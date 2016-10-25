@@ -4,17 +4,25 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
+import { SimpleFormComponent } from './simple-form/simple-form.component';
+import {MailService} from "./mail.service";
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    SimpleFormComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpModule
   ],
-  providers: [],
+  providers: [
+    MailService,
+    {provide: 'piper-server-uri', useValue: 'ws://not/a/real/path'}
+  ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+
+}
