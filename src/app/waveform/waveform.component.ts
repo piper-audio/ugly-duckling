@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, ViewChild, ElementRef} from '@angular/core';
+
 declare var wavesUI: any;
 
 @Component({
@@ -7,11 +8,13 @@ declare var wavesUI: any;
   styleUrls: ['./waveform.component.css']
 })
 export class WaveformComponent implements OnInit {
+  @ViewChild('track') trackDiv: ElementRef;
 
   constructor() {
     console.log(wavesUI.core);
   }
 
   ngOnInit() {
+    console.log(this.trackDiv.nativeElement.getBoundingClientRect().width);
   }
 }
