@@ -7,11 +7,13 @@ import { AppComponent } from './app.component';
 import { SimpleFormComponent } from './simple-form/simple-form.component';
 import {MailService} from "./mail.service";
 import {MaterialModule} from "@angular/material";
+import { WaveformComponent } from './waveform/waveform.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    SimpleFormComponent
+    SimpleFormComponent,
+    WaveformComponent
   ],
   imports: [
     BrowserModule,
