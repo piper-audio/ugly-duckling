@@ -12,4 +12,5 @@ md-sidenav-layout {
 
 md-sidenav {
   width: 240px;
+  text-align: center;
 }
