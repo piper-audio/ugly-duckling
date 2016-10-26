@@ -1,6 +1,6 @@
 import {
   Component, OnInit, Input, Output, EventEmitter,
-  ViewEncapsulation
+  ViewEncapsulation, ViewChild, ElementRef
 } from '@angular/core';
 
 @Component({
@@ -14,29 +14,17 @@ import {
       (mouseup)="isMousedown = false"
       (mouseleave)="isMousedown = false"
     />
+    <pre #testPre>Hi</pre>
+    <pre>{{testHi}}</pre>
     <button (click)="update.emit({text:message})">Click me!</button>
-  `,
-  styles: [`
-:host {
-  display: flex;
-  flex-direction: column;
-}
-
-.mousedown {
-  border: 2px solid green;
-}
-
-input:focus {
-  font-weight: bold;
-  outline: none;
-}
-
-button {
-  border: none;
-}
-`]
+  
+`,
+  styleUrls: ['./simple-form.component.css']
 })
 export class SimpleFormComponent implements OnInit {
+
+  @ViewChild('testPre') testPre: ElementRef;
+  testHi = 'Hi';
 
   isMousedown;
 
@@ -49,6 +37,7 @@ export class SimpleFormComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.testPre.nativeElement.innerHTML = Math.random().toString();
   }
 
 }

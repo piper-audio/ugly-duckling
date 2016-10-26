@@ -1,18 +1,27 @@
-<h1>
-  {{title}}
-</h1>
-<div>
-  <ul>
-    <li *ngFor="let message of mail.messages">{{message.text}}</li>
-  </ul>
+<md-toolbar color="primary">
+  <span>{{title}}</span>
+  <!-- This fills the remaining space of the current row -->
+  <span class="example-fill-remaining-space"></span>
 
-  <ul>
-    <app-simple-form
-      *ngFor="let message of mail.messages"
-      [message]="message.text"
-      (update)="onUpdate(message.id, $event.text)"
-    >{{message}}</app-simple-form>
-  </ul>
-  <hr>
-  {{serverUri}}
-</div>
+  <span>Right Aligned Text</span>
+</md-toolbar>
+
+<md-slider min="1" max="5"></md-slider>
+<!--<h1>-->
+  <!--{{title}}-->
+<!--</h1>-->
+<!--<div>-->
+  <!--<ul>-->
+    <!--<li *ngFor="let message of mail.messages">{{message.text}}</li>-->
+  <!--</ul>-->
+
+  <!--<ul>-->
+    <!--<app-simple-form-->
+      <!--*ngFor="let message of mail.messages"-->
+      <!--[message]="message.text"-->
+      <!--(update)="onUpdate(message.id, $event.text)"-->
+    <!--&gt;{{message}}</app-simple-form>-->
+  <!--</ul>-->
+  <!--<hr>-->
+  <!--{{serverUri}}-->
+<!--</div>-->

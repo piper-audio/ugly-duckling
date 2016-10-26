@@ -7,7 +7,7 @@ import {MailService} from "./mail.service";
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app works!';
+  title = 'Ugly';
 
   constructor(
     private mail: MailService,

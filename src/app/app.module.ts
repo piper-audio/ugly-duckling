@@ -6,6 +6,7 @@ import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
 import { SimpleFormComponent } from './simple-form/simple-form.component';
 import {MailService} from "./mail.service";
+import {MaterialModule} from "@angular/material";
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import {MailService} from "./mail.service";
   imports: [
     BrowserModule,
     FormsModule,
-    HttpModule
+    HttpModule,
+    MaterialModule.forRoot()
   ],
   providers: [
     MailService,
