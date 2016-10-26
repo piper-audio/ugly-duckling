@@ -1,27 +1,42 @@
 <md-toolbar color="primary">
+  <md-icon>face</md-icon>
   <span>{{title}}</span>
   <!-- This fills the remaining space of the current row -->
-  <span class="example-fill-remaining-space"></span>
+  <span class="app-toolbar-filler"></span>
 
-  <span>Right Aligned Text</span>
+  <!-- menu opens when trigger button is clicked -->
+  <button md-icon-button [md-menu-trigger-for]="menu">
+    <md-icon>more_vert</md-icon>
+  </button>
+
+  <md-menu x-position="before" #menu="mdMenu">
+    <button md-menu-item> Refresh</button>
+    <button md-menu-item> Settings</button>
+    <button md-menu-item> Help</button>
+    <button md-menu-item disabled> Sign Out</button>
+  </md-menu>
 </md-toolbar>
+<md-sidenav-layout>
+  <md-sidenav align="end" mode="side" opened>
+  </md-sidenav>
+  <md-slider min="1" max="5"></md-slider>
 
-<md-slider min="1" max="5"></md-slider>
+</md-sidenav-layout>
 <!--<h1>-->
-  <!--{{title}}-->
+<!--{{title}}-->
 <!--</h1>-->
 <!--<div>-->
-  <!--<ul>-->
-    <!--<li *ngFor="let message of mail.messages">{{message.text}}</li>-->
-  <!--</ul>-->
+<!--<ul>-->
+<!--<li *ngFor="let message of mail.messages">{{message.text}}</li>-->
+<!--</ul>-->
 
-  <!--<ul>-->
-    <!--<app-simple-form-->
-      <!--*ngFor="let message of mail.messages"-->
-      <!--[message]="message.text"-->
-      <!--(update)="onUpdate(message.id, $event.text)"-->
-    <!--&gt;{{message}}</app-simple-form>-->
-  <!--</ul>-->
-  <!--<hr>-->
-  <!--{{serverUri}}-->
+<!--<ul>-->
+<!--<app-simple-form-->
+<!--*ngFor="let message of mail.messages"-->
+<!--[message]="message.text"-->
+<!--(update)="onUpdate(message.id, $event.text)"-->
+<!--&gt;{{message}}</app-simple-form>-->
+<!--</ul>-->
+<!--<hr>-->
+<!--{{serverUri}}-->
 <!--</div>-->

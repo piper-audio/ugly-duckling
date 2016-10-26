@@ -1,3 +1,15 @@
 app-simple-form {
   margin-bottom: 10px;
 }
+
+.app-toolbar-filler {
+  flex: 1 1 auto;
+}
+
+md-sidenav-layout {
+  height: calc(100vh - 64px); /* height of window minus the toolbar height*/
+}
+
+md-sidenav {
+  width: 240px;
+}
