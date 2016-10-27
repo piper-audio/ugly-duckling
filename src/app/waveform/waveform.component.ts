@@ -17,7 +17,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnChanges {
 
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
-    console.log("setter");
     this._audioBuffer = buffer || undefined;
   }
 
@@ -55,7 +54,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log("ng changes");
     if (changes.hasOwnProperty("audioBuffer")) { // why wouldn't it?
       if (changes["audioBuffer"].currentValue)
         this.renderWaveform(changes["audioBuffer"].currentValue);
@@ -64,8 +62,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnChanges {
 
   renderWaveform(buffer: AudioBuffer) {
     // TODO reduce dupe from original timeline state, anyway to actually not instantiate new timeline?
-    console.log("render wave");
     const track: HTMLElement = this.trackDiv.nativeElement;
+    track.innerHTML = "";
     const duration: number = buffer.duration;
     const height: number = track.getBoundingClientRect().height;
     const width: number = track.getBoundingClientRect().width;

@@ -24,7 +24,6 @@ export class AppComponent {
 
   onAudioLoaded(buffer: AudioBuffer) {
     this.zone.run(() => { // TODO why the f does this only recognise changes immediately (and not the next tick) inside zone.run?
-      console.log("audio loaded");
       this.audioBuffer = buffer;
       this.count++;
     });
