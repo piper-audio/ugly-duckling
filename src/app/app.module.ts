@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
-import { SimpleFormComponent } from './simple-form/simple-form.component';
 import {MailService} from "./mail.service";
 import {MaterialModule} from "@angular/material";
 import { WaveformComponent } from './waveform/waveform.component';
@@ -12,7 +11,6 @@ import { WaveformComponent } from './waveform/waveform.component';
 @NgModule({
   declarations: [
     AppComponent,
-    SimpleFormComponent,
     WaveformComponent
   ],
   imports: [
