@@ -1,0 +1,4 @@
+<input #open type="file" accept="audio/*" (change)="openAudio($event.srcElement.files)"/>
+<button md-icon-button (click)="openAudioDialog()">
+    <md-icon>folder_open</md-icon>
+</button>

@@ -7,11 +7,13 @@ import { AppComponent } from './app.component';
 import {MailService} from "./mail.service";
 import {MaterialModule} from "@angular/material";
 import { WaveformComponent } from './waveform/waveform.component';
+import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    WaveformComponent
+    WaveformComponent,
+    AudioFileOpenComponent
   ],
   imports: [
     BrowserModule,
