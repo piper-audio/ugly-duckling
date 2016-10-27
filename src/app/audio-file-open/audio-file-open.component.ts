@@ -1,4 +1,7 @@
-import {Component, OnInit, ViewChild, ElementRef} from '@angular/core';
+import {
+  Component, OnInit, ViewChild, ElementRef, Output,
+  EventEmitter
+} from '@angular/core';
 
 interface AudioContextConstructor {
   new(): AudioContext
@@ -17,10 +20,13 @@ interface WindowAudioContext {
 export class AudioFileOpenComponent implements OnInit {
 
   @ViewChild('open') open: ElementRef;
+  @Output() audioLoaded: EventEmitter<AudioBuffer>;
 
   private audioContext: AudioContext;
 
   constructor() {
+    this.audioLoaded = new EventEmitter<AudioBuffer>();
+
     // TODO make a service which provides the AudioContext?
     const factory: WindowAudioContext = (window as WindowAudioContext);
     this.audioContext = new (factory.AudioContext || factory.webkitAudioContext)();
@@ -34,7 +40,7 @@ export class AudioFileOpenComponent implements OnInit {
       const reader: FileReader = new FileReader();
       reader.onload = (event: any) => {
         this.audioContext.decodeAudioData(event.target.result, buffer => {
-          console.log(buffer);
+          this.audioLoaded.emit(buffer);
         });
       };
       reader.readAsArrayBuffer(files[0]);

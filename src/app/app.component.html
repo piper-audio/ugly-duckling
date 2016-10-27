@@ -4,7 +4,7 @@
   <span class="app-toolbar-filler"></span>
 
 
-  <app-audio-file-open></app-audio-file-open>
+  <app-audio-file-open (audioLoaded)="onAudioLoaded($event)"></app-audio-file-open>
   <!-- menu opens when trigger button is clicked -->
   <button md-icon-button [md-menu-trigger-for]="menu">
     <md-icon>more_vert</md-icon>
@@ -18,6 +18,10 @@
 <md-sidenav-layout>
   <md-sidenav align="end" mode="side" opened>
     <md-slider></md-slider>
+    <button md-icon-button (click)="testRef()">
+      <md-icon>face</md-icon>
+    </button>
+    <h1>{{count}}</h1>
   </md-sidenav>
-  <app-waveform></app-waveform>
+  <app-waveform [audioBuffer]="audioBuffer"></app-waveform>
 </md-sidenav-layout>
