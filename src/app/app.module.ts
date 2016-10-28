@@ -8,12 +8,14 @@ import {MailService} from "./mail.service";
 import {MaterialModule} from "@angular/material";
 import { WaveformComponent } from './waveform/waveform.component';
 import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
+import { PlaybackControlComponent } from './playback-control/playback-control.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     WaveformComponent,
-    AudioFileOpenComponent
+    AudioFileOpenComponent,
+    PlaybackControlComponent
   ],
   imports: [
     BrowserModule,

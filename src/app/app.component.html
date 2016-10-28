@@ -1,5 +1,5 @@
 <md-toolbar color="primary">
-  <md-icon svgSrc="/assets/duck.svg"></md-icon>
+  <md-icon svgSrc="assets/duck.svg"></md-icon>
   <!-- This fills the remaining space of the current row -->
   <span class="app-toolbar-filler"></span>
 
@@ -17,11 +17,28 @@
 
 <md-sidenav-layout>
   <md-sidenav align="end" mode="side" opened>
-    <md-slider></md-slider>
-    <button md-icon-button (click)="testRef()">
-      <md-icon>face</md-icon>
-    </button>
-    <h1>{{count}}</h1>
+    <md-tab-group>
+      <md-tab>
+        <template md-tab-label>
+          Playback
+        </template>
+        <template md-tab-content>
+          <app-playback-control class="playback-content"></app-playback-control>
+          <button md-icon-button (click)="testRef()">
+            <md-icon>face</md-icon>
+          </button>
+          <h1>{{count}}</h1>
+        </template>
+      </md-tab>
+      <md-tab>
+        <template md-tab-label>
+          Feature Extraction
+        </template>
+        <template md-tab-content>
+          <p>Extraction</p>
+        </template>
+      </md-tab>
+    </md-tab-group>
   </md-sidenav>
   <app-waveform [audioBuffer]="audioBuffer"></app-waveform>
 </md-sidenav-layout>
