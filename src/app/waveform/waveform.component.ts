@@ -1,16 +1,17 @@
 import {
-  Component, OnInit, ViewChild, ElementRef,
-  AfterViewInit, OnChanges, SimpleChanges, Input
+  Component, OnInit, ViewChild, ElementRef, Input, AfterViewInit
 } from '@angular/core';
 
 declare var wavesUI: any; // TODO non-global app scope import
+type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 
 @Component({
   selector: 'app-waveform',
   templateUrl: './waveform.component.html',
   styleUrls: ['./waveform.component.css']
 })
-export class WaveformComponent implements OnInit, AfterViewInit, OnChanges {
+export class WaveformComponent implements OnInit, AfterViewInit {
+
   @ViewChild('track') trackDiv: ElementRef;
 
   private _audioBuffer: AudioBuffer = undefined;
@@ -18,53 +19,24 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnChanges {
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
     this._audioBuffer = buffer || undefined;
+    if (this.audioBuffer)
+      this.renderWaveform(this.audioBuffer);
   }
 
   get audioBuffer(): AudioBuffer {
     return this._audioBuffer;
   }
 
-
-
-  private timeline: any; // TODO what type is it?
-
-  constructor() {
-  }
-
+  constructor() {}
   ngOnInit() {}
 
   ngAfterViewInit(): void {
-    const track: HTMLElement = this.trackDiv.nativeElement;
-    const duration: number = 1.0;
-    const height: number = track.getBoundingClientRect().height;
-    const width: number = track.getBoundingClientRect().width;
-    const pixelsPerSecond = width / duration;
-    const timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
-    timeline.createTrack(track, height, 'main');
-
-    // time axis
-    const timeAxis = new wavesUI.helpers.TimeAxisLayer({
-      height: height,
-      top: 10,
-      color: 'gray'
-    });
-
-    timeline.addLayer(timeAxis, 'main', 'default', true);
-    timeline.state = new wavesUI.states.CenteredZoomState(timeline);
+    this.renderTimeline();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.hasOwnProperty("audioBuffer")) { // why wouldn't it?
-      if (changes["audioBuffer"].currentValue)
-        this.renderWaveform(changes["audioBuffer"].currentValue);
-    }
-  }
-
-  renderWaveform(buffer: AudioBuffer) {
-    // TODO reduce dupe from original timeline state, anyway to actually not instantiate new timeline?
+  renderTimeline(duration: number = 1.0): Timeline {
     const track: HTMLElement = this.trackDiv.nativeElement;
     track.innerHTML = "";
-    const duration: number = buffer.duration;
     const height: number = track.getBoundingClientRect().height;
     const width: number = track.getBoundingClientRect().width;
     const pixelsPerSecond = width / duration;
@@ -74,18 +46,23 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnChanges {
     // time axis
     const timeAxis = new wavesUI.helpers.TimeAxisLayer({
       height: height,
-      top: 10,
       color: 'gray'
     });
 
     timeline.addLayer(timeAxis, 'main', 'default', true);
     timeline.state = new wavesUI.states.CenteredZoomState(timeline);
-    // TODO dispose of the existing layer?
+    return timeline;
+  }
+
+  renderWaveform(buffer: AudioBuffer): void {
+    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
+    const timeline: Timeline = this.renderTimeline(buffer.duration);
     const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
-      height: 600,
+      top: 10,
+      height: height * 0.9,
       color: 'darkblue'
     });
-    timeline.addLayer(waveformLayer, 'main');
+    (timeline as any).addLayer(waveformLayer, 'main');
   }
 
 }
