@@ -1,6 +1,6 @@
 import {
   Component, OnInit, ViewChild, ElementRef, Output,
-  EventEmitter
+  EventEmitter, NgZone
 } from '@angular/core';
 
 interface AudioContextConstructor {
@@ -24,7 +24,7 @@ export class AudioFileOpenComponent implements OnInit {
 
   private audioContext: AudioContext;
 
-  constructor() {
+  constructor(private zone: NgZone) {
     this.audioLoaded = new EventEmitter<AudioBuffer>();
 
     // TODO make a service which provides the AudioContext?
@@ -40,7 +40,9 @@ export class AudioFileOpenComponent implements OnInit {
       const reader: FileReader = new FileReader();
       reader.onload = (event: any) => {
         this.audioContext.decodeAudioData(event.target.result, buffer => {
-          this.audioLoaded.emit(buffer);
+          this.zone.run(() => {
+            this.audioLoaded.emit(buffer);
+          });
         });
       };
       reader.readAsArrayBuffer(files[0]);

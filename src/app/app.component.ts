@@ -1,4 +1,4 @@
-import {Component, Inject, NgZone} from '@angular/core';
+import {Component, Inject} from '@angular/core';
 import {MailService} from "./mail.service";
 
 @Component({
@@ -14,8 +14,7 @@ export class AppComponent {
 
   constructor(
     private mail: MailService,
-    @Inject('piper-server-uri') private serverUri,
-    private zone: NgZone
+    @Inject('piper-server-uri') private serverUri
   ) {}
 
   onUpdate(id, text) {
@@ -23,10 +22,8 @@ export class AppComponent {
   }
 
   onAudioLoaded(buffer: AudioBuffer) {
-    this.zone.run(() => { // TODO why the f does this only recognise changes immediately (and not the next tick) inside zone.run?
-      this.audioBuffer = buffer;
-      this.count++;
-    });
+    this.audioBuffer = buffer;
+    this.count++;
   }
 
   testRef() {
