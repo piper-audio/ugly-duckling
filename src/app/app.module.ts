@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
-import {MailService} from "./mail.service";
 import {MaterialModule} from "@angular/material";
 import { WaveformComponent } from './waveform/waveform.component';
 import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
@@ -24,7 +23,6 @@ import { PlaybackControlComponent } from './playback-control/playback-control.co
     MaterialModule.forRoot()
   ],
   providers: [
-    MailService,
     {provide: 'piper-server-uri', useValue: 'ws://not/a/real/path'}
   ],
   bootstrap: [AppComponent]
