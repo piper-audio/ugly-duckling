@@ -10,7 +10,10 @@ md-sidenav {
   text-align: center;
 }
 
-.md-tab-body {
-  background-color: black;
+md-tab-group {
+  height: calc(100vh - 64px); /* height of window minus the toolbar height*/
 }
 
+md-tab-group >>> .md-tab-body-wrapper {
+  align-items: center;
+}
