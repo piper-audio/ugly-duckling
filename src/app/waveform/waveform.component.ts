@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import {AudioPlayerService} from "../services/audio-player.service";
 
-declare var wavesUI: any; // TODO non-global app scope import
+declare let wavesUI: any; // TODO non-global app scope import
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 
 @Component({
@@ -43,6 +43,7 @@ export class WaveformComponent implements OnInit, AfterViewInit {
     const width: number = track.getBoundingClientRect().width;
     const pixelsPerSecond = width / duration;
     const timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
+    timeline.timeContext.offset = 0.5 * timeline.timeContext.visibleDuration;
     timeline.createTrack(track, height, 'main');
 
     // time axis
@@ -77,6 +78,11 @@ export class WaveformComponent implements OnInit, AfterViewInit {
       const updateSeekingCursor = () => {
         cursorLayer.currentPosition = this.audioService.getCurrentTime();
         cursorLayer.update();
+        if (timeline.timeContext.offset + this.audioService.getCurrentTime() >= timeline.timeContext.visibleDuration)
+          timeline.timeContext.offset -= timeline.timeContext.visibleDuration;
+        if (-this.audioService.getCurrentTime() > timeline.timeContext.offset)
+          timeline.timeContext.offset += timeline.timeContext.visibleDuration;
+        timeline.tracks.update();
         requestAnimationFrame(updateSeekingCursor);
       };
       updateSeekingCursor();
