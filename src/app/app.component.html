@@ -4,7 +4,7 @@
   <span class="app-toolbar-filler"></span>
 
 
-  <app-audio-file-open (audioLoaded)="onAudioLoaded($event)"></app-audio-file-open>
+  <app-audio-file-open (fileOpened)="onFileOpened($event)"></app-audio-file-open>
   <!-- menu opens when trigger button is clicked -->
   <button md-icon-button [md-menu-trigger-for]="menu">
     <md-icon>more_vert</md-icon>

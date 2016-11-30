@@ -1,6 +1,7 @@
 import {
-  Component, OnInit, ViewChild, ElementRef, Input, AfterViewInit
+  Component, OnInit, ViewChild, ElementRef, Input, AfterViewInit, NgZone
 } from '@angular/core';
+import {AudioPlayerService} from "../services/audio-player.service";
 
 declare var wavesUI: any; // TODO non-global app scope import
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
@@ -27,7 +28,8 @@ export class WaveformComponent implements OnInit, AfterViewInit {
     return this._audioBuffer;
   }
 
-  constructor() {}
+  constructor(private audioService: AudioPlayerService,
+              public ngZone: NgZone) {}
   ngOnInit() {}
 
   ngAfterViewInit(): void {
@@ -50,7 +52,6 @@ export class WaveformComponent implements OnInit, AfterViewInit {
     });
 
     timeline.addLayer(timeAxis, 'main', 'default', true);
-    timeline.state = new wavesUI.states.CenteredZoomState(timeline);
     return timeline;
   }
 
@@ -63,6 +64,23 @@ export class WaveformComponent implements OnInit, AfterViewInit {
       color: 'darkblue'
     });
     (timeline as any).addLayer(waveformLayer, 'main');
+
+    const cursorLayer = new wavesUI.helpers.CursorLayer({
+      height: height
+    });
+    timeline.addLayer(cursorLayer, 'main');
+    timeline.state = new wavesUI.states.CenteredZoomState(timeline);
+    this.ngZone.runOutsideAngular(() => {
+      // listen for time passing...
+      // TODO this gets the fans going on large files... worth fixing? or waiting to write a better component?
+      // or, can this be updated in a more efficient manner?
+      const updateSeekingCursor = () => {
+        cursorLayer.currentPosition = this.audioService.getCurrentTime();
+        cursorLayer.update();
+        requestAnimationFrame(updateSeekingCursor);
+      };
+      updateSeekingCursor();
+    });
   }
 
 }

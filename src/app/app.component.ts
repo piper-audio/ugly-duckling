@@ -1,4 +1,5 @@
-import {Component, Inject} from '@angular/core';
+import {Component} from '@angular/core';
+import {AudioPlayerService} from "./services/audio-player.service";
 
 @Component({
   selector: 'app-root',
@@ -6,15 +7,22 @@ import {Component, Inject} from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'Ugly';
+  audioBuffer: AudioBuffer; // TODO consider revising
 
-  audioBuffer: AudioBuffer = undefined;
+  constructor(private audioService: AudioPlayerService) {}
 
-  constructor(
-    @Inject('piper-server-uri') private serverUri
-  ) {}
-
-  onAudioLoaded(buffer: AudioBuffer) {
-    this.audioBuffer = buffer;
+  onFileOpened(file: File) {
+    const reader: FileReader = new FileReader();
+    const mimeType = file.type;
+    reader.onload = (event: any) => {
+      this.audioService.loadAudioFromUrl(
+        URL.createObjectURL(new Blob([event.target.result], {type: mimeType}))
+      );
+      // TODO use a rxjs/Subject instead?
+      this.audioService.decodeAudioData(event.target.result).then(audioBuffer => {
+        this.audioBuffer = audioBuffer;
+      });
+    };
+    reader.readAsArrayBuffer(file);
   }
 }
