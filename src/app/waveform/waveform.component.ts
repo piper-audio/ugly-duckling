@@ -78,11 +78,14 @@ export class WaveformComponent implements OnInit, AfterViewInit {
       const updateSeekingCursor = () => {
         cursorLayer.currentPosition = this.audioService.getCurrentTime();
         cursorLayer.update();
-        if (timeline.timeContext.offset + this.audioService.getCurrentTime() >= timeline.timeContext.visibleDuration)
+        if (timeline.timeContext.offset + this.audioService.getCurrentTime() >= timeline.timeContext.visibleDuration) {
           timeline.timeContext.offset -= timeline.timeContext.visibleDuration;
-        if (-this.audioService.getCurrentTime() > timeline.timeContext.offset)
+          timeline.tracks.update();
+        }
+        if (-this.audioService.getCurrentTime() > timeline.timeContext.offset) {
           timeline.timeContext.offset += timeline.timeContext.visibleDuration;
-        timeline.tracks.update();
+          timeline.tracks.update();
+        }
         requestAnimationFrame(updateSeekingCursor);
       };
       updateSeekingCursor();
