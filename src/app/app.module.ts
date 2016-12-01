@@ -8,7 +8,7 @@ import { MaterialModule } from "@angular/material";
 import { WaveformComponent } from './waveform/waveform.component';
 import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
 import { PlaybackControlComponent } from './playback-control/playback-control.component';
-import { AudioPlayerService } from "./services/audio-player.service";
+import { AudioPlayerService } from "./services/audio-player/audio-player.service";
 
 function createAudioContext(): AudioContext {
   return new (

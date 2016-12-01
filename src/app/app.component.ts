@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {AudioPlayerService} from "./services/audio-player.service";
+import {AudioPlayerService} from "./services/audio-player/audio-player.service";
 
 @Component({
   selector: 'app-root',
