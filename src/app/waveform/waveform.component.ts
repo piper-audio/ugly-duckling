@@ -1,7 +1,7 @@
 import {
   Component, OnInit, ViewChild, ElementRef, Input, AfterViewInit, NgZone
 } from '@angular/core';
-import {AudioPlayerService} from "../services/audio-player.service";
+import {AudioPlayerService} from "../services/audio-player/audio-player.service";
 import wavesUI from 'waves-ui';
 
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
