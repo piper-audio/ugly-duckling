@@ -8,7 +8,9 @@ import { MaterialModule } from "@angular/material";
 import { WaveformComponent } from './waveform/waveform.component';
 import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
 import { PlaybackControlComponent } from './playback-control/playback-control.component';
-import { AudioPlayerService } from "./services/audio-player.service";
+import { AudioPlayerService } from "./services/audio-player/audio-player.service";
+import { FeatureExtractionService } from "./services/feature-extraction/feature-extraction.service";
+import { FeatureExtractionMenuComponent } from "./feature-extraction-menu/feature-extraction-menu.component";
 
 function createAudioContext(): AudioContext {
   return new (
@@ -22,7 +24,8 @@ function createAudioContext(): AudioContext {
     AppComponent,
     WaveformComponent,
     AudioFileOpenComponent,
-    PlaybackControlComponent
+    PlaybackControlComponent,
+    FeatureExtractionMenuComponent
   ],
   imports: [
     BrowserModule,
@@ -33,7 +36,8 @@ function createAudioContext(): AudioContext {
   providers: [
     {provide: HTMLAudioElement, useValue: new Audio()}, // TODO use something more generic than HTMLAudioElement
     {provide: 'AudioContext', useValue: createAudioContext()}, // use a string token, Safari doesn't seem to like AudioContext
-    AudioPlayerService
+    AudioPlayerService,
+    FeatureExtractionService
   ],
   bootstrap: [AppComponent]
 })

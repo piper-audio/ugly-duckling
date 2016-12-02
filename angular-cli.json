@@ -21,7 +21,7 @@
         "styles.css"
       ],
       "scripts": [
-        "../node_modules/waves-ui/waves-ui.min.js"
+        "externals.ts"
       ],
       "environments": {
         "source": "environments/environment.ts",
