@@ -13,9 +13,7 @@ export class PlaybackControlComponent implements OnInit {
               private featureExtractionService: FeatureExtractionService) {
   }
 
-  ngOnInit() {
-    this.featureExtractionService.testMessageStream();
-  }
+  ngOnInit() {}
 
   emitPlayPause() {
     this.audioService.togglePlaying();

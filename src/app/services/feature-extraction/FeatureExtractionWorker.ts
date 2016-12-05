@@ -23,16 +23,20 @@ export default class FeatureExtractionWorker {
 
   constructor(workerScope: WorkerGlobalScope) {
     this.workerScope = workerScope;
-    let counter = 0;
-    setInterval(() => this.workerScope.postMessage(counter++), 1000);
     this.piperClient = new PiperSimpleClient(new EmscriptenProxy(VampExamplePlugins()));
     this.workerScope.onmessage = (ev: MessageEvent) => {
+      const sendResponse = (result) => this.workerScope.postMessage({
+        method: ev.data.method,
+        result: result
+      });
       switch (ev.data.method) {
         case 'list':
-          this.piperClient.list({}).then(this.workerScope.postMessage);
+          this.piperClient.list({}).then(sendResponse);
+          break;
+        case 'process':
+          this.piperClient.process(ev.data.params).then(sendResponse);
       }
     };
   }
-
 
 }
