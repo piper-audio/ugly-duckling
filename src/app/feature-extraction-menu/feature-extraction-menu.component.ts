@@ -21,11 +21,20 @@ export class FeatureExtractionMenuComponent implements OnInit {
 
   ngOnInit() {
     this.piperService.list().then(available => {
-      available.available.forEach(staticData => this.extractors.push({
-          key: staticData.key,
-          name: staticData.basic.name
-        })
-      );
+      const maxCharacterLimit = 50;
+      available.available.forEach(staticData => {
+        if (staticData.basicOutputInfo.length > 1)
+          staticData.basicOutputInfo.forEach(output => this.extractors.push({
+              key: `${staticData.key}:${output.identifier}`,
+              name: `${staticData.basic.name}: ${output.name}`.substr(0, maxCharacterLimit) + '...'
+            })
+          );
+        else
+          this.extractors.push({
+            key: staticData.key,
+            name: staticData.basic.name.substr(0, maxCharacterLimit) + '...'
+          });
+      });
     });
   }
 

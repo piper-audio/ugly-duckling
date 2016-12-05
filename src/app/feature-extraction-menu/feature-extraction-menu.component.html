@@ -1,7 +1,9 @@
-<select id="extractors">
+<select id="extractor-outputs">
   <option selected></option>
   <option *ngFor="let extractor of extractors" value="{{extractor.key}}">
     {{extractor.name}}
   </option>
-
 </select>
+<p>
+  <button md-raised-button color="primary">Extract</button>
+</p>
