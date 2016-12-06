@@ -10,15 +10,15 @@ import {ExtractorOutputInfo} from "./feature-extraction-menu/feature-extraction-
 })
 export class AppComponent {
   audioBuffer: AudioBuffer; // TODO consider revising
-  hasAudioBuffer: boolean;
+  canExtract: boolean;
 
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService) {
-    this.hasAudioBuffer = false;
+    this.canExtract = false;
   }
 
   onFileOpened(file: File) {
-    this.hasAudioBuffer = false;
+    this.canExtract = false;
     const reader: FileReader = new FileReader();
     const mimeType = file.type;
     reader.onload = (event: any) => {
@@ -29,14 +29,15 @@ export class AppComponent {
       this.audioService.decodeAudioData(event.target.result).then(audioBuffer => {
         this.audioBuffer = audioBuffer;
         if (this.audioBuffer)
-          this.hasAudioBuffer = true;
+          this.canExtract = true;
       });
     };
     reader.readAsArrayBuffer(file);
   }
 
   extractFeatures(outputInfo: ExtractorOutputInfo): void {
-    if (!this.hasAudioBuffer) return;
+    if (!this.canExtract) return;
+    this.canExtract = false;
     this.piperService.process({
       audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
         .map(i => this.audioBuffer.getChannelData(i)),
@@ -46,6 +47,9 @@ export class AppComponent {
       },
       key: outputInfo.extractorKey,
       outputId: outputInfo.outputId
-    }).then(data => console.log(data)).catch(err => console.error(err));
+    }).then(data => {
+      this.canExtract = true;
+      console.log(data);
+    }).catch(err => console.error(err));
   }
 }
