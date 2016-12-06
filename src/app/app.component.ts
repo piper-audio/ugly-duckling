@@ -36,7 +36,7 @@ export class AppComponent {
   }
 
   extractFeatures(outputInfo: ExtractorOutputInfo): void {
-    if (!this.canExtract) return;
+    if (!this.canExtract || !outputInfo) return;
     this.canExtract = false;
     this.piperService.process({
       audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
@@ -47,9 +47,8 @@ export class AppComponent {
       },
       key: outputInfo.extractorKey,
       outputId: outputInfo.outputId
-    }).then(data => {
+    }).then(() => {
       this.canExtract = true;
-      console.log(data);
     }).catch(err => console.error(err));
   }
 }
