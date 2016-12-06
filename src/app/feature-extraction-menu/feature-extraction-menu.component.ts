@@ -33,7 +33,7 @@ export class FeatureExtractionMenuComponent implements OnInit {
   constructor(private piperService: FeatureExtractionService) {
     this.extractorsMap = new Map();
     this.extractors = [];
-    this.requestOutput = new EventEmitter();
+    this.requestOutput = new EventEmitter<ExtractorOutputInfo>();
     this.isDisabled = true;
   }
 

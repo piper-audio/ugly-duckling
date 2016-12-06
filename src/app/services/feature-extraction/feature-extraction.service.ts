@@ -1,10 +1,11 @@
 import {Injectable} from '@angular/core';
 import {
-  ListResponse, ProcessResponse, ProcessRequest,
-  ListRequest
+  ListResponse, ListRequest
 } from "piper";
 import {SimpleRequest} from "piper/HigherLevelUtilities";
 import {FeatureList} from "piper/Feature";
+import {Subject} from "rxjs/Subject";
+import {Observable} from "rxjs";
 
 interface RequestMessage<RequestType> {
   method: string;
@@ -20,10 +21,13 @@ interface ResponseMessage<ResponseType> {
 export class FeatureExtractionService {
 
   private worker: Worker;
-
+  private featuresExtracted: Subject<FeatureList>;
+  featuresExtracted$: Observable<FeatureList>;
 
   constructor() {
     this.worker = new Worker('bootstrap-feature-extraction-worker.js');
+    this.featuresExtracted = new Subject<FeatureList>();
+    this.featuresExtracted$ = this.featuresExtracted.asObservable();
   }
 
   list(): Promise<ListResponse> {
@@ -37,7 +41,10 @@ export class FeatureExtractionService {
     return this.request<SimpleRequest, FeatureList>(
       {method: 'process', params: request},
       (ev: MessageEvent) => ev.data.method === 'process'
-    );
+    ).then(msg => {
+      this.featuresExtracted.next(msg.result);
+      return msg.result;
+    });
   }
 
   private request<Req, Res>(request: RequestMessage<Req>,

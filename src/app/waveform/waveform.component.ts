@@ -1,8 +1,12 @@
 import {
-  Component, OnInit, ViewChild, ElementRef, Input, AfterViewInit, NgZone
+  Component, OnInit, ViewChild, ElementRef, Input, AfterViewInit, NgZone,
+  OnDestroy
 } from '@angular/core';
 import {AudioPlayerService} from "../services/audio-player/audio-player.service";
 import wavesUI from 'waves-ui';
+import {FeatureList} from "piper/Feature";
+import {FeatureExtractionService} from "../services/feature-extraction/feature-extraction.service";
+import {Subscription} from "rxjs";
 
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 
@@ -11,11 +15,12 @@ type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-
   templateUrl: './waveform.component.html',
   styleUrls: ['./waveform.component.css']
 })
-export class WaveformComponent implements OnInit, AfterViewInit {
+export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('track') trackDiv: ElementRef;
 
   private _audioBuffer: AudioBuffer = undefined;
+  private timeline: Timeline = undefined;
 
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
@@ -28,12 +33,21 @@ export class WaveformComponent implements OnInit, AfterViewInit {
     return this._audioBuffer;
   }
 
+  private featureExtractionSubscription: Subscription;
+
   constructor(private audioService: AudioPlayerService,
-              public ngZone: NgZone) {}
+              private piperService: FeatureExtractionService,
+              public ngZone: NgZone) {
+    this.featureExtractionSubscription = piperService.featuresExtracted$.subscribe(
+      features => {
+        this.renderFeatures(features);
+      });
+  }
+
   ngOnInit() {}
 
   ngAfterViewInit(): void {
-    this.renderTimeline();
+    this.timeline = this.renderTimeline();
   }
 
   renderTimeline(duration: number = 1.0): Timeline {
@@ -58,19 +72,19 @@ export class WaveformComponent implements OnInit, AfterViewInit {
 
   renderWaveform(buffer: AudioBuffer): void {
     const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const timeline: Timeline = this.renderTimeline(buffer.duration);
+    this.timeline = this.renderTimeline(buffer.duration);
     const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
       top: 10,
       height: height * 0.9,
       color: 'darkblue'
     });
-    (timeline as any).addLayer(waveformLayer, 'main');
+    (this.timeline as any).addLayer(waveformLayer, 'main');
 
     const cursorLayer = new wavesUI.helpers.CursorLayer({
       height: height
     });
-    timeline.addLayer(cursorLayer, 'main');
-    timeline.state = new wavesUI.states.CenteredZoomState(timeline);
+    this.timeline.addLayer(cursorLayer, 'main');
+    this.timeline.state = new wavesUI.states.CenteredZoomState(this.timeline);
     this.ngZone.runOutsideAngular(() => {
       // listen for time passing...
       // TODO this gets the fans going on large files... worth fixing? or waiting to write a better component?
@@ -78,13 +92,13 @@ export class WaveformComponent implements OnInit, AfterViewInit {
       const updateSeekingCursor = () => {
         cursorLayer.currentPosition = this.audioService.getCurrentTime();
         cursorLayer.update();
-        if (timeline.timeContext.offset + this.audioService.getCurrentTime() >= timeline.timeContext.visibleDuration) {
-          timeline.timeContext.offset -= timeline.timeContext.visibleDuration;
-          timeline.tracks.update();
+        if (this.timeline.timeContext.offset + this.audioService.getCurrentTime() >= this.timeline.timeContext.visibleDuration) {
+          this.timeline.timeContext.offset -= this.timeline.timeContext.visibleDuration;
+          this.timeline.tracks.update();
         }
-        if (-this.audioService.getCurrentTime() > timeline.timeContext.offset) {
-          timeline.timeContext.offset += timeline.timeContext.visibleDuration;
-          timeline.tracks.update();
+        if (-this.audioService.getCurrentTime() > this.timeline.timeContext.offset) {
+          this.timeline.timeContext.offset += this.timeline.timeContext.visibleDuration;
+          this.timeline.tracks.update();
         }
         requestAnimationFrame(updateSeekingCursor);
       };
@@ -92,4 +106,12 @@ export class WaveformComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // TODO refactor - this doesn't belong here
+  private renderFeatures(features: FeatureList): void {
+    console.log(features);
+  }
+
+  ngOnDestroy(): void {
+    this.featureExtractionSubscription.unsubscribe();
+  }
 }
