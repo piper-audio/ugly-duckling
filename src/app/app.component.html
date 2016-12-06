@@ -22,7 +22,9 @@
         <app-playback-control class="playback-content"></app-playback-control>
       </md-tab>
       <md-tab label="Feature Extraction">
-        <app-feature-extraction-menu (requestOutput)="extractFeatures($event)"></app-feature-extraction-menu>
+        <app-feature-extraction-menu
+          (requestOutput)="extractFeatures($event)"
+          [disabled]="!hasAudioBuffer"></app-feature-extraction-menu>
       </md-tab>
     </md-tab-group>
   </md-sidenav>

@@ -7,5 +7,6 @@
 <p>
   <button md-raised-button
           color="primary"
-          (click)="extract(extractorOutputs.value)">Extract</button>
+          (click)="extract(extractorOutputs.value)"
+          [disabled]="disabled">Extract</button>
 </p>

@@ -1,4 +1,4 @@
-import {Component, OnInit, Output, EventEmitter} from '@angular/core';
+import {Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import {FeatureExtractionService} from "../services/feature-extraction/feature-extraction.service";
 
 export interface ExtractorOutputInfo {
@@ -15,8 +15,18 @@ export interface ExtractorOutputInfo {
 })
 export class FeatureExtractionMenuComponent implements OnInit {
 
+  @Input()
+  set disabled(isDisabled: boolean) {
+    this.isDisabled = isDisabled;
+  }
+
+  get disabled() {
+    return this.isDisabled;
+  }
+
   @Output() requestOutput: EventEmitter<ExtractorOutputInfo>;
 
+  private isDisabled: boolean;
   private extractorsMap: Map<string, ExtractorOutputInfo>;
   extractors: Iterable<ExtractorOutputInfo>;
 
@@ -24,6 +34,7 @@ export class FeatureExtractionMenuComponent implements OnInit {
     this.extractorsMap = new Map();
     this.extractors = [];
     this.requestOutput = new EventEmitter();
+    this.isDisabled = true;
   }
 
   ngOnInit() {
