@@ -7,6 +7,7 @@ import wavesUI from 'waves-ui';
 import {FeatureList} from "piper/Feature";
 import {FeatureExtractionService} from "../services/feature-extraction/feature-extraction.service";
 import {Subscription} from "rxjs";
+import {toSeconds} from "piper";
 
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 
@@ -21,6 +22,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _audioBuffer: AudioBuffer = undefined;
   private timeline: Timeline = undefined;
+  private cursorLayer: any = undefined;
 
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
@@ -34,17 +36,32 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private featureExtractionSubscription: Subscription;
+  private playingStateSubscription: Subscription;
+  private seekedSubscription: Subscription;
+  private isPlaying: boolean;
 
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
               public ngZone: NgZone) {
+    this.isPlaying = false;
     this.featureExtractionSubscription = piperService.featuresExtracted$.subscribe(
       features => {
         this.renderFeatures(features);
       });
+    this.playingStateSubscription = audioService.playingStateChange$.subscribe(
+      isPlaying => {
+        this.isPlaying = isPlaying;
+        if (this.isPlaying)
+          this.animate();
+      });
+    this.seekedSubscription = audioService.seeked$.subscribe(() => {
+      if (!this.isPlaying)
+        this.animate();
+    });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+  }
 
   ngAfterViewInit(): void {
     this.timeline = this.renderTimeline();
@@ -80,38 +97,73 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     (this.timeline as any).addLayer(waveformLayer, 'main');
 
-    const cursorLayer = new wavesUI.helpers.CursorLayer({
+    this.cursorLayer = new wavesUI.helpers.CursorLayer({
       height: height
     });
-    this.timeline.addLayer(cursorLayer, 'main');
+    this.timeline.addLayer(this.cursorLayer, 'main');
     this.timeline.state = new wavesUI.states.CenteredZoomState(this.timeline);
+    this.animate();
+  }
+
+  // TODO refactor - this doesn't belong here
+  private renderFeatures(features: FeatureList): void {
+    const plotData = features.map(feature => {
+      return {
+        cx: toSeconds(feature.timestamp),
+        cy: feature.featureValues[0]
+      };
+    });
+    this.timeline.addLayer(
+      new wavesUI.helpers.BreakpointLayer(plotData, {color: 'green'}),
+      'main'
+    );
+  }
+
+  private animate(): void {
     this.ngZone.runOutsideAngular(() => {
       // listen for time passing...
-      // TODO this gets the fans going on large files... worth fixing? or waiting to write a better component?
-      // or, can this be updated in a more efficient manner?
       const updateSeekingCursor = () => {
-        cursorLayer.currentPosition = this.audioService.getCurrentTime();
-        cursorLayer.update();
-        if (this.timeline.timeContext.offset + this.audioService.getCurrentTime() >= this.timeline.timeContext.visibleDuration) {
-          this.timeline.timeContext.offset -= this.timeline.timeContext.visibleDuration;
+        const currentTime = this.audioService.getCurrentTime();
+        this.cursorLayer.currentPosition = currentTime;
+        this.cursorLayer.update();
+
+        const currentOffset = this.timeline.timeContext.offset;
+        const offsetTimestamp = currentOffset
+          + currentTime;
+
+        const visibleDuration = this.timeline.timeContext.visibleDuration;
+        // TODO reduce duplication between directions and make more declarative
+        // this kinda logic should also be tested
+        const mustPageForward = offsetTimestamp > visibleDuration;
+        const mustPageBackward = currentTime < -currentOffset;
+
+        if (mustPageForward) {
+          const hasSkippedMultiplePages = offsetTimestamp - visibleDuration > visibleDuration;
+
+          this.timeline.timeContext.offset = hasSkippedMultiplePages
+              ? -currentTime +  0.5 * visibleDuration
+              :  currentOffset - visibleDuration;
           this.timeline.tracks.update();
         }
-        if (-this.audioService.getCurrentTime() > this.timeline.timeContext.offset) {
-          this.timeline.timeContext.offset += this.timeline.timeContext.visibleDuration;
+
+        if (mustPageBackward) {
+          const hasSkippedMultiplePages = currentTime + visibleDuration < -currentOffset;
+          this.timeline.timeContext.offset = hasSkippedMultiplePages
+            ? -currentTime + 0.5 * visibleDuration
+            : currentOffset + visibleDuration;
           this.timeline.tracks.update();
         }
-        requestAnimationFrame(updateSeekingCursor);
+
+        if (this.isPlaying)
+          requestAnimationFrame(updateSeekingCursor);
       };
       updateSeekingCursor();
     });
   }
 
-  // TODO refactor - this doesn't belong here
-  private renderFeatures(features: FeatureList): void {
-    console.log(features);
-  }
-
   ngOnDestroy(): void {
     this.featureExtractionSubscription.unsubscribe();
+    this.playingStateSubscription.unsubscribe();
+    this.seekedSubscription.unsubscribe();
   }
 }
