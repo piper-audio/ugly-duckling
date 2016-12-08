@@ -137,10 +137,16 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // TODO refactor - this doesn't belong here
   private renderFeatures(features: FeatureList): void {
+    const normalisationFactor = 1.0 /
+      features.reduce((currentMax, feature) => {
+        return (feature.featureValues)
+          ? Math.max(currentMax, feature.featureValues[0])
+          : currentMax;
+      }, -Infinity);
     const plotData = features.map(feature => {
       return {
         cx: toSeconds(feature.timestamp),
-        cy: feature.featureValues[0]
+        cy: feature.featureValues[0] * normalisationFactor
       };
     });
     this.addLayer(
