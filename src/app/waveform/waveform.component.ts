@@ -148,6 +148,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       this.timeline.getTrackById('main'),
       this.timeline.timeContext
     );
+    this.timeline.tracks.update();
   }
 
   private animate(): void {
