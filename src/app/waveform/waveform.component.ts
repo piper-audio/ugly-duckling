@@ -115,7 +115,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
       const timeContextChildren = this.timeline.timeContext._children;
 
-      for (let i = 0; i < this.disposableLayers.length; ++i) {
+      for (let i = 0, length = this.disposableLayers.length; i < length; ++i) {
         let layer = this.disposableLayers.pop();
         mainTrack.remove(layer);
 
