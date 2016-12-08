@@ -92,10 +92,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.timeline) {
       // resize
       const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
+
       // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
+      const timeContextChildren = this.timeline.timeContext._children;
+
       for (let i = 0; i < this.disposableLayers.length; ++i) {
         let layer = this.disposableLayers.pop();
         mainTrack.remove(layer);
+
+        const index = timeContextChildren.indexOf(layer.timeContext);
+        if (index >= 0)
+          timeContextChildren.splice(index, 1);
         layer.destroy();
       }
       this.timeline.visibleWidth = width;
