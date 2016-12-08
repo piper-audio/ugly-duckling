@@ -47,8 +47,10 @@ export class AudioPlayerService {
   }
 
   togglePlaying(): void {
-    this.isPlaying() ? this.audioElement.pause() : this.audioElement.play();
-    this.playingStateChange.next(this.isPlaying());
+    if (this.audioElement.readyState >= 2) {
+      this.isPlaying() ? this.audioElement.pause() : this.audioElement.play();
+      this.playingStateChange.next(this.isPlaying());
+    }
   }
 
   setVolume(value: number): void {
