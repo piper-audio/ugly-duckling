@@ -12,6 +12,8 @@ import {toSeconds} from "piper";
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 type Layer = any;
 type Track = any;
+type DisposableIndex = number;
+type Colour = string;
 
 @Component({
   selector: 'app-waveform',
@@ -26,6 +28,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private timeline: Timeline;
   private cursorLayer: any;
   private disposableLayers: Layer[];
+  private colouredLayers: Map<DisposableIndex, Colour>;
 
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
@@ -46,14 +49,30 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
               public ngZone: NgZone) {
+    this.colouredLayers = new Map();
     this.disposableLayers = [];
     this._audioBuffer = undefined;
     this.timeline = undefined;
     this.cursorLayer = undefined;
     this.isPlaying = false;
+    const colours = function* () {
+      const circularColours = [
+        'black',
+        'red',
+        'green',
+        'purple',
+        'orange'
+      ];
+      let index = 0;
+      const nColours = circularColours.length;
+      while (true) {
+        yield circularColours[index = ++index % nColours];
+      }
+    }();
+
     this.featureExtractionSubscription = piperService.featuresExtracted$.subscribe(
       features => {
-        this.renderFeatures(features);
+        this.renderFeatures(features, colours.next().value);
       });
     this.playingStateSubscription = audioService.playingStateChange$.subscribe(
       isPlaying => {
@@ -105,6 +124,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           timeContextChildren.splice(index, 1);
         layer.destroy();
       }
+      this.colouredLayers.clear();
+
       this.timeline.visibleWidth = width;
       this.timeline.pixelsPerSecond = width / buffer.duration;
       mainTrack.height = height;
@@ -136,7 +157,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // TODO refactor - this doesn't belong here
-  private renderFeatures(features: FeatureList): void {
+  private renderFeatures(features: FeatureList, colour: Colour): void {
     const normalisationFactor = 1.0 /
       features.reduce((currentMax, feature) => {
         return (feature.featureValues)
@@ -149,11 +170,15 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         cy: feature.featureValues[0] * normalisationFactor
       };
     });
-    this.addLayer(
-      new wavesUI.helpers.BreakpointLayer(plotData, {color: 'green'}),
+    let breakpointLayer = new wavesUI.helpers.BreakpointLayer(plotData, {
+      color: colour
+    });
+    this.colouredLayers.set(this.addLayer(
+      breakpointLayer,
       this.timeline.getTrackById('main'),
       this.timeline.timeContext
-    );
+    ), colour);
+
     this.timeline.tracks.update();
   }
 
@@ -199,14 +224,27 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private addLayer(layer: Layer, track: Track, timeContext: any, isAxis: boolean = false): void {
+  private addLayer(layer: Layer, track: Track, timeContext: any, isAxis: boolean = false): DisposableIndex {
     timeContext.zoom = 1.0;
     if (!layer.timeContext) {
       layer.setTimeContext(isAxis ?
         timeContext : new wavesUI.core.LayerTimeContext(timeContext));
     }
-    this.disposableLayers.push(layer);
     track.add(layer);
+    layer.render();
+    layer.update();
+    return this.disposableLayers.push(layer) - 1;
+  }
+
+  private static changeColour(layer: Layer, colour: string): void {
+    const butcherShapes = (shape) => {
+      shape.install({color: () => colour});
+      shape.params.color = colour;
+      shape.update(layer._renderingContext, layer.data);
+    };
+
+    layer._$itemCommonShapeMap.forEach(butcherShapes);
+    layer._$itemShapeMap.forEach(butcherShapes);
     layer.render();
     layer.update();
   }
