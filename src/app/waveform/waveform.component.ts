@@ -4,9 +4,15 @@ import {
 } from '@angular/core';
 import {AudioPlayerService} from "../services/audio-player/audio-player.service";
 import wavesUI from 'waves-ui';
-import {FeatureList} from "piper/Feature";
-import {FeatureExtractionService} from "../services/feature-extraction/feature-extraction.service";
+import {
+  FeatureExtractionService,
+  Extracted
+} from "../services/feature-extraction/feature-extraction.service";
 import {Subscription} from "rxjs";
+import {
+  FeatureCollection,
+  FixedSpacedFeatures
+} from "piper/HigherLevelUtilities";
 import {toSeconds} from "piper";
 
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
@@ -157,28 +163,35 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // TODO refactor - this doesn't belong here
-  private renderFeatures(features: FeatureList, colour: Colour): void {
-    const normalisationFactor = 1.0 /
-      features.reduce((currentMax, feature) => {
-        return (feature.featureValues)
-          ? Math.max(currentMax, feature.featureValues[0])
-          : currentMax;
-      }, -Infinity);
-    const plotData = features.map(feature => {
-      return {
-        cx: toSeconds(feature.timestamp),
-        cy: feature.featureValues[0] * normalisationFactor
-      };
-    });
-    let breakpointLayer = new wavesUI.helpers.BreakpointLayer(plotData, {
-      color: colour,
-      height: this.trackDiv.nativeElement.getBoundingClientRect().height
-    });
-    this.colouredLayers.set(this.addLayer(
-      breakpointLayer,
-      this.timeline.getTrackById('main'),
-      this.timeline.timeContext
-    ), colour);
+  private renderFeatures(extracted: Extracted, colour: Colour): void {
+    if (!extracted.hasOwnProperty('shape') || !extracted.hasOwnProperty('data')) return;
+    const features: FeatureCollection = (extracted as FeatureCollection);
+    switch (features.shape) {
+      case 'vector':
+        const stepDuration = (features as FixedSpacedFeatures).stepDuration;
+        const featureData = (features.data as Float32Array);
+        const normalisationFactor = 1.0 /
+          featureData.reduce(
+            (currentMax, feature) => Math.max(currentMax, feature),
+            -Infinity
+          );
+        const plotData = [...featureData].map((feature, i) => {
+          return {
+            cx: i * stepDuration,
+            cy: feature * normalisationFactor
+          };
+        });
+        let breakpointLayer = new wavesUI.helpers.BreakpointLayer(plotData, {
+          color: colour,
+          height: this.trackDiv.nativeElement.getBoundingClientRect().height
+        });
+        this.colouredLayers.set(this.addLayer(
+          breakpointLayer,
+          this.timeline.getTrackById('main'),
+          this.timeline.timeContext
+        ), colour);
+        break;
+    }
 
     this.timeline.tracks.update();
   }

@@ -38,7 +38,7 @@ export class AppComponent {
   extractFeatures(outputInfo: ExtractorOutputInfo): void {
     if (!this.canExtract || !outputInfo) return;
     this.canExtract = false;
-    this.piperService.process({
+    this.piperService.collect({
       audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
         .map(i => this.audioBuffer.getChannelData(i)),
       audioFormat: {
