@@ -5,6 +5,7 @@
 import {ListResponse, EmscriptenProxy} from 'piper';
 import {PiperSimpleClient} from 'piper/HigherLevelUtilities';
 import { VampExamplePlugins } from 'piper/ext/VampExamplePluginsModule';
+import { VampTestPlugin } from 'piper/ext/VampTestPluginModule';
 
 
 // TODO TypeScript has a .d.ts file for webworkers, but for some reason it clashes with the typings for dom and causes compiler errors
@@ -23,7 +24,7 @@ export default class FeatureExtractionWorker {
 
   constructor(workerScope: WorkerGlobalScope) {
     this.workerScope = workerScope;
-    this.piperClient = new PiperSimpleClient(new EmscriptenProxy(VampExamplePlugins()));
+    this.piperClient = new PiperSimpleClient(new EmscriptenProxy(VampTestPlugin()));
     this.workerScope.onmessage = (ev: MessageEvent) => {
       const sendResponse = (result) => this.workerScope.postMessage({
         method: ev.data.method,
@@ -35,6 +36,9 @@ export default class FeatureExtractionWorker {
           break;
         case 'process':
           this.piperClient.process(ev.data.params).then(sendResponse);
+          break;
+        case 'collect':
+          this.piperClient.collect(ev.data.params).then(sendResponse);
       }
     };
   }
