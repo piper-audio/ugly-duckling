@@ -171,7 +171,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       };
     });
     let breakpointLayer = new wavesUI.helpers.BreakpointLayer(plotData, {
-      color: colour
+      color: colour,
+      height: this.trackDiv.nativeElement.getBoundingClientRect().height
     });
     this.colouredLayers.set(this.addLayer(
       breakpointLayer,
