@@ -2,8 +2,9 @@ import {Injectable} from '@angular/core';
 import {
   ListResponse, ListRequest
 } from "piper";
-import {SimpleRequest, FeatureCollection} from "piper/HigherLevelUtilities";
-import {FeatureList} from "piper/Feature";
+import {
+  SimpleRequest, SimpleResponse
+} from "piper/HigherLevelUtilities";
 import {Subject} from "rxjs/Subject";
 import {Observable} from "rxjs";
 
@@ -17,18 +18,16 @@ interface ResponseMessage<ResponseType> {
   result: ResponseType;
 }
 
-export type Extracted = FeatureList | FeatureCollection;
-
 @Injectable()
 export class FeatureExtractionService {
 
   private worker: Worker;
-  private featuresExtracted: Subject<Extracted>;
-  featuresExtracted$: Observable<Extracted>;
+  private featuresExtracted: Subject<SimpleResponse>;
+  featuresExtracted$: Observable<SimpleResponse>;
 
   constructor() {
     this.worker = new Worker('bootstrap-feature-extraction-worker.js');
-    this.featuresExtracted = new Subject<Extracted>();
+    this.featuresExtracted = new Subject<SimpleResponse>();
     this.featuresExtracted$ = this.featuresExtracted.asObservable();
   }
 
@@ -39,8 +38,8 @@ export class FeatureExtractionService {
     ).then(msg => msg.result);
   }
 
-  process(request: SimpleRequest): Promise<FeatureList> {
-    return this.request<SimpleRequest, FeatureList>(
+  process(request: SimpleRequest): Promise<SimpleResponse> {
+    return this.request<SimpleRequest, SimpleResponse>(
       {method: 'process', params: request},
       (ev: MessageEvent) => ev.data.method === 'process'
     ).then(msg => {
@@ -49,8 +48,8 @@ export class FeatureExtractionService {
     });
   }
 
-  collect(request: SimpleRequest): Promise<FeatureCollection> {
-    return this.request<SimpleRequest, FeatureCollection>(
+  collect(request: SimpleRequest): Promise<SimpleResponse> {
+    return this.request<SimpleRequest, SimpleResponse>(
       {method: 'collect', params: request},
       (ev: MessageEvent) => ev.data.method === 'collect'
     ).then(msg => {

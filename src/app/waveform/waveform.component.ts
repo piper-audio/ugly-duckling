@@ -5,15 +5,15 @@ import {
 import {AudioPlayerService} from "../services/audio-player/audio-player.service";
 import wavesUI from 'waves-ui';
 import {
-  FeatureExtractionService,
-  Extracted
+  FeatureExtractionService
 } from "../services/feature-extraction/feature-extraction.service";
 import {Subscription} from "rxjs";
 import {
   FeatureCollection,
-  FixedSpacedFeatures
+  FixedSpacedFeatures, SimpleResponse
 } from "piper/HigherLevelUtilities";
 import {toSeconds} from "piper";
+import {FeatureList} from "piper/Feature";
 
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 type Layer = any;
@@ -163,11 +163,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // TODO refactor - this doesn't belong here
-  private renderFeatures(extracted: Extracted, colour: Colour): void {
-    if (!extracted.hasOwnProperty('shape') || !extracted.hasOwnProperty('data')) return;
-    const features: FeatureCollection = (extracted as FeatureCollection);
+  private renderFeatures(extracted: SimpleResponse, colour: Colour): void {
+    if (!extracted.hasOwnProperty('features') || !extracted.hasOwnProperty('outputDescriptor')) return;
+    if (!extracted.features.hasOwnProperty('shape') || !extracted.features.hasOwnProperty('data')) return;
+    const features: FeatureCollection = (extracted.features as FeatureCollection);
+    const outputDescriptor = extracted.outputDescriptor;
+    const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
+    const mainTrack = this.timeline.getTrackById('main');
+
+    // TODO refactor all of this
     switch (features.shape) {
-      case 'vector':
+      case 'vector': {
         const stepDuration = (features as FixedSpacedFeatures).stepDuration;
         const featureData = (features.data as Float32Array);
         const normalisationFactor = 1.0 /
@@ -183,14 +189,90 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         let breakpointLayer = new wavesUI.helpers.BreakpointLayer(plotData, {
           color: colour,
-          height: this.trackDiv.nativeElement.getBoundingClientRect().height
+          height: height
         });
         this.colouredLayers.set(this.addLayer(
           breakpointLayer,
-          this.timeline.getTrackById('main'),
+          mainTrack,
           this.timeline.timeContext
         ), colour);
         break;
+      }
+      case 'list': {
+        const featureData = (features.data as FeatureList);
+        // TODO look at output descriptor instead of directly inspecting features
+        const hasDuration = outputDescriptor.configured.hasDuration;
+        const isMarker = !hasDuration
+          && outputDescriptor.configured.binCount === 0
+          && featureData[0].featureValues == null;
+        const isRegion = hasDuration
+          && featureData[0].timestamp != null;
+
+        // TODO refactor, this is incomprehensible
+        if (isMarker) {
+          const plotData = featureData.map(feature => {
+            return {x: toSeconds(feature.timestamp)}
+          });
+          let markerLayer = new wavesUI.helpers.MarkerLayer(plotData, {
+            height: height,
+            color: colour,
+          });
+          this.colouredLayers.set(this.addLayer(
+            markerLayer,
+            mainTrack,
+            this.timeline.timeContext
+          ), colour);
+        } else if (isRegion) {
+          const isBarRegion = featureData[0].featureValues.length === 1;
+          const getSegmentArgs = () => {
+            if (isBarRegion) {
+              const min = featureData.reduce((min, feature) =>
+                  Math.min(min, feature.featureValues[0]),
+                Infinity
+              );
+
+              const max = featureData.reduce((max, feature) =>
+                  Math.max(max, feature.featureValues[0]),
+                -Infinity
+              );
+
+              return [
+                featureData.map(feature => {
+                  return {
+                    x: toSeconds(feature.timestamp),
+                    y: feature.featureValues[0],
+                    width: toSeconds(feature.duration),
+                    height: 0.05 * max,
+                    color: colour,
+                    opacity: 0.8
+                  }
+                }),
+                {yDomain: [min, max + 0.05 * max], height: height} as any
+              ]
+            } else {
+              return [featureData.map(feature => {
+                return {
+                  x: toSeconds(feature.timestamp),
+                  width: toSeconds(feature.duration),
+                  color: colour,
+                  opacity: 0.8
+                }
+              }), {height: height}];
+            }
+          };
+
+          let segmentLayer = new wavesUI.helpers.SegmentLayer(
+            ...getSegmentArgs()
+          );
+          this.colouredLayers.set(this.addLayer(
+            segmentLayer,
+            mainTrack,
+            this.timeline.timeContext
+          ), colour);
+        }
+
+        break;
+      }
     }
 
     this.timeline.tracks.update();
