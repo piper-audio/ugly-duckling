@@ -242,7 +242,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
                     x: toSeconds(feature.timestamp),
                     y: feature.featureValues[0],
                     width: toSeconds(feature.duration),
-                    height: 0.05 * max,
+                    height: min + 0.05 * max,
                     color: colour,
                     opacity: 0.8
                   }
