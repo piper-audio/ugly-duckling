@@ -22,9 +22,13 @@
         <app-playback-control class="playback-content"></app-playback-control>
       </md-tab>
       <md-tab label="Feature Extraction">
-        <app-feature-extraction-menu></app-feature-extraction-menu>
+        <app-feature-extraction-menu
+          (requestOutput)="extractFeatures($event)"
+          [disabled]="!canExtract"></app-feature-extraction-menu>
       </md-tab>
     </md-tab-group>
   </md-sidenav>
-  <app-waveform [audioBuffer]="audioBuffer"></app-waveform>
+  <app-waveform
+    [audioBuffer]="audioBuffer"
+    ></app-waveform>
 </md-sidenav-layout>

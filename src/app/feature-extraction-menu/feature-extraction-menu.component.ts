@@ -1,8 +1,10 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import {FeatureExtractionService} from "../services/feature-extraction/feature-extraction.service";
 
-interface ExtractorInfo {
-  key: string;
+export interface ExtractorOutputInfo {
+  extractorKey: string;
+  combinedKey: string;
+  outputId: string;
   name: string;
 }
 
@@ -13,20 +15,53 @@ interface ExtractorInfo {
 })
 export class FeatureExtractionMenuComponent implements OnInit {
 
-  extractors: ExtractorInfo[];
+  @Input()
+  set disabled(isDisabled: boolean) {
+    this.isDisabled = isDisabled;
+  }
+
+  get disabled() {
+    return this.isDisabled;
+  }
+
+  @Output() requestOutput: EventEmitter<ExtractorOutputInfo>;
+
+  private isDisabled: boolean;
+  private extractorsMap: Map<string, ExtractorOutputInfo>;
+  extractors: Iterable<ExtractorOutputInfo>;
 
   constructor(private piperService: FeatureExtractionService) {
+    this.extractorsMap = new Map();
     this.extractors = [];
+    this.requestOutput = new EventEmitter<ExtractorOutputInfo>();
+    this.isDisabled = true;
   }
 
   ngOnInit() {
     this.piperService.list().then(available => {
-      available.available.forEach(staticData => this.extractors.push({
-          key: staticData.key,
-          name: staticData.basic.name
-        })
-      );
+      const maxCharacterLimit = 50;
+      available.available.forEach(staticData => {
+        const isSingleOutputExtractor = staticData.basicOutputInfo.length === 1;
+        staticData.basicOutputInfo.forEach(output => {
+          const combinedKey = `${staticData.key}:${output.identifier}`;
+          this.extractorsMap.set(combinedKey, {
+            extractorKey: staticData.key,
+            combinedKey: combinedKey,
+            name: (
+              isSingleOutputExtractor
+                ? staticData.basic.name
+                : `${staticData.basic.name}: ${output.name}`
+            ).substr(0, maxCharacterLimit) + '...',
+            outputId: output.identifier
+          });
+        });
+      });
+      this.extractors = [...this.extractorsMap.values()];
     });
+  }
+
+  extract(combinedKey: string): void {
+    this.requestOutput.emit(this.extractorsMap.get(combinedKey));
   }
 
 }
