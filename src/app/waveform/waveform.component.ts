@@ -13,7 +13,7 @@ import {
   FixedSpacedFeatures, SimpleResponse
 } from "piper/HigherLevelUtilities";
 import {toSeconds} from "piper";
-import {FeatureList} from "piper/Feature";
+import {FeatureList, Feature} from "piper/Feature";
 
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 type Layer = any;
@@ -181,12 +181,14 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
             (currentMax, feature) => Math.max(currentMax, feature),
             -Infinity
           );
+
         const plotData = [...featureData].map((feature, i) => {
           return {
             cx: i * stepDuration,
             cy: feature * normalisationFactor
           };
         });
+
         let breakpointLayer = new wavesUI.helpers.BreakpointLayer(plotData, {
           color: colour,
           height: height
@@ -207,7 +209,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           && featureData[0].featureValues == null;
         const isRegion = hasDuration
           && featureData[0].timestamp != null;
-
         // TODO refactor, this is incomprehensible
         if (isMarker) {
           const plotData = featureData.map(feature => {
@@ -223,32 +224,53 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
             this.timeline.timeContext
           ), colour);
         } else if (isRegion) {
-          const isBarRegion = featureData[0].featureValues.length === 1;
+          const binCount = outputDescriptor.configured.binCount || 0;
+          const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1 ;
           const getSegmentArgs = () => {
             if (isBarRegion) {
-              const min = featureData.reduce((min, feature) =>
-                  Math.min(min, feature.featureValues[0]),
-                Infinity
-              );
 
-              const max = featureData.reduce((max, feature) =>
-                  Math.max(max, feature.featureValues[0]),
-                -Infinity
-              );
+              // TODO refactor - this is messy
+              interface FoldsToNumber<T> {
+                reduce(fn: (previousValue: number,
+                            currentValue: T,
+                            currentIndex: number,
+                            array: ArrayLike<T>) => number,
+                       initialValue?: number): number;
+              }
 
+              // TODO potentially change impl., i.e avoid reduce
+              const findMin = <T>(arr: FoldsToNumber<T>, getElement: (x: T) => number): number => {
+                return arr.reduce((min, val) => Math.min(min, getElement(val)), Infinity);
+              };
+
+              const findMax = <T>(arr: FoldsToNumber<T>, getElement: (x: T) => number): number => {
+                return arr.reduce((min, val) => Math.max(min, getElement(val)), -Infinity);
+              };
+
+              const min = findMin<Feature>(featureData, (x: Feature) => {
+                return findMin<number>(x.featureValues, y => y);
+              });
+
+              const max = findMax<Feature>(featureData, (x: Feature) => {
+                return findMax<number>(x.featureValues, y => y);
+              });
+
+              const barHeight = 1.0 / height;
               return [
-                featureData.map(feature => {
-                  return {
+                featureData.reduce((bars, feature) => {
+                  const staticProperties = {
                     x: toSeconds(feature.timestamp),
-                    y: feature.featureValues[0],
                     width: toSeconds(feature.duration),
-                    height: min + 0.05 * max,
+                    height: min + barHeight,
                     color: colour,
                     opacity: 0.8
-                  }
-                }),
-                {yDomain: [min, max + 0.05 * max], height: height} as any
-              ]
+                  };
+                  // TODO avoid copying Float32Array to an array - map is problematic here
+                  return bars.concat([...feature.featureValues]
+                    .map(val => Object.assign({}, staticProperties, {y: val})))
+                }, []),
+                {yDomain: [min, max + barHeight], height: height} as any
+              ];
             } else {
               return [featureData.map(feature => {
                 return {
@@ -273,6 +295,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
         break;
       }
+      default:
+        console.log('Cannot render an appropriate layer.');
     }
 
     this.timeline.tracks.update();
