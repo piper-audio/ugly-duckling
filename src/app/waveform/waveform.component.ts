@@ -176,6 +176,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       case 'vector': {
         const stepDuration = (features as FixedSpacedFeatures).stepDuration;
         const featureData = (features.data as Float32Array);
+        if (featureData.length === 0) return;
         const normalisationFactor = 1.0 /
           featureData.reduce(
             (currentMax, feature) => Math.max(currentMax, feature),
@@ -202,6 +203,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       case 'list': {
         const featureData = (features.data as FeatureList);
+        if (featureData.length === 0) return;
         // TODO look at output descriptor instead of directly inspecting features
         const hasDuration = outputDescriptor.configured.hasDuration;
         const isMarker = !hasDuration
