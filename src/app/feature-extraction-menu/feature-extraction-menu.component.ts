@@ -1,5 +1,10 @@
-import {Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
+import {
+  Component, OnInit, Output, EventEmitter, Input,
+  OnDestroy
+} from '@angular/core';
 import {FeatureExtractionService} from "../services/feature-extraction/feature-extraction.service";
+import {ListResponse} from "piper";
+import {Subscription} from "rxjs";
 
 export interface ExtractorOutputInfo {
   extractorKey: string;
@@ -13,7 +18,7 @@ export interface ExtractorOutputInfo {
   templateUrl: './feature-extraction-menu.component.html',
   styleUrls: ['./feature-extraction-menu.component.css']
 })
-export class FeatureExtractionMenuComponent implements OnInit {
+export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
 
   @Input()
   set disabled(isDisabled: boolean) {
@@ -28,17 +33,16 @@ export class FeatureExtractionMenuComponent implements OnInit {
 
   private isDisabled: boolean;
   private extractorsMap: Map<string, ExtractorOutputInfo>;
+  private populateExtractors: (available: ListResponse) => void;
   extractors: Iterable<ExtractorOutputInfo>;
+  private librariesUpdatedSubscription: Subscription;
 
   constructor(private piperService: FeatureExtractionService) {
     this.extractorsMap = new Map();
     this.extractors = [];
     this.requestOutput = new EventEmitter<ExtractorOutputInfo>();
     this.isDisabled = true;
-  }
-
-  ngOnInit() {
-    this.piperService.list().then(available => {
+    this.populateExtractors = available => {
       const maxCharacterLimit = 50;
       available.available.forEach(staticData => {
         const isSingleOutputExtractor = staticData.basicOutputInfo.length === 1;
@@ -57,11 +61,25 @@ export class FeatureExtractionMenuComponent implements OnInit {
         });
       });
       this.extractors = [...this.extractorsMap.values()];
-    });
+    };
+  }
+
+  ngOnInit() {
+    this.piperService.list().then(this.populateExtractors);
+    this.librariesUpdatedSubscription = this.piperService.librariesUpdated$.subscribe(this.populateExtractors);
   }
 
   extract(combinedKey: string): void {
     this.requestOutput.emit(this.extractorsMap.get(combinedKey));
   }
 
+  load(): void {
+    this.piperService.updateAvailableLibraries().subscribe(res => {
+      Object.keys(res).forEach(key => this.piperService.load(key));
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.librariesUpdatedSubscription.unsubscribe();
+  }
 }
