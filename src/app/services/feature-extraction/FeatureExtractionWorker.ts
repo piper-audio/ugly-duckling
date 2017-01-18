@@ -24,11 +24,6 @@ interface MessageEvent {
 type LibraryUri = string;
 type LibraryKey = string;
 
-interface Message {
-  method: string;
-  params: any;
-}
-
 type RequireJs = (libs: string[], callback: (...libs: any[]) => void) => void;
 
 export default class FeatureExtractionWorker {
