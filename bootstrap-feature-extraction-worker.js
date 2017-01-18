@@ -4,6 +4,6 @@
 let window = {};
 importScripts('inline.d41d8cd98f00b204e980.bundle.js'); // provides webpackJsonp
 const webpackJsonp = window['webpackJsonp'];
-importScripts('scripts.1cd69ad45f0a25d2342e.bundle.js'); // needs webpackJsonp, hence above - provides require
+importScripts('scripts.2dd21bf4ef57452a75d4.bundle.js'); // needs webpackJsonp, hence above - provides require
 
-new (require('feature-extraction-worker'))(self);
+new (require('feature-extraction-worker'))(self, requirejs);
