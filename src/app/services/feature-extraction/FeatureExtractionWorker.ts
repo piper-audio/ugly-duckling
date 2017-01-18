@@ -33,7 +33,7 @@ type RequireJs = (libs: string[], callback: (...libs: any[]) => void) => void;
 
 export default class FeatureExtractionWorker {
   private workerScope: WorkerGlobalScope;
-  private clients: Map<string, PiperSimpleClient>;
+  private clients: Map<LibraryKey, PiperSimpleClient>;
   private remoteLibraries: Map<LibraryKey, LibraryUri>;
 
   constructor(workerScope: WorkerGlobalScope, private requireJs: RequireJs) {
