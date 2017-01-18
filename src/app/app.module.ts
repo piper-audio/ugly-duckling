@@ -38,7 +38,7 @@ function createAudioContext(): AudioContext {
     {provide: 'AudioContext', useValue: createAudioContext()}, // use a string token, Safari doesn't seem to like AudioContext
     AudioPlayerService,
     FeatureExtractionService,
-    {provide: 'PiperRepoUri', useValue: 'http://localhost:8080'}
+    {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'}
   ],
   bootstrap: [AppComponent]
 })
