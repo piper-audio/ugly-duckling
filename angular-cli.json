@@ -21,6 +21,7 @@
         "styles.css"
       ],
       "scripts": [
+        "../node_modules/requirejs/require.js",
         "externals.ts"
       ],
       "environments": {
