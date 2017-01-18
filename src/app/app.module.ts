@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import {NgModule} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
@@ -37,7 +37,8 @@ function createAudioContext(): AudioContext {
     {provide: HTMLAudioElement, useValue: new Audio()}, // TODO use something more generic than HTMLAudioElement
     {provide: 'AudioContext', useValue: createAudioContext()}, // use a string token, Safari doesn't seem to like AudioContext
     AudioPlayerService,
-    FeatureExtractionService
+    FeatureExtractionService,
+    {provide: 'PiperRepoUri', useValue: 'http://localhost:8080'}
   ],
   bootstrap: [AppComponent]
 })
