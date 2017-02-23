@@ -2,7 +2,7 @@
  * Created by lucas on 01/12/2016.
  */
 
-import {EmscriptenProxy, ListRequest, ListResponse} from 'piper';
+import {PiperVampService, ListRequest, ListResponse} from 'piper';
 import {
   PiperSimpleClient, SimpleRequest,
   SimpleResponse
@@ -37,7 +37,7 @@ export default class FeatureExtractionWorker {
     this.remoteLibraries = new Map<LibraryKey, LibraryUri>();
     this.clients.set(
       'vamp-example-plugins',
-      new PiperSimpleClient(new EmscriptenProxy(VampExamplePlugins()))
+      new PiperSimpleClient(new PiperVampService(VampExamplePlugins()))
     );
 
     this.workerScope.onmessage = (ev: MessageEvent) => {
@@ -70,7 +70,7 @@ export default class FeatureExtractionWorker {
             this.requireJs([this.remoteLibraries.get(key)], (plugin) => {
               this.clients.set(
                 key,
-                new PiperSimpleClient(new EmscriptenProxy(plugin.createLibrary()))
+                new PiperSimpleClient(new PiperVampService(plugin.createLibrary()))
               ); // TODO won't always be an emscripten module
               this.list({}).then(sendResponse);
             });

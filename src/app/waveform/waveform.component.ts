@@ -14,6 +14,7 @@ import {
 } from "piper/HigherLevelUtilities";
 import {toSeconds} from "piper";
 import {FeatureList, Feature} from "piper/Feature";
+import * as Hammer from 'hammerjs';
 
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 type Layer = any;
@@ -106,7 +107,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const width: number = track.getBoundingClientRect().width;
     const pixelsPerSecond = width / duration;
     const timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
-    timeline.timeContext.offset = 0.5 * timeline.timeContext.visibleDuration;
     timeline.createTrack(track, height, 'main');
     return timeline;
   }
@@ -138,6 +138,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.timeline = this.renderTimeline(buffer.duration)
     }
+    this.timeline.timeContext.offset = 0.5 * this.timeline.timeContext.visibleDuration;
     // time axis
     const timeAxis = new wavesUI.helpers.TimeAxisLayer({
       height: height,
@@ -159,6 +160,41 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.timeline.state = new wavesUI.states.CenteredZoomState(this.timeline);
     mainTrack.render();
     mainTrack.update();
+
+
+    if ('ontouchstart' in window) {
+      console.log('TOUCH!');
+      const hammertime = new Hammer(this.trackDiv.nativeElement);
+      const scroll = (ev) => {
+        const sign = ev.direction === Hammer.DIRECTION_LEFT ? -1 : 1;
+        let delta = this.timeline.timeContext.timeToPixel.invert(sign * ev.distance);
+        if (Math.abs(ev.velocityX) < 2 /*arbitrary, it just felt a bit better than 1*/) {
+          delta *= Math.abs(ev.velocityX);
+        }
+        this.timeline.timeContext.offset += delta;
+        this.timeline.tracks.update();
+      };
+
+      const zoom = (ev) => {
+        const minZoom = this.timeline.state.minZoom;
+        const maxZoom = this.timeline.state.maxZoom;
+        const initialZoom = this.timeline.timeContext.zoom;
+        const targetZoom = initialZoom * ev.scale;
+        this.timeline.timeContext.zoom = Math.min(Math.max(targetZoom, minZoom), maxZoom);
+        this.timeline.tracks.update();
+      };
+      const seek = (ev) => {
+        this.audioService.seekTo(
+          this.timeline.timeContext.timeToPixel.invert(ev.center.x) - this.timeline.timeContext.offset
+        );
+      };
+      hammertime.get('pinch').set({ enable: true });
+      hammertime.on('panleft', scroll);
+      hammertime.on('panright', scroll);
+      hammertime.on('pinch', zoom);
+      hammertime.on('tap', seek);
+    }
+
     this.animate();
   }
 

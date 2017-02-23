@@ -2,6 +2,8 @@ import {Component} from '@angular/core';
 import {AudioPlayerService} from "./services/audio-player/audio-player.service";
 import {FeatureExtractionService} from "./services/feature-extraction/feature-extraction.service";
 import {ExtractorOutputInfo} from "./feature-extraction-menu/feature-extraction-menu.component";
+import {DomSanitizer} from '@angular/platform-browser';
+import {MdIconRegistry} from '@angular/material';
 
 @Component({
   selector: 'app-root',
@@ -13,8 +15,14 @@ export class AppComponent {
   canExtract: boolean;
 
   constructor(private audioService: AudioPlayerService,
-              private piperService: FeatureExtractionService) {
+              private piperService: FeatureExtractionService,
+              private iconRegistry: MdIconRegistry,
+              private sanitizer: DomSanitizer) {
     this.canExtract = false;
+    iconRegistry.addSvgIcon(
+      'duck',
+      sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg')
+    );
   }
 
   onFileOpened(file: File) {
