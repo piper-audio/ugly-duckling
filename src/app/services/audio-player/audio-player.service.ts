@@ -44,6 +44,7 @@ export class AudioPlayerService {
     this.currentObjectUrl = url;
     this.audioElement.pause();
     this.audioElement.src = url;
+    this.audioElement.load();
   }
 
   togglePlaying(): void {
@@ -55,6 +56,16 @@ export class AudioPlayerService {
 
   setVolume(value: number): void {
     this.audioElement.volume = value; // TODO check bounds?
+  }
+
+  seekTo(seconds: number): void {
+    if (seconds < 0) {
+      this.audioElement.currentTime = 0;
+    } else if (seconds < this.getDuration()) {
+      this.audioElement.currentTime = seconds;
+    } else {
+      this.audioElement.currentTime = this.getDuration();
+    }
   }
 
   seekBy(seconds: number): void {
