@@ -2,8 +2,9 @@
  * Created by lucas on 01/12/2016.
  */
 let window = {};
-importScripts('inline.d41d8cd98f00b204e980.bundle.js'); // provides webpackJsonp
+importScripts('/inline.928e2270e066a21e5ace.bundle.js'); // provides webpackJsonp
 const webpackJsonp = window['webpackJsonp'];
-importScripts('scripts.2dd21bf4ef57452a75d4.bundle.js'); // needs webpackJsonp, hence above - provides require
+importScripts('/scripts.8848ad4ed57b82b36e10.bundle.js'); // needs webpackJsonp, hence above - provides RequireJS
+importScripts('/polyfills.af8c36cc057c791425e1.bundle.js'); // provides the compiled FeatureExtractionWorker
 
 new (require('feature-extraction-worker'))(self, requirejs);
