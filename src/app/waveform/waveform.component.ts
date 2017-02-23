@@ -164,6 +164,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if ('ontouchstart' in window) {
       console.log('TOUCH!');
+      const hammertime = new Hammer(this.trackDiv.nativeElement);
       const scroll = (ev) => {
         const sign = ev.direction === Hammer.DIRECTION_LEFT ? -1 : 1;
         let delta = this.timeline.timeContext.timeToPixel.invert(sign * ev.distance);
@@ -173,6 +174,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         this.timeline.timeContext.offset += delta;
         this.timeline.tracks.update();
       };
+
       const zoom = (ev) => {
         const minZoom = this.timeline.state.minZoom;
         const maxZoom = this.timeline.state.maxZoom;
@@ -181,11 +183,16 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         this.timeline.timeContext.zoom = Math.min(Math.max(targetZoom, minZoom), maxZoom);
         this.timeline.tracks.update();
       };
-      const hammertime = new Hammer(this.trackDiv.nativeElement);
+      const seek = (ev) => {
+        this.audioService.seekTo(
+          this.timeline.timeContext.timeToPixel.invert(ev.center.x) - this.timeline.timeContext.offset
+        );
+      };
       hammertime.get('pinch').set({ enable: true });
       hammertime.on('panleft', scroll);
       hammertime.on('panright', scroll);
       hammertime.on('pinch', zoom);
+      hammertime.on('tap', seek);
     }
 
     this.animate();
