@@ -9,10 +9,12 @@
       "outDir": "dist",
       "assets": [
         "assets",
-        "favicon.ico"
+        "favicon.ico",
+        "bootstrap-feature-extraction-worker.js"
       ],
       "index": "index.html",
       "main": "main.ts",
+      "polyfills": "externals.ts",
       "test": "test.ts",
       "tsconfig": "tsconfig.json",
       "prefix": "app",
@@ -21,11 +23,10 @@
         "styles.css"
       ],
       "scripts": [
-        "../node_modules/requirejs/require.js",
-        "externals.ts"
+        "../node_modules/requirejs/require.js"
       ],
+      "environmentSource": "environments/environment.ts",
       "environments": {
-        "source": "environments/environment.ts",
         "dev": "environments/environment.ts",
         "prod": "environments/environment.prod.ts"
       }
