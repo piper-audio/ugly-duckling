@@ -19,6 +19,10 @@ export function createAudioContext(): AudioContext {
   )();
 }
 
+export function createAudioElement(): HTMLAudioElement {
+  return new Audio();
+}
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -34,8 +38,8 @@ export function createAudioContext(): AudioContext {
     MaterialModule
   ],
   providers: [
-    {provide: HTMLAudioElement, useValue: new Audio() }, // TODO use something more generic than HTMLAudioElement
-    {provide: 'AudioContext', useValue: createAudioContext()}, // use a string token, Safari doesn't seem to like AudioContext
+    {provide: HTMLAudioElement, useFactory: createAudioElement}, // TODO use something more generic than HTMLAudioElement
+    {provide: 'AudioContext', useFactory: createAudioContext}, // use a string token, Safari doesn't seem to like AudioContext
     AudioPlayerService,
     FeatureExtractionService,
     {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'}
