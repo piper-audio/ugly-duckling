@@ -107,7 +107,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const width: number = track.getBoundingClientRect().width;
     const pixelsPerSecond = width / duration;
     const timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
-    timeline.timeContext.offset = 0.5 * timeline.timeContext.visibleDuration;
     timeline.createTrack(track, height, 'main');
     return timeline;
   }
@@ -139,6 +138,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.timeline = this.renderTimeline(buffer.duration)
     }
+    this.timeline.timeContext.offset = 0.5 * this.timeline.timeContext.visibleDuration;
     // time axis
     const timeAxis = new wavesUI.helpers.TimeAxisLayer({
       height: height,
