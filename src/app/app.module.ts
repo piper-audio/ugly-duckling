@@ -12,7 +12,7 @@ import { AudioPlayerService } from "./services/audio-player/audio-player.service
 import { FeatureExtractionService } from "./services/feature-extraction/feature-extraction.service";
 import { FeatureExtractionMenuComponent } from "./feature-extraction-menu/feature-extraction-menu.component";
 
-function createAudioContext(): AudioContext {
+export function createAudioContext(): AudioContext {
   return new (
     (window as any).AudioContext
     || (window as any).webkitAudioContext
@@ -34,7 +34,7 @@ function createAudioContext(): AudioContext {
     MaterialModule
   ],
   providers: [
-    {provide: HTMLAudioElement, useValue: new Audio()}, // TODO use something more generic than HTMLAudioElement
+    {provide: HTMLAudioElement, useValue: new Audio() }, // TODO use something more generic than HTMLAudioElement
     {provide: 'AudioContext', useValue: createAudioContext()}, // use a string token, Safari doesn't seem to like AudioContext
     AudioPlayerService,
     FeatureExtractionService,
