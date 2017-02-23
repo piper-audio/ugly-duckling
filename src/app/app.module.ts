@@ -31,7 +31,7 @@ function createAudioContext(): AudioContext {
     BrowserModule,
     FormsModule,
     HttpModule,
-    MaterialModule.forRoot()
+    MaterialModule
   ],
   providers: [
     {provide: HTMLAudioElement, useValue: new Audio()}, // TODO use something more generic than HTMLAudioElement
