@@ -163,14 +163,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
     if ('ontouchstart' in window) {
-      console.log('TOUCH!');
       const hammertime = new Hammer(this.trackDiv.nativeElement);
       const scroll = (ev) => {
         const sign = ev.direction === Hammer.DIRECTION_LEFT ? -1 : 1;
         let delta = this.timeline.timeContext.timeToPixel.invert(sign * ev.distance);
-        if (Math.abs(ev.velocityX) < 2 /*arbitrary, it just felt a bit better than 1*/) {
-          delta *= Math.abs(ev.velocityX);
-        }
+        const speed: number = Math.abs(ev.velocityX);
+        delta *= (speed > 0.075 ? 0.075 : speed); // this is completely made up to limit the max speed, TODO something sensible
         this.timeline.timeContext.offset += delta;
         this.timeline.tracks.update();
       };
@@ -180,7 +178,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const maxZoom = this.timeline.state.maxZoom;
         const initialZoom = this.timeline.timeContext.zoom;
         const targetZoom = initialZoom * ev.scale;
+        const lastCenterTime = this.timeline.timeContext.timeToPixel.invert(ev.center.x);
         this.timeline.timeContext.zoom = Math.min(Math.max(targetZoom, minZoom), maxZoom);
+        const newCenterTime = this.timeline.timeContext.timeToPixel.invert(ev.center.x);
+        this.timeline.timeContext.offset += newCenterTime - lastCenterTime;
         this.timeline.tracks.update();
       };
       const seek = (ev) => {
