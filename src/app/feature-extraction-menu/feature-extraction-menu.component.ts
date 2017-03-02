@@ -70,7 +70,11 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   }
 
   extract(combinedKey: string): void {
-    this.requestOutput.emit(this.extractorsMap.get(combinedKey));
+    const info: ExtractorOutputInfo =
+      this.extractorsMap.get(combinedKey);
+    if (info) {
+      this.requestOutput.emit(info);
+    }
   }
 
   load(): void {
