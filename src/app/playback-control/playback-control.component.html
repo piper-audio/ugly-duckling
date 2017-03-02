@@ -1,17 +1,6 @@
-<button md-icon-button class="play" (click)="emitPlayPause()">
+<button md-icon-button (click)="emitPlayPause()">
   <md-icon>
-    <template [ngIf]="isPlaying()">pause_circle_outline</template>
-    <template [ngIf]="!isPlaying()">play_circle_outline</template>
+    <template [ngIf]="isPlaying()">pause</template>
+    <template [ngIf]="!isPlaying()">play_arrow</template>
   </md-icon>
 </button>
-<span class="seek-controls">
-  <button md-icon-button (click)="emitFastRewindStart()"><md-icon>skip_previous</md-icon></button>
-  <button md-icon-button (click)="emitFastRewind()"><md-icon>fast_rewind</md-icon></button>
-  <button md-icon-button (click)="emitFastForward()"><md-icon>fast_forward</md-icon></button>
-  <button md-icon-button (click)="emitFastForwardEnd()"><md-icon>skip_next</md-icon></button>
-</span>
-<md-slider #volume
-           (slide)="emitVolumeChanged(volume.percent)"
-           (click)="emitVolumeChanged(volume.percent)"
-           value="50">
-</md-slider>
