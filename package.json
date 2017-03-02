@@ -27,7 +27,7 @@
     "requirejs": "^2.3.2",
     "rxjs": "5.0.0-beta.12",
     "ts-helpers": "^1.1.1",
-    "waves-ui": "github:cannam/waves-ui#7a4f46683c9d064bee485a72622b28929f3b59c0",
+    "waves-ui": "github:cannam/waves-ui#eb4d366ad3ef56d32714e4f49eeca3d44e295fcb",
     "zone.js": "^0.6.23"
   },
   "devDependencies": {
