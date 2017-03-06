@@ -227,12 +227,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           };
         });
 
-        let breakpointLayer = new wavesUI.helpers.BreakpointLayer(plotData, {
+        let lineLayer = new wavesUI.helpers.LineLayer(plotData, {
           color: colour,
           height: height
         });
         this.colouredLayers.set(this.addLayer(
-          breakpointLayer,
+          lineLayer,
           mainTrack,
           this.timeline.timeContext
         ), colour);
