@@ -139,10 +139,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       this.timeline = this.renderTimeline(buffer.duration)
     }
     this.timeline.timeContext.offset = 0.5 * this.timeline.timeContext.visibleDuration;
+
     // time axis
     const timeAxis = new wavesUI.helpers.TimeAxisLayer({
       height: height,
-      color: 'gray'
+      color: '#b0b0b0'
     });
     this.addLayer(timeAxis, mainTrack, this.timeline.timeContext, true);
 
@@ -152,7 +153,15 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       color: 'darkblue'
     });
     this.addLayer(waveformLayer, mainTrack, this.timeline.timeContext);
-
+/*
+    const spectrogramLayer = new wavesUI.helpers.SpectrogramLayer(buffer, {
+      top: 10,
+      height: height * 0.9,
+      stepSize: 512,
+      fftSize: 1024
+    });
+    this.addLayer(spectrogramLayer, mainTrack, this.timeline.timeContext);
+*/      
     this.cursorLayer = new wavesUI.helpers.CursorLayer({
       height: height
     });
@@ -331,11 +340,27 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
             this.timeline.timeContext
           ), colour);
         }
-
         break;
       }
+      case 'matrix': {
+          const stepDuration = (features as FixedSpacedFeatures).stepDuration;
+          const matrixData = (features.data as Float32Array[]);
+          if (matrixData.length === 0) return;
+          const matrixEntity = new wavesUI.utils.PrefilledMatrixEntity(matrixData);
+          let matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
+              color: colour,
+              height: height
+          });
+          this.colouredLayers.set(this.addLayer(
+              matrixLayer,
+              mainTrack,
+              this.timeline.timeContext
+          ), colour);
+          break;
+      }
       default:
-        console.log('Cannot render an appropriate layer.');
+        console.log("Cannot render an appropriate layer for feature shape '" +
+                    features.shape + "'");
     }
 
     this.timeline.tracks.update();
@@ -362,17 +387,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         if (mustPageForward) {
           const hasSkippedMultiplePages = offsetTimestamp - visibleDuration > visibleDuration;
 
-          this.timeline.timeContext.offset = hasSkippedMultiplePages
-              ? -currentTime +  0.5 * visibleDuration
-              :  currentOffset - visibleDuration;
+            this.timeline.timeContext.offset = hasSkippedMultiplePages ?
+                -currentTime +  0.5 * visibleDuration :
+                currentOffset - visibleDuration;
           this.timeline.tracks.update();
         }
 
         if (mustPageBackward) {
           const hasSkippedMultiplePages = currentTime + visibleDuration < -currentOffset;
-          this.timeline.timeContext.offset = hasSkippedMultiplePages
-            ? -currentTime + 0.5 * visibleDuration
-            : currentOffset + visibleDuration;
+            this.timeline.timeContext.offset = hasSkippedMultiplePages ?
+                -currentTime + 0.5 * visibleDuration :
+                currentOffset + visibleDuration;
           this.timeline.tracks.update();
         }
 
