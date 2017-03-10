@@ -111,6 +111,77 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     return timeline;
   }
 
+  estimatePercentile(matrix, percentile) {
+    // our sample is not evenly distributed across the whole data set:
+    // it is guaranteed to include at least one sample from every
+    // column, and could sample some values more than once. But it
+    // should be good enough in most cases (todo: show this)
+    if (matrix.length === 0) return 0.0;
+    const w = matrix.length;
+    const h = matrix[0].length;
+    const n = w * h;
+    const m = (n > 10000 ? 10000 : n); // should base that on the %ile
+    let m_per = Math.floor(m / w);
+    if (m_per < 1) m_per = 1;
+    let sample = [];
+    for (let x = 0; x < w; ++x) {
+      for (let i = 0; i < m_per; ++i) {
+        const y = Math.floor(Math.random() * h);
+        sample.push(matrix[x][y]);
+      }
+    }
+    sample.sort((a,b) => { return a - b; });
+    const ix = Math.floor((sample.length * percentile) / 100);
+    console.log("Estimating " + percentile + "-%ile of " +
+                n + "-sample dataset (" + w + " x " + h + ") as value " + ix +
+                " of sorted " + sample.length + "-sample subset");
+    const estimate = sample[ix];
+    console.log("Estimate is: " + estimate + " (where min sampled value = " +
+                sample[0] + " and max = " + sample[sample.length-1] + ")");
+    return estimate;
+  }
+
+  interpolatingMapper(hexColours) {
+    const colours = hexColours.map(n => {
+      const i = parseInt(n, 16);
+      return [ (i >> 16) & 255, (i >> 8) & 255, i & 255, 255 ];
+    });
+    const last = colours.length - 1;
+    return (value => {
+      // value must be in the range [0,1]. We quantize to 256 levels,
+      // as the PNG encoder deep inside uses a limited palette for
+      // simplicity. Should document this for the mapper. Also that
+      // individual colour values should be integers
+      value = Math.round(value * 255) / 255;
+      const m = value * last;
+      if (m >= last) {
+        return colours[last];
+      }
+      if (m <= 0) {
+        return colours[0];
+      }
+      const base = Math.floor(m);
+      const prop0 = base + 1.0 - m;
+      const prop1 = m - base;
+      const c0 = colours[base];
+      const c1 = colours[base+1];
+      return [ Math.round(c0[0] * prop0 + c1[0] * prop1),
+               Math.round(c0[1] * prop0 + c1[1] * prop1),
+               Math.round(c0[2] * prop0 + c1[2] * prop1),
+               255 ];
+    });
+  }
+  
+  iceMapper() {
+    let hexColours = [ 
+      // Based on ColorBrewer ylGnBu
+      "ffffff", "ffff00", "f7fcf0", "e0f3db", "ccebc5", "a8ddb5",
+      "7bccc4", "4eb3d3", "2b8cbe", "0868ac", "084081", "042040"
+    ];
+    hexColours.reverse();
+    return this.interpolatingMapper(hexColours);
+  }
+    
   renderWaveform(buffer: AudioBuffer): void {
     const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
     const mainTrack = this.timeline.getTrackById('main');
@@ -343,20 +414,25 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       }
       case 'matrix': {
-          const stepDuration = (features as FixedSpacedFeatures).stepDuration;
-          const matrixData = (features.data as Float32Array[]);
-          if (matrixData.length === 0) return;
-          const matrixEntity = new wavesUI.utils.PrefilledMatrixEntity(matrixData);
-          let matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
-              color: colour,
-              height: height
-          });
-          this.colouredLayers.set(this.addLayer(
-              matrixLayer,
-              mainTrack,
-              this.timeline.timeContext
-          ), colour);
-          break;
+        const stepDuration = (features as FixedSpacedFeatures).stepDuration;
+        const matrixData = (features.data as Float32Array[]);
+        if (matrixData.length === 0) return;
+        const targetValue = this.estimatePercentile(matrixData, 97);
+        const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
+        console.log("setting gain to " + gain);
+        const matrixEntity = new wavesUI.utils.PrefilledMatrixEntity(matrixData);
+        let matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
+          gain,
+          height,
+          normalise: 'hybrid',
+          mapper: this.iceMapper()
+        });
+        this.colouredLayers.set(this.addLayer(
+          matrixLayer,
+          mainTrack,
+          this.timeline.timeContext
+        ), colour);
+        break;
       }
       default:
         console.log("Cannot render an appropriate layer for feature shape '" +
