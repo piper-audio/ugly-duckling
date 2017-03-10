@@ -52,6 +52,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private playingStateSubscription: Subscription;
   private seekedSubscription: Subscription;
   private isPlaying: boolean;
+  private offsetAtPanStart: number;
+  private initialZoom: number;
+  private initialDistance: number;
 
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
@@ -181,9 +184,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
                255 ];
     });
   }
-  
+
   iceMapper() {
-    let hexColours = [ 
+    let hexColours = [
       // Based on ColorBrewer ylGnBu
       "ffffff", "ffff00", "f7fcf0", "e0f3db", "ccebc5", "a8ddb5",
       "7bccc4", "4eb3d3", "2b8cbe", "0868ac", "084081", "042040"
@@ -191,7 +194,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     hexColours.reverse();
     return this.interpolatingMapper(hexColours);
   }
-    
+
   renderWaveform(buffer: AudioBuffer): void {
     const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
     const mainTrack = this.timeline.getTrackById('main');
@@ -242,7 +245,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       fftSize: 1024
     });
     this.addLayer(spectrogramLayer, mainTrack, this.timeline.timeContext);
-*/      
+*/
     this.cursorLayer = new wavesUI.helpers.CursorLayer({
       height: height
     });
@@ -253,24 +256,51 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
     if ('ontouchstart' in window) {
+      interface Point {
+        x: number;
+        y: number;
+      }
+
+      const pixelToExponent: Function = wavesUI.utils.scales.linear()
+        .domain([0, 100]) // 100px => factor 2
+        .range([0, 1]);
+
+      const calculateDistance: (p1: Point, p2: Point) => number = (p1, p2) => {
+        return Math.pow(
+          Math.pow(p2.x - p1.x, 2) +
+          Math.pow(p2.y - p1.y, 2), 0.5);
+      };
+
       const hammertime = new Hammer(this.trackDiv.nativeElement);
       const scroll = (ev) => {
-        const sign = ev.direction === Hammer.DIRECTION_LEFT ? -1 : 1;
-        let delta = this.timeline.timeContext.timeToPixel.invert(sign * ev.distance);
-        const speed: number = Math.abs(ev.velocityX);
-        delta *= (speed > 0.075 ? 0.075 : speed); // this is completely made up to limit the max speed, TODO something sensible
-        this.timeline.timeContext.offset += delta;
+        this.timeline.timeContext.offset = this.offsetAtPanStart +
+          this.timeline.timeContext.timeToPixel.invert(ev.deltaX);
         this.timeline.tracks.update();
       };
 
       const zoom = (ev) => {
         const minZoom = this.timeline.state.minZoom;
         const maxZoom = this.timeline.state.maxZoom;
-        const initialZoom = this.timeline.timeContext.zoom;
-        const targetZoom = initialZoom * ev.scale;
-        const lastCenterTime = this.timeline.timeContext.timeToPixel.invert(ev.center.x);
-        this.timeline.timeContext.zoom = Math.min(Math.max(targetZoom, minZoom), maxZoom);
-        const newCenterTime = this.timeline.timeContext.timeToPixel.invert(ev.center.x);
+        const distance = calculateDistance({
+          x: ev.pointers[0].clientX,
+          y: ev.pointers[0].clientY
+        }, {
+          x: ev.pointers[1].clientX,
+          y: ev.pointers[1].clientY
+        });
+
+        const lastCenterTime =
+          this.timeline.timeContext.timeToPixel.invert(ev.center.x);
+
+        const exponent = pixelToExponent(distance - this.initialDistance);
+        const targetZoom = this.initialZoom * Math.pow(2, exponent);
+
+        this.timeline.timeContext.zoom =
+          Math.min(Math.max(targetZoom, minZoom), maxZoom);
+
+        const newCenterTime =
+          this.timeline.timeContext.timeToPixel.invert(ev.center.x);
+
         this.timeline.timeContext.offset += newCenterTime - lastCenterTime;
         this.timeline.tracks.update();
       };
@@ -280,8 +310,22 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       };
       hammertime.get('pinch').set({ enable: true });
+      hammertime.on('panstart', () => {
+        this.offsetAtPanStart = this.timeline.timeContext.offset;
+      });
       hammertime.on('panleft', scroll);
       hammertime.on('panright', scroll);
+      hammertime.on('pinchstart', (e) => {
+        this.initialZoom = this.timeline.timeContext.zoom;
+
+        this.initialDistance = calculateDistance({
+          x: e.pointers[0].clientX,
+          y: e.pointers[0].clientY
+        }, {
+          x: e.pointers[1].clientX,
+          y: e.pointers[1].clientY
+        });
+      });
       hammertime.on('pinch', zoom);
       hammertime.on('tap', seek);
     }
