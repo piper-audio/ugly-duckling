@@ -116,19 +116,29 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     // it is guaranteed to include at least one sample from every
     // column, and could sample some values more than once. But it
     // should be good enough in most cases (todo: show this)
-    if (matrix.length === 0) return 0.0;
+    if (matrix.length === 0) {
+      return 0.0;
+    }
     const w = matrix.length;
     const h = matrix[0].length;
     const n = w * h;
-    const m = (n > 10000 ? 10000 : n); // should base that on the %ile
+    const m = (n > 50000 ? 50000 : n); // should base that on the %ile
     let m_per = Math.floor(m / w);
     if (m_per < 1) m_per = 1;
     let sample = [];
     for (let x = 0; x < w; ++x) {
       for (let i = 0; i < m_per; ++i) {
         const y = Math.floor(Math.random() * h);
-        sample.push(matrix[x][y]);
+        const value = matrix[x][y];
+        if (!isNaN(value) && value !== Infinity) {
+          sample.push(value);
+        }
       }
+    }
+    if (sample.length === 0) {
+      console.log("WARNING: No samples gathered, even though we hoped for " +
+                  (m_per * w) + " of them");
+      return 0.0;
     }
     sample.sort((a,b) => { return a - b; });
     const ix = Math.floor((sample.length * percentile) / 100);
@@ -417,14 +427,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const stepDuration = (features as FixedSpacedFeatures).stepDuration;
         const matrixData = (features.data as Float32Array[]);
         if (matrixData.length === 0) return;
-        const targetValue = this.estimatePercentile(matrixData, 97);
+        console.log("matrix data length = " + matrixData.length);
+        console.log("height of first column = " + matrixData[0].length);
+        const targetValue = this.estimatePercentile(matrixData, 95);
         const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
         console.log("setting gain to " + gain);
         const matrixEntity = new wavesUI.utils.PrefilledMatrixEntity(matrixData);
         let matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
           gain,
-          height,
-          normalise: 'hybrid',
+          height: height * 0.8,
+          top: height * 0.1,
+          normalise: 'none',
           mapper: this.iceMapper()
         });
         this.colouredLayers.set(this.addLayer(
