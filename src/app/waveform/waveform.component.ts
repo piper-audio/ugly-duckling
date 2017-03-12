@@ -550,6 +550,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     track.add(layer);
     layer.render();
     layer.update();
+    if (this.cursorLayer) {
+      track.$layout.appendChild(this.cursorLayer.$el);
+    }
     return this.disposableLayers.push(layer) - 1;
   }
 
