@@ -261,6 +261,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         y: number;
       }
 
+      let zoomGestureJustEnded: boolean = false;
+
       const pixelToExponent: Function = wavesUI.utils.scales.linear()
         .domain([0, 100]) // 100px => factor 2
         .range([0, 1]);
@@ -273,6 +275,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const hammertime = new Hammer(this.trackDiv.nativeElement);
       const scroll = (ev) => {
+        if (zoomGestureJustEnded) {
+          zoomGestureJustEnded = false;
+          console.log("Skip this event: likely a single touch dangling from pinch");
+          return;
+        }
         this.timeline.timeContext.offset = this.offsetAtPanStart +
           this.timeline.timeContext.timeToPixel.invert(ev.deltaX);
         this.timeline.tracks.update();
@@ -327,6 +334,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       });
       hammertime.on('pinch', zoom);
+      hammertime.on('pinchend', () => {
+        zoomGestureJustEnded = true;
+      });
       hammertime.on('tap', seek);
     }
 
