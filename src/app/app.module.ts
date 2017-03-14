@@ -11,6 +11,7 @@ import { PlaybackControlComponent } from './playback-control/playback-control.co
 import { AudioPlayerService } from "./services/audio-player/audio-player.service";
 import { FeatureExtractionService } from "./services/feature-extraction/feature-extraction.service";
 import { FeatureExtractionMenuComponent } from "./feature-extraction-menu/feature-extraction-menu.component";
+import { ProgressSpinnerComponent } from "./progress-spinner/progress-spinner.component";
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -29,7 +30,8 @@ export function createAudioElement(): HTMLAudioElement {
     WaveformComponent,
     AudioFileOpenComponent,
     PlaybackControlComponent,
-    FeatureExtractionMenuComponent
+    FeatureExtractionMenuComponent,
+    ProgressSpinnerComponent
   ],
   imports: [
     BrowserModule,
