@@ -529,6 +529,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       case 'matrix': {
         const stepDuration = (features as FixedSpacedFeatures).stepDuration;
+        //!!! + start time
         const matrixData = (features.data as Float32Array[]);
         if (matrixData.length === 0) return;
         console.log("matrix data length = " + matrixData.length);
@@ -536,7 +537,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const targetValue = this.estimatePercentile(matrixData, 95);
         const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
         console.log("setting gain to " + gain);
-        const matrixEntity = new wavesUI.utils.PrefilledMatrixEntity(matrixData);
+        const matrixEntity =
+          new wavesUI.utils.PrefilledMatrixEntity(matrixData,
+                                                  0, // startTime
+                                                  stepDuration);
         let matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
           gain,
           height: height * 0.9,
