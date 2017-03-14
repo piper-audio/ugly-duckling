@@ -40,8 +40,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
     this._audioBuffer = buffer || undefined;
-    if (this.audioBuffer)
+    if (this.audioBuffer) {
       this.renderWaveform(this.audioBuffer);
+      this.renderSpectrogram(this.audioBuffer);
+    }
   }
 
   get audioBuffer(): AudioBuffer {
@@ -110,7 +112,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const width: number = track.getBoundingClientRect().width;
     const pixelsPerSecond = width / duration;
     const timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
-    timeline.createTrack(track, height, 'main');
+    timeline.createTrack(track, height/2, 'wave');
+    timeline.createTrack(track, height/2, 'grid');
     return timeline;
   }
 
@@ -157,15 +160,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   interpolatingMapper(hexColours) {
     const colours = hexColours.map(n => {
       const i = parseInt(n, 16);
-      return [ (i >> 16) & 255, (i >> 8) & 255, i & 255, 255 ];
+      return [ ((i >> 16) & 255) / 255.0,
+               ((i >> 8) & 255) / 255.0,
+               ((i) & 255) / 255.0 ];
     });
     const last = colours.length - 1;
     return (value => {
-      // value must be in the range [0,1]. We quantize to 256 levels,
-      // as the PNG encoder deep inside uses a limited palette for
-      // simplicity. Should document this for the mapper. Also that
-      // individual colour values should be integers
-      value = Math.round(value * 255) / 255;
       const m = value * last;
       if (m >= last) {
         return colours[last];
@@ -178,10 +178,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       const prop1 = m - base;
       const c0 = colours[base];
       const c1 = colours[base+1];
-      return [ Math.round(c0[0] * prop0 + c1[0] * prop1),
-               Math.round(c0[1] * prop0 + c1[1] * prop1),
-               Math.round(c0[2] * prop0 + c1[2] * prop1),
-               255 ];
+      return [ c0[0] * prop0 + c1[0] * prop1,
+               c0[1] * prop0 + c1[1] * prop1,
+               c0[2] * prop0 + c1[2] * prop1 ];
     });
   }
 
@@ -195,9 +194,48 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.interpolatingMapper(hexColours);
   }
 
+  hsv2rgb(h, s, v) { // all values in range [0, 1]
+    const i = Math.floor(h * 6);
+    const f = h * 6 - i;
+    const p = v * (1 - s);
+    const q = v * (1 - f * s);
+    const t = v * (1 - (1 - f) * s);
+    let r = 0, g = 0, b = 0;
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return [ r, g, b ];
+  }
+  
+  greenMapper() {
+    const blue = 0.6666;
+    const pieslice = 0.3333;
+    return (value => {
+      const h = blue - value * 2.0 * pieslice;
+      const s = 0.5 + value / 2.0;
+      const v = value;
+      return this.hsv2rgb(h, s, v);
+    });
+  }
+
+  sunsetMapper() {
+    return (value => {
+      let r = (value - 0.24) * 2.38;
+      let g = (value - 0.64) * 2.777;
+      let b = (3.6 * value);
+      if (value > 0.277) b = 2.0 - b;
+      return [ r, g, b ];
+    });
+  }
+
   renderWaveform(buffer: AudioBuffer): void {
-    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const mainTrack = this.timeline.getTrackById('main');
+    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const waveTrack = this.timeline.getTrackById('wave');
     if (this.timeline) {
       // resize
       const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
@@ -207,18 +245,21 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
       for (let i = 0, length = this.disposableLayers.length; i < length; ++i) {
         let layer = this.disposableLayers.pop();
-        mainTrack.remove(layer);
+//        if (waveTrack.hasElement(layer)) {
+//          waveTrack.remove(layer);
+//        }
 
         const index = timeContextChildren.indexOf(layer.timeContext);
-        if (index >= 0)
+        if (index >= 0) {
           timeContextChildren.splice(index, 1);
+        }
         layer.destroy();
       }
       this.colouredLayers.clear();
 
       this.timeline.visibleWidth = width;
       this.timeline.pixelsPerSecond = width / buffer.duration;
-      mainTrack.height = height;
+      waveTrack.height = height;
     } else {
       this.timeline = this.renderTimeline(buffer.duration)
     }
@@ -229,30 +270,22 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       height: height,
       color: '#b0b0b0'
     });
-    this.addLayer(timeAxis, mainTrack, this.timeline.timeContext, true);
+    this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
 
     const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
       top: 10,
       height: height * 0.9,
       color: 'darkblue'
     });
-    this.addLayer(waveformLayer, mainTrack, this.timeline.timeContext);
-/*
-    const spectrogramLayer = new wavesUI.helpers.SpectrogramLayer(buffer, {
-      top: 10,
-      height: height * 0.9,
-      stepSize: 512,
-      fftSize: 1024
-    });
-    this.addLayer(spectrogramLayer, mainTrack, this.timeline.timeContext);
-*/
+    this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
+
     this.cursorLayer = new wavesUI.helpers.CursorLayer({
       height: height
     });
-    this.addLayer(this.cursorLayer, mainTrack, this.timeline.timeContext);
+    this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
     this.timeline.state = new wavesUI.states.CenteredZoomState(this.timeline);
-    mainTrack.render();
-    mainTrack.update();
+    waveTrack.render();
+    waveTrack.update();
 
 
     if ('ontouchstart' in window) {
@@ -343,14 +376,31 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.animate();
   }
 
+  renderSpectrogram(buffer: AudioBuffer): void {
+    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const gridTrack = this.timeline.getTrackById('grid');
+
+    const spectrogramLayer = new wavesUI.helpers.SpectrogramLayer(buffer, {
+      top: height * 0.05,
+      height: height * 0.9,
+      stepSize: 512,
+      fftSize: 1024,
+      normalise: 'none',
+      mapper: this.sunsetMapper()
+    });
+    this.addLayer(spectrogramLayer, gridTrack, this.timeline.timeContext);
+
+    this.timeline.tracks.update();
+  }
+
   // TODO refactor - this doesn't belong here
   private renderFeatures(extracted: SimpleResponse, colour: Colour): void {
     if (!extracted.hasOwnProperty('features') || !extracted.hasOwnProperty('outputDescriptor')) return;
     if (!extracted.features.hasOwnProperty('shape') || !extracted.features.hasOwnProperty('data')) return;
     const features: FeatureCollection = (extracted.features as FeatureCollection);
     const outputDescriptor = extracted.outputDescriptor;
-    const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const mainTrack = this.timeline.getTrackById('main');
+    const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const waveTrack = this.timeline.getTrackById('wave');
 
     // TODO refactor all of this
     switch (features.shape) {
@@ -377,7 +427,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         this.colouredLayers.set(this.addLayer(
           lineLayer,
-          mainTrack,
+          waveTrack,
           this.timeline.timeContext
         ), colour);
         break;
@@ -403,7 +453,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           });
           this.colouredLayers.set(this.addLayer(
             markerLayer,
-            mainTrack,
+            waveTrack,
             this.timeline.timeContext
           ), colour);
         } else if (isRegion) {
@@ -471,7 +521,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           );
           this.colouredLayers.set(this.addLayer(
             segmentLayer,
-            mainTrack,
+            waveTrack,
             this.timeline.timeContext
           ), colour);
         }
@@ -479,6 +529,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       case 'matrix': {
         const stepDuration = (features as FixedSpacedFeatures).stepDuration;
+        //!!! + start time
         const matrixData = (features.data as Float32Array[]);
         if (matrixData.length === 0) return;
         console.log("matrix data length = " + matrixData.length);
@@ -486,17 +537,20 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const targetValue = this.estimatePercentile(matrixData, 95);
         const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
         console.log("setting gain to " + gain);
-        const matrixEntity = new wavesUI.utils.PrefilledMatrixEntity(matrixData);
+        const matrixEntity =
+          new wavesUI.utils.PrefilledMatrixEntity(matrixData,
+                                                  0, // startTime
+                                                  stepDuration);
         let matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
           gain,
-          height: height * 0.8,
-          top: height * 0.1,
+          height: height * 0.9,
+          top: height * 0.05,
           normalise: 'none',
           mapper: this.iceMapper()
         });
         this.colouredLayers.set(this.addLayer(
           matrixLayer,
-          mainTrack,
+          waveTrack,
           this.timeline.timeContext
         ), colour);
         break;
