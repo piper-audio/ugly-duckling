@@ -160,15 +160,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   interpolatingMapper(hexColours) {
     const colours = hexColours.map(n => {
       const i = parseInt(n, 16);
-      return [ (i >> 16) & 255, (i >> 8) & 255, i & 255, 255 ];
+      return [ ((i >> 16) & 255) / 255.0,
+               ((i >> 8) & 255) / 255.0,
+               ((i) & 255) / 255.0 ];
     });
     const last = colours.length - 1;
     return (value => {
-      // value must be in the range [0,1]. We quantize to 256 levels,
-      // as the PNG encoder deep inside uses a limited palette for
-      // simplicity. Should document this for the mapper. Also that
-      // individual colour values should be integers
-      value = Math.round(value * 255) / 255;
       const m = value * last;
       if (m >= last) {
         return colours[last];
@@ -181,10 +178,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       const prop1 = m - base;
       const c0 = colours[base];
       const c1 = colours[base+1];
-      return [ Math.round(c0[0] * prop0 + c1[0] * prop1),
-               Math.round(c0[1] * prop0 + c1[1] * prop1),
-               Math.round(c0[2] * prop0 + c1[2] * prop1),
-               255 ];
+      return [ c0[0] * prop0 + c1[0] * prop1,
+               c0[1] * prop0 + c1[1] * prop1,
+               c0[2] * prop0 + c1[2] * prop1 ];
     });
   }
 
@@ -196,6 +192,45 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     ];
     hexColours.reverse();
     return this.interpolatingMapper(hexColours);
+  }
+
+  hsv2rgb(h, s, v) { // all values in range [0, 1]
+    const i = Math.floor(h * 6);
+    const f = h * 6 - i;
+    const p = v * (1 - s);
+    const q = v * (1 - f * s);
+    const t = v * (1 - (1 - f) * s);
+    let r = 0, g = 0, b = 0;
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return [ r, g, b ];
+  }
+  
+  greenMapper() {
+    const blue = 0.6666;
+    const pieslice = 0.3333;
+    return (value => {
+      const h = blue - value * 2.0 * pieslice;
+      const s = 0.5 + value / 2.0;
+      const v = value;
+      return this.hsv2rgb(h, s, v);
+    });
+  }
+
+  sunsetMapper() {
+    return (value => {
+      let r = (value - 0.24) * 2.38;
+      let g = (value - 0.64) * 2.777;
+      let b = (3.6 * value);
+      if (value > 0.277) b = 2.0 - b;
+      return [ r, g, b ];
+    });
   }
 
   renderWaveform(buffer: AudioBuffer): void {
@@ -346,10 +381,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const gridTrack = this.timeline.getTrackById('grid');
 
     const spectrogramLayer = new wavesUI.helpers.SpectrogramLayer(buffer, {
-      top: 10,
+      top: height * 0.05,
       height: height * 0.9,
       stepSize: 512,
-      fftSize: 1024
+      fftSize: 1024,
+      normalise: 'none',
+      mapper: this.sunsetMapper()
     });
     this.addLayer(spectrogramLayer, gridTrack, this.timeline.timeContext);
 
@@ -362,8 +399,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!extracted.features.hasOwnProperty('shape') || !extracted.features.hasOwnProperty('data')) return;
     const features: FeatureCollection = (extracted.features as FeatureCollection);
     const outputDescriptor = extracted.outputDescriptor;
-    const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const waveTrack = this.timeline.getTrackById('main');
+    const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const waveTrack = this.timeline.getTrackById('wave');
 
     // TODO refactor all of this
     switch (features.shape) {
@@ -502,8 +539,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const matrixEntity = new wavesUI.utils.PrefilledMatrixEntity(matrixData);
         let matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
           gain,
-          height: height * 0.8,
-          top: height * 0.1,
+          height: height * 0.9,
+          top: height * 0.05,
           normalise: 'none',
           mapper: this.iceMapper()
         });
