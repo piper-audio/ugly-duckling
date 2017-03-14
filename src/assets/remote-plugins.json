@@ -2,5 +2,6 @@
   "vamp-test-plugin": "assets/VampTestPlugin.js",
   "qm-vamp-plugins": "assets/QMVampPlugins.js",
   "nnls-chroma": "assets/NNLSChroma.js",
-  "cqvamp": "assets/CQ.js"
+  "cqvamp": "assets/CQ.js",
+  "tipic": "assets/Tipic.js"
 }
