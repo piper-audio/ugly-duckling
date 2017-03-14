@@ -40,8 +40,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
     this._audioBuffer = buffer || undefined;
-    if (this.audioBuffer)
+    if (this.audioBuffer) {
       this.renderWaveform(this.audioBuffer);
+      this.renderSpectrogram(this.audioBuffer);
+    }
   }
 
   get audioBuffer(): AudioBuffer {
@@ -110,7 +112,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const width: number = track.getBoundingClientRect().width;
     const pixelsPerSecond = width / duration;
     const timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
-    timeline.createTrack(track, height, 'main');
+    timeline.createTrack(track, height/2, 'wave');
+    timeline.createTrack(track, height/2, 'grid');
     return timeline;
   }
 
@@ -196,8 +199,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   renderWaveform(buffer: AudioBuffer): void {
-    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const mainTrack = this.timeline.getTrackById('main');
+    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const waveTrack = this.timeline.getTrackById('wave');
     if (this.timeline) {
       // resize
       const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
@@ -207,18 +210,21 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
       for (let i = 0, length = this.disposableLayers.length; i < length; ++i) {
         let layer = this.disposableLayers.pop();
-        mainTrack.remove(layer);
+//        if (waveTrack.hasElement(layer)) {
+//          waveTrack.remove(layer);
+//        }
 
         const index = timeContextChildren.indexOf(layer.timeContext);
-        if (index >= 0)
+        if (index >= 0) {
           timeContextChildren.splice(index, 1);
+        }
         layer.destroy();
       }
       this.colouredLayers.clear();
 
       this.timeline.visibleWidth = width;
       this.timeline.pixelsPerSecond = width / buffer.duration;
-      mainTrack.height = height;
+      waveTrack.height = height;
     } else {
       this.timeline = this.renderTimeline(buffer.duration)
     }
@@ -229,30 +235,22 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       height: height,
       color: '#b0b0b0'
     });
-    this.addLayer(timeAxis, mainTrack, this.timeline.timeContext, true);
+    this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
 
     const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
       top: 10,
       height: height * 0.9,
       color: 'darkblue'
     });
-    this.addLayer(waveformLayer, mainTrack, this.timeline.timeContext);
-/*
-    const spectrogramLayer = new wavesUI.helpers.SpectrogramLayer(buffer, {
-      top: 10,
-      height: height * 0.9,
-      stepSize: 512,
-      fftSize: 1024
-    });
-    this.addLayer(spectrogramLayer, mainTrack, this.timeline.timeContext);
-*/
+    this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
+
     this.cursorLayer = new wavesUI.helpers.CursorLayer({
       height: height
     });
-    this.addLayer(this.cursorLayer, mainTrack, this.timeline.timeContext);
+    this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
     this.timeline.state = new wavesUI.states.CenteredZoomState(this.timeline);
-    mainTrack.render();
-    mainTrack.update();
+    waveTrack.render();
+    waveTrack.update();
 
 
     if ('ontouchstart' in window) {
@@ -343,6 +341,21 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.animate();
   }
 
+  renderSpectrogram(buffer: AudioBuffer): void {
+    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const gridTrack = this.timeline.getTrackById('grid');
+
+    const spectrogramLayer = new wavesUI.helpers.SpectrogramLayer(buffer, {
+      top: 10,
+      height: height * 0.9,
+      stepSize: 512,
+      fftSize: 1024
+    });
+    this.addLayer(spectrogramLayer, gridTrack, this.timeline.timeContext);
+
+    this.timeline.tracks.update();
+  }
+
   // TODO refactor - this doesn't belong here
   private renderFeatures(extracted: SimpleResponse, colour: Colour): void {
     if (!extracted.hasOwnProperty('features') || !extracted.hasOwnProperty('outputDescriptor')) return;
@@ -350,7 +363,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const features: FeatureCollection = (extracted.features as FeatureCollection);
     const outputDescriptor = extracted.outputDescriptor;
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const mainTrack = this.timeline.getTrackById('main');
+    const waveTrack = this.timeline.getTrackById('main');
 
     // TODO refactor all of this
     switch (features.shape) {
@@ -377,7 +390,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         this.colouredLayers.set(this.addLayer(
           lineLayer,
-          mainTrack,
+          waveTrack,
           this.timeline.timeContext
         ), colour);
         break;
@@ -403,7 +416,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           });
           this.colouredLayers.set(this.addLayer(
             markerLayer,
-            mainTrack,
+            waveTrack,
             this.timeline.timeContext
           ), colour);
         } else if (isRegion) {
@@ -471,7 +484,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           );
           this.colouredLayers.set(this.addLayer(
             segmentLayer,
-            mainTrack,
+            waveTrack,
             this.timeline.timeContext
           ), colour);
         }
@@ -496,7 +509,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         this.colouredLayers.set(this.addLayer(
           matrixLayer,
-          mainTrack,
+          waveTrack,
           this.timeline.timeContext
         ), colour);
         break;
