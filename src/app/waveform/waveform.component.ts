@@ -19,7 +19,6 @@ import * as Hammer from 'hammerjs';
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 type Layer = any;
 type Track = any;
-type DisposableIndex = number;
 type Colour = string;
 
 @Component({
@@ -34,8 +33,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private _audioBuffer: AudioBuffer;
   private timeline: Timeline;
   private cursorLayer: any;
-  private disposableLayers: Layer[];
-  private colouredLayers: Map<DisposableIndex, Colour>;
 
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
@@ -61,8 +58,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
               public ngZone: NgZone) {
-    this.colouredLayers = new Map();
-    this.disposableLayers = [];
     this._audioBuffer = undefined;
     this.timeline = undefined;
     this.cursorLayer = undefined;
@@ -211,7 +206,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     return [ r, g, b ];
   }
-  
+
   greenMapper() {
     const blue = 0.6666;
     const pieslice = 0.3333;
@@ -233,21 +228,15 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  renderWaveform(buffer: AudioBuffer): void {
-    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
-    const waveTrack = this.timeline.getTrackById('wave');
-    if (this.timeline) {
-      // resize
-      const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
-
-      // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
-      const timeContextChildren = this.timeline.timeContext._children;
-
-      for (let i = 0, length = this.disposableLayers.length; i < length; ++i) {
-        let layer = this.disposableLayers.pop();
-//        if (waveTrack.hasElement(layer)) {
-//          waveTrack.remove(layer);
-//        }
+  clearTimeline(): void {
+    // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
+    const timeContextChildren = this.timeline.timeContext._children;
+    for (let track of this.timeline.tracks) {
+      if (track.layers.length === 0) { continue; }
+      const trackLayers = Array.from(track.layers);
+      while (trackLayers.length) {
+        let layer: Layer = trackLayers.pop();
+        track.remove(layer);
 
         const index = timeContextChildren.indexOf(layer.timeContext);
         if (index >= 0) {
@@ -255,7 +244,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         layer.destroy();
       }
-      this.colouredLayers.clear();
+    }
+  }
+
+  renderWaveform(buffer: AudioBuffer): void {
+    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const waveTrack = this.timeline.getTrackById('wave');
+    if (this.timeline) {
+      // resize
+      const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
+
+      this.clearTimeline();
 
       this.timeline.visibleWidth = width;
       this.timeline.pixelsPerSecond = width / buffer.duration;
@@ -425,11 +424,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           color: colour,
           height: height
         });
-        this.colouredLayers.set(this.addLayer(
+        this.addLayer(
           lineLayer,
           waveTrack,
           this.timeline.timeContext
-        ), colour);
+        );
         break;
       }
       case 'list': {
@@ -451,11 +450,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
             height: height,
             color: colour,
           });
-          this.colouredLayers.set(this.addLayer(
+          this.addLayer(
             markerLayer,
             waveTrack,
             this.timeline.timeContext
-          ), colour);
+          );
         } else if (isRegion) {
           const binCount = outputDescriptor.configured.binCount || 0;
           const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1 ;
@@ -519,11 +518,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           let segmentLayer = new wavesUI.helpers.SegmentLayer(
             ...getSegmentArgs()
           );
-          this.colouredLayers.set(this.addLayer(
+          this.addLayer(
             segmentLayer,
             waveTrack,
             this.timeline.timeContext
-          ), colour);
+          );
         }
         break;
       }
@@ -548,11 +547,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           normalise: 'none',
           mapper: this.iceMapper()
         });
-        this.colouredLayers.set(this.addLayer(
+        this.addLayer(
           matrixLayer,
           waveTrack,
           this.timeline.timeContext
-        ), colour);
+        );
         break;
       }
       default:
@@ -605,7 +604,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private addLayer(layer: Layer, track: Track, timeContext: any, isAxis: boolean = false): DisposableIndex {
+  private addLayer(layer: Layer, track: Track, timeContext: any, isAxis: boolean = false): void {
     timeContext.zoom = 1.0;
     if (!layer.timeContext) {
       layer.setTimeContext(isAxis ?
@@ -614,10 +613,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     track.add(layer);
     layer.render();
     layer.update();
-    if (this.cursorLayer) {
+    if (this.cursorLayer && track.$layout.contains(this.cursorLayer.$el)) {
       track.$layout.appendChild(this.cursorLayer.$el);
     }
-    return this.disposableLayers.push(layer) - 1;
   }
 
   private static changeColour(layer: Layer, colour: string): void {
