@@ -17,7 +17,7 @@ interface WavesUserInterface {
 interface MatrixEntity {
   getColumnCount(): number;
   getColumnHeight(): number;
-  getColumn(n: number): Float32Array[] | number[][];
+  getColumn(n: number): Float32Array | number[];
   getStepDuration(): number;
   getStartTime(): number;
 }
