@@ -15,11 +15,11 @@ interface WavesUserInterface {
 }
 
 interface MatrixEntity {
-  getColumnCount: () => number;
-  getColumnHeight: () => number;
-  getColumn: (n: number) => number[];
-  getStepDuration: () => number;
-  getStartTime: () => number;
+  getColumnCount(): number;
+  getColumnHeight(): number;
+  getColumn(n: number): number[];
+  getStepDuration(): number;
+  getStartTime(): number;
 }
 
 interface MatrixEntityConstructor {
