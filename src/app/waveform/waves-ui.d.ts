@@ -13,6 +13,7 @@ interface WavesUserInterface {
   helpers: any;
   states: any;
   utils: Utilities;
+  shapes: any;
 }
 
 interface MatrixEntity {
