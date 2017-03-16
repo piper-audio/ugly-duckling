@@ -13,6 +13,7 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
   private fft: RealFft;
   private real: Float32Array;
   private nCols: number;
+  private columnHeight: number;
   private window: Float32Array;
 
   constructor(samples: Float32Array, options: Framing & Object) {
@@ -21,6 +22,7 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
     this.framing = options;
     this.real = new Float32Array(this.framing.blockSize);
     this.nCols = Math.floor(this.samples.length / this.framing.stepSize); //!!! not correct
+    this.columnHeight = Math.round(this.framing.blockSize / 2) + 1;
     this.fft = new KissRealFft(this.framing.blockSize);
     this.window = hann(this.framing.blockSize);
   }
@@ -30,7 +32,7 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
   }
 
   getColumnHeight(): number {
-    return Math.floor(this.framing.blockSize * 0.5) + 1;
+    return this.columnHeight;
   }
 
   getColumn(n: number): Float32Array {
@@ -54,10 +56,12 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
     const h = this.getColumnHeight();
     const col = new Float32Array(h);
 
+    const scale = 1.0 / Math.sqrt(sz);
     for (let i = 0; i < h; ++i) {
-      const real: number = complex[i * 2];
-      const imaginary: number = complex[i * 2 + 1];
-      col[i] = real * real + imaginary * imaginary;
+      const re : number = complex[i*2] * scale;
+      const im : number = complex[i*2+1] * scale;
+      const mag = Math.sqrt(re * re + im * im);
+      col[i] = mag;
     }
 
     return col;
