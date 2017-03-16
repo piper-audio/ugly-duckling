@@ -15,6 +15,7 @@ import {
 import {toSeconds} from "piper";
 import {FeatureList, Feature} from "piper/Feature";
 import * as Hammer from 'hammerjs';
+import {WavesSpectrogramLayer} from "../spectrogram/Spectrogram";
 
 type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 type Layer = any;
@@ -379,11 +380,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
     const gridTrack = this.timeline.getTrackById('grid');
 
-    const spectrogramLayer = new wavesUI.helpers.SpectrogramLayer(buffer, {
+    const spectrogramLayer = new WavesSpectrogramLayer(buffer, {
       top: height * 0.05,
       height: height * 0.9,
       stepSize: 512,
-      fftSize: 1024,
+      blockSize: 1024,
       normalise: 'none',
       mapper: this.sunsetMapper()
     });
