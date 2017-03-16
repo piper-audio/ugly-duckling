@@ -22,6 +22,7 @@ interface MatrixEntity {
   getColumn(n: number): Float32Array | number[];
   getStepDuration(): number;
   getStartTime(): number;
+  dispose(): void;
 }
 
 type TimeContext = any; // TODO

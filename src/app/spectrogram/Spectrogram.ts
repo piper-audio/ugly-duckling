@@ -27,6 +27,10 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
     this.window = hann(this.framing.blockSize);
   }
 
+  dispose(): void {
+    this.fft.dispose();
+  }
+
   getColumnCount(): number {
     return this.nCols;
   }
