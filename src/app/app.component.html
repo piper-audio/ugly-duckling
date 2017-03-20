@@ -4,9 +4,9 @@
   <span class="app-toolbar-filler"></span>
 
   <app-playback-control></app-playback-control>
-  <button md-icon-button>
-    <md-icon>mic_off</md-icon>
-  </button>
+  <ugly-recording-control
+    (finishedRecording)="onFileOpened($event)"
+  ></ugly-recording-control>
 
   <!-- This fills the remaining space of the current row -->
   <span class="app-toolbar-filler"></span>
