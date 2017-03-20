@@ -27,22 +27,27 @@ export class AppComponent {
     );
   }
 
-  onFileOpened(file: File) {
+  onFileOpened(file: File | Blob) {
     this.canExtract = false;
     this.isProcessing = true;
     const reader: FileReader = new FileReader();
     const mimeType = file.type;
     reader.onload = (event: any) => {
-      this.audioService.loadAudioFromUrl(
-        URL.createObjectURL(new Blob([event.target.result], {type: mimeType}))
-      );
+      const url: string = file instanceof Blob ? URL.createObjectURL(file) :
+        URL.createObjectURL(new Blob([event.target.result], {type: mimeType}));
+      this.audioService.loadAudioFromUrl(url);
       // TODO use a rxjs/Subject instead?
-      this.audioService.decodeAudioData(event.target.result).then(audioBuffer => {
+      this.audioService.decodeAudioData(event.target.result)
+        .then(audioBuffer => {
         this.audioBuffer = audioBuffer;
         if (this.audioBuffer) {
           this.canExtract = true;
           this.isProcessing = false;
         }
+      }).catch(error => {
+        this.canExtract = false;
+        this.isProcessing = false;
+        console.warn(error);
       });
     };
     reader.readAsArrayBuffer(file);
