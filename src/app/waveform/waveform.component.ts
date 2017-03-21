@@ -444,11 +444,16 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         // TODO refactor, this is incomprehensible
         if (isMarker) {
           const plotData = featureData.map(feature => {
-            return {time: toSeconds(feature.timestamp)}
+            return {
+              time: toSeconds(feature.timestamp),
+              label: feature.label
+            }
           });
           let featureLayer = new wavesUI.helpers.TickLayer(plotData, {
             height: height,
             color: colour,
+            labelPosition: 'bottom',
+            shadeSegments: true
           });
           this.addLayer(
             featureLayer,
