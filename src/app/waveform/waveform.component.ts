@@ -442,21 +442,25 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           && featureData[0].featureValues == null;
         const isRegion = hasDuration
           && featureData[0].timestamp != null;
+        console.log("Have list features: length " + featureData.length +
+                    ", isMarker " + isMarker + ", isRegion " + isRegion +
+                    ", hasDuration " + hasDuration);
         // TODO refactor, this is incomprehensible
         if (isMarker) {
           const plotData = featureData.map(feature => {
-            return {x: toSeconds(feature.timestamp)}
+            return {time: toSeconds(feature.timestamp)}
           });
-          let markerLayer = new wavesUI.helpers.MarkerLayer(plotData, {
+          let featureLayer = new wavesUI.helpers.TickLayer(plotData, {
             height: height,
             color: colour,
           });
           this.addLayer(
-            markerLayer,
+            featureLayer,
             waveTrack,
             this.timeline.timeContext
           );
         } else if (isRegion) {
+          console.log("Output is of region type");
           const binCount = outputDescriptor.configured.binCount || 0;
           const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1 ;
           const getSegmentArgs = () => {
