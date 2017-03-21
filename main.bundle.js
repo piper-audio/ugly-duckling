@@ -962,7 +962,7 @@ var _a;
 /***/ "pox9":
 /***/ (function(module, exports) {
 
-module.exports = "<div #track class=\"track\"></div>\n"
+module.exports = "<div #track class=\"track\" (click)=\"seek($event.clientX)\"></div>\n"
 
 /***/ }),
 
@@ -1293,9 +1293,6 @@ let WaveformComponent = class WaveformComponent {
                 this.timeline.timeContext.offset += newCenterTime - lastCenterTime;
                 this.timeline.tracks.update();
             };
-            const seek = (ev) => {
-                this.audioService.seekTo(this.timeline.timeContext.timeToPixel.invert(ev.center.x) - this.timeline.timeContext.offset);
-            };
             hammertime.get('pinch').set({ enable: true });
             hammertime.on('panstart', () => {
                 this.offsetAtPanStart = this.timeline.timeContext.offset;
@@ -1316,7 +1313,6 @@ let WaveformComponent = class WaveformComponent {
             hammertime.on('pinchend', () => {
                 zoomGestureJustEnded = true;
             });
-            hammertime.on('tap', seek);
         }
         this.animate();
     }
@@ -1536,6 +1532,12 @@ let WaveformComponent = class WaveformComponent {
         this.playingStateSubscription.unsubscribe();
         this.seekedSubscription.unsubscribe();
     }
+    seek(x) {
+        if (this.timeline) {
+            const timeContext = this.timeline.timeContext;
+            this.audioService.seekTo(timeContext.timeToPixel.invert(x) - timeContext.offset);
+        }
+    }
 };
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ViewChild */])('track'),
@@ -1738,7 +1740,7 @@ let AudioPlayerService = class AudioPlayerService {
         this.audioElement.currentTime = this.getDuration();
     }
     getDuration() {
-        return this.audioElement.duration;
+        return this.audioElement.duration || 0;
     }
 };
 AudioPlayerService = __decorate([
