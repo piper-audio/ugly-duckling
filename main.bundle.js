@@ -962,7 +962,7 @@ var _a;
 /***/ "pox9":
 /***/ (function(module, exports) {
 
-module.exports = "<div #track class=\"track\" (click)=\"seek($event.clientX)\"></div>\n"
+module.exports = "<div\n  #track class=\"track\"\n  (mousedown)=\"seekStart()\"\n  (mouseup)=\"seekEnd($event.clientX)\"></div>\n"
 
 /***/ }),
 
@@ -1531,6 +1531,14 @@ let WaveformComponent = class WaveformComponent {
         this.featureExtractionSubscription.unsubscribe();
         this.playingStateSubscription.unsubscribe();
         this.seekedSubscription.unsubscribe();
+    }
+    seekStart() {
+        this.zoomOnMouseDown = this.timeline.timeContext.zoom;
+    }
+    seekEnd(x) {
+        if (this.zoomOnMouseDown === this.timeline.timeContext.zoom) {
+            this.seek(x);
+        }
     }
     seek(x) {
         if (this.timeline) {
