@@ -1377,18 +1377,22 @@ let WaveformComponent = class WaveformComponent {
                     && featureData[0].featureValues == null;
                 const isRegion = hasDuration
                     && featureData[0].timestamp != null;
+                console.log("Have list features: length " + featureData.length +
+                    ", isMarker " + isMarker + ", isRegion " + isRegion +
+                    ", hasDuration " + hasDuration);
                 // TODO refactor, this is incomprehensible
                 if (isMarker) {
                     const plotData = featureData.map(feature => {
-                        return { x: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp) };
+                        return { time: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp) };
                     });
-                    let markerLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.MarkerLayer(plotData, {
+                    let featureLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.TickLayer(plotData, {
                         height: height,
                         color: colour,
                     });
-                    this.addLayer(markerLayer, waveTrack, this.timeline.timeContext);
+                    this.addLayer(featureLayer, waveTrack, this.timeline.timeContext);
                 }
                 else if (isRegion) {
+                    console.log("Output is of region type");
                     const binCount = outputDescriptor.configured.binCount || 0;
                     const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1;
                     const getSegmentArgs = () => {
