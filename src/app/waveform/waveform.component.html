@@ -1,1 +1,4 @@
-<div #track class="track"></div>
+<div
+  #track class="track"
+  (mousedown)="seekStart()"
+  (mouseup)="seekEnd($event.clientX)"></div>
