@@ -55,6 +55,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private offsetAtPanStart: number;
   private initialZoom: number;
   private initialDistance: number;
+  private zoomOnMouseDown: number;
 
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
@@ -634,6 +635,16 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.featureExtractionSubscription.unsubscribe();
     this.playingStateSubscription.unsubscribe();
     this.seekedSubscription.unsubscribe();
+  }
+
+  seekStart(): void {
+    this.zoomOnMouseDown = this.timeline.timeContext.zoom;
+  }
+
+  seekEnd(x: number): void {
+    if (this.zoomOnMouseDown === this.timeline.timeContext.zoom) {
+      this.seek(x);
+    }
   }
 
   seek(x: number): void {
