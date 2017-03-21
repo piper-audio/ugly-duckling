@@ -55,6 +55,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private offsetAtPanStart: number;
   private initialZoom: number;
   private initialDistance: number;
+  private zoomOnMouseDown: number;
 
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
@@ -344,11 +345,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         this.timeline.timeContext.offset += newCenterTime - lastCenterTime;
         this.timeline.tracks.update();
       };
-      const seek = (ev) => {
-        this.audioService.seekTo(
-          this.timeline.timeContext.timeToPixel.invert(ev.center.x) - this.timeline.timeContext.offset
-        );
-      };
       hammertime.get('pinch').set({ enable: true });
       hammertime.on('panstart', () => {
         this.offsetAtPanStart = this.timeline.timeContext.offset;
@@ -370,7 +366,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       hammertime.on('pinchend', () => {
         zoomGestureJustEnded = true;
       });
-      hammertime.on('tap', seek);
     }
 
     this.animate();
@@ -640,5 +635,24 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.featureExtractionSubscription.unsubscribe();
     this.playingStateSubscription.unsubscribe();
     this.seekedSubscription.unsubscribe();
+  }
+
+  seekStart(): void {
+    this.zoomOnMouseDown = this.timeline.timeContext.zoom;
+  }
+
+  seekEnd(x: number): void {
+    if (this.zoomOnMouseDown === this.timeline.timeContext.zoom) {
+      this.seek(x);
+    }
+  }
+
+  seek(x: number): void {
+    if (this.timeline) {
+      const timeContext: any = this.timeline.timeContext;
+      this.audioService.seekTo(
+        timeContext.timeToPixel.invert(x)- timeContext.offset
+      );
+    }
   }
 }
