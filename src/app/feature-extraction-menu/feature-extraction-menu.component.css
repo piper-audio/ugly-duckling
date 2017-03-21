@@ -3,3 +3,8 @@
   display: block;
   margin: 0 auto;
 }
+
+.container {
+  margin-top: 10pt;
+  padding: 10pt;
+}

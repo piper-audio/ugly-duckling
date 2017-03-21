@@ -1,0 +1,8 @@
+<button md-icon-button (click)="emitToggleRecording()">
+  <md-icon>
+    <template [ngIf]="recordingStatus == 'enabled'">mic_none</template>
+    <template [ngIf]="recordingStatus == 'disabled'">mic_off</template>
+    <template [ngIf]="recordingStatus == 'recording'">mic_on</template>
+  </md-icon>
+</button>
+
