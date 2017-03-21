@@ -56,6 +56,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private initialZoom: number;
   private initialDistance: number;
   private zoomOnMouseDown: number;
+  private offsetOnMouseDown: number;
 
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
@@ -443,11 +444,16 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         // TODO refactor, this is incomprehensible
         if (isMarker) {
           const plotData = featureData.map(feature => {
-            return {time: toSeconds(feature.timestamp)}
+            return {
+              time: toSeconds(feature.timestamp),
+              label: feature.label
+            }
           });
           let featureLayer = new wavesUI.helpers.TickLayer(plotData, {
             height: height,
             color: colour,
+            labelPosition: 'bottom',
+            shadeSegments: true
           });
           this.addLayer(
             featureLayer,
@@ -639,10 +645,15 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   seekStart(): void {
     this.zoomOnMouseDown = this.timeline.timeContext.zoom;
+    this.offsetOnMouseDown = this.timeline.timeContext.offset;
   }
 
   seekEnd(x: number): void {
-    if (this.zoomOnMouseDown === this.timeline.timeContext.zoom) {
+    const hasSameZoom: boolean = this.zoomOnMouseDown ===
+      this.timeline.timeContext.zoom;
+    const hasSameOffset: boolean = this.offsetOnMouseDown ===
+      this.timeline.timeContext.offset;
+    if (hasSameZoom && hasSameOffset) {
       this.seek(x);
     }
   }
