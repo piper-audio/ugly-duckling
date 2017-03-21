@@ -26,8 +26,7 @@
       [disabled]="!canExtract">
     </app-feature-extraction-menu>
   </md-sidenav>
-  <app-waveform
-    [audioBuffer]="audioBuffer"
-    ></app-waveform>
+  <ugly-notebook-feed
+    [audioBuffer]="audioBuffer"></ugly-notebook-feed>
   <ugly-progress-spinner [isVisible]="isProcessing"></ugly-progress-spinner>
 </md-sidenav-container>
