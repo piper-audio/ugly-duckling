@@ -21,6 +21,8 @@ import {
   ThrowingMediaRecorder,
 } from "./services/audio-recorder/audio-recorder.service";
 import {RecordingControlComponent} from "./recording-control/recording-control.component";
+import {NotebookFeedComponent} from "./notebook-feed/notebook-feed.component";
+import {AnalysisItemComponent} from "./analysis-item/analysis-item.component";
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -67,7 +69,9 @@ export function createMediaRecorderFactory(): MediaRecorderConstructor {
     PlaybackControlComponent,
     RecordingControlComponent,
     FeatureExtractionMenuComponent,
-    ProgressSpinnerComponent
+    ProgressSpinnerComponent,
+    AnalysisItemComponent,
+    NotebookFeedComponent
   ],
   imports: [
     BrowserModule,
