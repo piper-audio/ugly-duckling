@@ -124,11 +124,12 @@ let FeatureExtractionService = class FeatureExtractionService {
 };
 FeatureExtractionService = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
-    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('PiperRepoUri')), 
-    __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__angular_http__["b" /* Http */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_3__angular_http__["b" /* Http */]) === 'function' && _a) || Object, String])
+    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('PiperRepoUri')),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__angular_http__["b" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_http__["b" /* Http */]) === "function" && _a || Object, String])
 ], FeatureExtractionService);
+
 var _a;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/feature-extraction.service.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/feature-extraction.service.js.map
 
 /***/ }),
 
@@ -174,7 +175,7 @@ module.exports = module.exports.toString();
 /* harmony namespace reexport (by used) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_1__app_module__["a"]; });
 
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/index.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/index.js.map
 
 /***/ }),
 
@@ -222,18 +223,19 @@ let RecordingControlComponent = class RecordingControlComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["W" /* Output */])(), 
-    __metadata('design:type', (typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]) === 'function' && _a) || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["W" /* Output */])(),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]) === "function" && _a || Object)
 ], RecordingControlComponent.prototype, "finishedRecording", void 0);
 RecordingControlComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
         selector: 'ugly-recording-control',
         template: __webpack_require__("+V6z")
-    }), 
-    __metadata('design:paramtypes', [(typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_recorder_audio_recorder_service__["b" /* AudioRecorderService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_audio_recorder_audio_recorder_service__["b" /* AudioRecorderService */]) === 'function' && _b) || Object])
+    }),
+    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_recorder_audio_recorder_service__["b" /* AudioRecorderService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_recorder_audio_recorder_service__["b" /* AudioRecorderService */]) === "function" && _b || Object])
 ], RecordingControlComponent);
+
 var _a, _b;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/recording-control.component.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/recording-control.component.js.map
 
 /***/ }),
 
@@ -269,23 +271,24 @@ let AudioFileOpenComponent = class AudioFileOpenComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ViewChild */])('open'), 
-    __metadata('design:type', (typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */]) === 'function' && _a) || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ViewChild */])('open'),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */]) === "function" && _a || Object)
 ], AudioFileOpenComponent.prototype, "open", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["W" /* Output */])(), 
-    __metadata('design:type', (typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]) === 'function' && _b) || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["W" /* Output */])(),
+    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]) === "function" && _b || Object)
 ], AudioFileOpenComponent.prototype, "fileOpened", void 0);
 AudioFileOpenComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
         selector: 'app-audio-file-open',
         template: __webpack_require__("4Wxe"),
         styles: [__webpack_require__("t89E")]
-    }), 
-    __metadata('design:paramtypes', [])
+    }),
+    __metadata("design:paramtypes", [])
 ], AudioFileOpenComponent);
+
 var _a, _b;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/audio-file-open.component.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/audio-file-open.component.js.map
 
 /***/ }),
 
@@ -318,9 +321,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 
 
@@ -391,10 +391,10 @@ AppModule = __decorate([
             { provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json' }
         ],
         bootstrap: [__WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */]]
-    }), 
-    __metadata('design:paramtypes', [])
+    })
 ], AppModule);
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/app.module.js.map
+
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/app.module.js.map
 
 /***/ }),
 
@@ -408,6 +408,9 @@ AppModule = __decorate([
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_piper_FftUtilities___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_piper_FftUtilities__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui__ = __webpack_require__("myhA");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_waves_ui__);
+/**
+ * Created by lucast on 16/03/2017.
+ */
 
 
 
@@ -471,7 +474,7 @@ class WavesSpectrogramLayer extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___defau
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = WavesSpectrogramLayer;
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/Spectrogram.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/Spectrogram.js.map
 
 /***/ }),
 
@@ -534,6 +537,8 @@ module.exports = "<div class=\"container\">\n  <md-select #extractorSelect\n    
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_zone_js_dist_zone___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_zone_js_dist_zone__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_hammerjs__ = __webpack_require__("rxKx");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_hammerjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_16_hammerjs__);
+// This file includes polyfills needed by Angular 2 and is loaded before
+// the app. You can add your own extra polyfills to this file.
 
 
 
@@ -551,7 +556,7 @@ module.exports = "<div class=\"container\">\n  <md-select #extractorSelect\n    
 
 
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/polyfills.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/polyfills.js.map
 
 /***/ }),
 
@@ -643,11 +648,12 @@ AppComponent = __decorate([
         selector: 'app-root',
         template: __webpack_require__("5xMp"),
         styles: [__webpack_require__("okgc")]
-    }), 
-    __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === 'function' && _a) || Object, (typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === 'function' && _b) || Object, (typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["b" /* MdIconRegistry */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_4__angular_material__["b" /* MdIconRegistry */]) === 'function' && _c) || Object, (typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["e" /* DomSanitizer */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["e" /* DomSanitizer */]) === 'function' && _d) || Object])
+    }),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["b" /* MdIconRegistry */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_material__["b" /* MdIconRegistry */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["e" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["e" /* DomSanitizer */]) === "function" && _d || Object])
 ], AppComponent);
+
 var _a, _b, _c, _d;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/app.component.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/app.component.js.map
 
 /***/ }),
 
@@ -676,8 +682,8 @@ let ProgressSpinnerComponent = class ProgressSpinnerComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(), 
-    __metadata('design:type', Boolean)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __metadata("design:type", Boolean)
 ], ProgressSpinnerComponent.prototype, "isVisible", void 0);
 ProgressSpinnerComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
@@ -704,10 +710,10 @@ ProgressSpinnerComponent = __decorate([
       height: 100%;
     }
   `]
-    }), 
-    __metadata('design:paramtypes', [])
+    })
 ], ProgressSpinnerComponent);
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/progress-spinner.component.js.map
+
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/progress-spinner.component.js.map
 
 /***/ }),
 
@@ -783,11 +789,12 @@ PlaybackControlComponent = __decorate([
         selector: 'app-playback-control',
         template: __webpack_require__("nKj7"),
         styles: [__webpack_require__("jJWp")]
-    }), 
-    __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === 'function' && _a) || Object, (typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === 'function' && _b) || Object])
+    }),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object])
 ], PlaybackControlComponent);
+
 var _a, _b;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/playback-control.component.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/playback-control.component.js.map
 
 /***/ }),
 
@@ -800,7 +807,7 @@ const environment = {
 };
 /* harmony export (immutable) */ __webpack_exports__["a"] = environment;
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/environment.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/environment.js.map
 
 /***/ }),
 
@@ -849,6 +856,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+/**
+ * Created by lucas on 17/03/2017.
+ */
 
 
 class ThrowingMediaRecorder {
@@ -872,7 +882,8 @@ class ThrowingMediaRecorder {
 /* harmony export (immutable) */ __webpack_exports__["a"] = ThrowingMediaRecorder;
 
 let AudioRecorderService = class AudioRecorderService {
-    constructor(requestProvider, recorderImpl) {
+    constructor(requestProvider, recorderImpl, ngZone) {
+        this.ngZone = ngZone;
         this.requestProvider = requestProvider;
         this.recorderImpl = recorderImpl;
         this.recordingStateChange = new __WEBPACK_IMPORTED_MODULE_1_rxjs__["Subject"]();
@@ -892,7 +903,9 @@ let AudioRecorderService = class AudioRecorderService {
                 this.recorder.onstop = () => {
                     const blob = new Blob(this.chunks, { 'type': this.recorder.mimeType });
                     this.chunks.length = 0;
-                    this.newRecording.next(blob);
+                    this.ngZone.run(() => {
+                        this.newRecording.next(blob);
+                    });
                 };
                 this.isRecordingAble = true;
                 this.recordingStateChange.next("enabled");
@@ -937,10 +950,12 @@ let AudioRecorderService = class AudioRecorderService {
 AudioRecorderService = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
     __param(0, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('AudioInputProvider')),
-    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('MediaRecorderFactory')), 
-    __metadata('design:paramtypes', [Function, Object])
+    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('MediaRecorderFactory')),
+    __metadata("design:paramtypes", [Function, Object, typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */]) === "function" && _a || Object])
 ], AudioRecorderService);
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/audio-recorder.service.js.map
+
+var _a;
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/audio-recorder.service.js.map
 
 /***/ }),
 
@@ -1519,24 +1534,25 @@ let WaveformComponent = class WaveformComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ViewChild */])('track'), 
-    __metadata('design:type', (typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */]) === 'function' && _a) || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ViewChild */])('track'),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */]) === "function" && _a || Object)
 ], WaveformComponent.prototype, "trackDiv", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(), 
-    __metadata('design:type', Object), 
-    __metadata('design:paramtypes', [Object])
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __metadata("design:type", Object),
+    __metadata("design:paramtypes", [Object])
 ], WaveformComponent.prototype, "audioBuffer", null);
 WaveformComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
         selector: 'app-waveform',
         template: __webpack_require__("pox9"),
         styles: [__webpack_require__("6o5O")]
-    }), 
-    __metadata('design:paramtypes', [(typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === 'function' && _b) || Object, (typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === 'function' && _c) || Object, (typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */]) === 'function' && _d) || Object])
+    }),
+    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */]) === "function" && _d || Object])
 ], WaveformComponent);
+
 var _a, _b, _c, _d;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/waveform.component.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/waveform.component.js.map
 
 /***/ }),
 
@@ -1610,24 +1626,25 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(), 
-    __metadata('design:type', Boolean), 
-    __metadata('design:paramtypes', [Boolean])
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __metadata("design:type", Boolean),
+    __metadata("design:paramtypes", [Boolean])
 ], FeatureExtractionMenuComponent.prototype, "disabled", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["W" /* Output */])(), 
-    __metadata('design:type', (typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]) === 'function' && _a) || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["W" /* Output */])(),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]) === "function" && _a || Object)
 ], FeatureExtractionMenuComponent.prototype, "requestOutput", void 0);
 FeatureExtractionMenuComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
         selector: 'app-feature-extraction-menu',
         template: __webpack_require__("W1+o"),
         styles: [__webpack_require__("1RzP")]
-    }), 
-    __metadata('design:paramtypes', [(typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === 'function' && _b) || Object])
+    }),
+    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object])
 ], FeatureExtractionMenuComponent);
+
 var _a, _b;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/feature-extraction-menu.component.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/feature-extraction-menu.component.js.map
 
 /***/ }),
 
@@ -1655,7 +1672,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 
 let AudioPlayerService = class AudioPlayerService {
     constructor(audioElement /* TODO probably shouldn't play audio this way */, audioContext) {
-        this.audioElement = audioElement;
+        this.audioElement = audioElement; /* TODO probably shouldn't play audio this way */
         this.audioContext = audioContext;
         this.currentObjectUrl = '';
         this.playingStateChange = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__["Subject"]();
@@ -1723,10 +1740,11 @@ let AudioPlayerService = class AudioPlayerService {
 AudioPlayerService = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
     __param(0, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])(HTMLAudioElement)),
-    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('AudioContext')), 
-    __metadata('design:paramtypes', [Object, Object])
+    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('AudioContext')),
+    __metadata("design:paramtypes", [Object, Object])
 ], AudioPlayerService);
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/audio-player.service.js.map
+
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/audio-player.service.js.map
 
 /***/ }),
 
@@ -1749,7 +1767,7 @@ if (__WEBPACK_IMPORTED_MODULE_3__environments_environment__["a" /* environment *
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["a" /* enableProdMode */])();
 }
 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_4__app___["a" /* AppModule */]);
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/main.js.map
+//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/main.js.map
 
 /***/ })
 
