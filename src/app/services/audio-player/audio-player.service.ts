@@ -82,6 +82,6 @@ export class AudioPlayerService {
   }
 
   getDuration(): number {
-    return this.audioElement.duration;
+    return this.audioElement.duration || 0;
   }
 }
