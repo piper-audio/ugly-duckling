@@ -1,7 +1,7 @@
 /**
  * Created by lucas on 17/03/2017.
  */
-import {Injectable, Inject} from "@angular/core";
+import {Injectable, Inject, NgZone} from "@angular/core";
 import {Subject, Observable} from "rxjs";
 
 
@@ -112,7 +112,8 @@ export class AudioRecorderService {
   constructor(@Inject('AudioInputProvider') requestProvider: AudioInputProvider,
               @Inject(
                 'MediaRecorderFactory'
-              ) recorderImpl: MediaRecorderConstructor) {
+              ) recorderImpl: MediaRecorderConstructor,
+              private ngZone: NgZone) {
     this.requestProvider = requestProvider;
     this.recorderImpl = recorderImpl;
     this.recordingStateChange = new Subject<RecorderServiceStatus>();
@@ -134,9 +135,11 @@ export class AudioRecorderService {
         this.recorder.onstop = () => {
           const blob = new Blob(this.chunks, { 'type': this.recorder.mimeType });
           this.chunks.length = 0;
-          this.newRecording.next(
-            blob
-          );
+          this.ngZone.run(() => {
+            this.newRecording.next(
+              blob
+            );
+          });
         };
         this.isRecordingAble = true;
         this.recordingStateChange.next("enabled");
