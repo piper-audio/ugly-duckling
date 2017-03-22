@@ -16,8 +16,8 @@ import {toSeconds} from "piper";
 import {FeatureList, Feature} from "piper/Feature";
 import * as Hammer from 'hammerjs';
 import {WavesSpectrogramLayer} from "../spectrogram/Spectrogram";
+import {PartialEventEmitter} from "../notebook-feed/notebook-feed.component";
 
-type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 type Layer = any;
 type Track = any;
 type Colour = string;
@@ -31,6 +31,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('track') trackDiv: ElementRef;
 
+  @Input() timeContext: TimelineTimeContext & PartialEventEmitter;
   private _audioBuffer: AudioBuffer;
   private timeline: Timeline;
   private cursorLayer: any;
@@ -40,7 +41,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this._audioBuffer = buffer || undefined;
     if (this.audioBuffer) {
       this.renderWaveform(this.audioBuffer);
-      this.renderSpectrogram(this.audioBuffer);
+      // this.renderSpectrogram(this.audioBuffer);
     }
   }
 
@@ -100,7 +101,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.timeline = this.renderTimeline();
+    this.renderTimeline();
   }
 
   renderTimeline(duration: number = 1.0): Timeline {
@@ -109,10 +110,25 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const height: number = track.getBoundingClientRect().height;
     const width: number = track.getBoundingClientRect().width;
     const pixelsPerSecond = width / duration;
-    const timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
-    timeline.createTrack(track, height/2, 'wave');
-    timeline.createTrack(track, height/2, 'grid');
-    return timeline;
+    if (this.timeline instanceof wavesUI.core.Timeline) {
+      this.timeline.pixelsPerSecond = pixelsPerSecond;
+      this.timeline.visibleWidth = width;
+    } else {
+      this.timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
+    }
+    if (this.timeContext instanceof wavesUI.core.TimelineTimeContext) {
+      console.warn('Has shared timeline');
+      this.timeline.timeContext = this.timeContext;
+      this.timeContext.on('zoom', () => {
+        this.timeline.tracks.update();
+      });
+      this.timeContext.on('offset', () => {
+        this.timeline.tracks.update();
+      });
+    }
+    this.timeline.createTrack(track, height, 'wave');
+    // this.timeline.createTrack(track, height/2, 'wave');
+    // this.timeline.createTrack(track, height/2, 'grid');
   }
 
   estimatePercentile(matrix, percentile) {
@@ -251,7 +267,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   renderWaveform(buffer: AudioBuffer): void {
-    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    // const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
     const waveTrack = this.timeline.getTrackById('wave');
     if (this.timeline) {
       // resize
@@ -263,7 +280,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       this.timeline.pixelsPerSecond = width / buffer.duration;
       waveTrack.height = height;
     } else {
-      this.timeline = this.renderTimeline(buffer.duration)
+      this.renderTimeline(buffer.duration)
     }
     this.timeline.timeContext.offset = 0.5 * this.timeline.timeContext.visibleDuration;
 
@@ -587,15 +604,19 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const mustPageBackward = currentTime < -currentOffset;
 
         if (mustPageForward) {
+          console.warn('page forward', mustPageForward, offsetTimestamp, visibleDuration);
           const hasSkippedMultiplePages = offsetTimestamp - visibleDuration > visibleDuration;
 
             this.timeline.timeContext.offset = hasSkippedMultiplePages ?
                 -currentTime +  0.5 * visibleDuration :
                 currentOffset - visibleDuration;
           this.timeline.tracks.update();
+        } else {
+          console.warn('no page', mustPageForward, offsetTimestamp, visibleDuration);
         }
 
         if (mustPageBackward) {
+          console.warn('page back');
           const hasSkippedMultiplePages = currentTime + visibleDuration < -currentOffset;
             this.timeline.timeContext.offset = hasSkippedMultiplePages ?
                 -currentTime + 0.5 * visibleDuration :
