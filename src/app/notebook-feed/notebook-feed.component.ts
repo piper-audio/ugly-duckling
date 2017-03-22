@@ -53,6 +53,7 @@ class NotifyingTimeContext extends Waves.core.TimelineTimeContext
 })
 export class NotebookFeedComponent {
   private _audioBuffer: AudioBuffer;
+  sharedTimeContext: TimelineTimeContext;
 
 
   @Input()
@@ -65,5 +66,9 @@ export class NotebookFeedComponent {
 
   get audioBuffer(): AudioBuffer {
     return this._audioBuffer;
+  }
+
+  constructor() {
+    this.sharedTimeContext = new NotifyingTimeContext(100, 1000);
   }
 }

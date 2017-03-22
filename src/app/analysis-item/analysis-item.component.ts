@@ -2,6 +2,7 @@
  * Created by lucast on 21/03/2017.
  */
 import {Component, Input} from "@angular/core";
+import Waves from 'waves-ui';
 
 export interface Analysis {
   audioUri: string;
@@ -15,7 +16,7 @@ export interface Analysis {
 })
 export class AnalysisItemComponent {
   private _audioBuffer: AudioBuffer;
-
+  @Input() timeContext: TimelineTimeContext;
 
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
