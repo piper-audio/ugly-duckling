@@ -90,6 +90,7 @@ export class WavesSpectrogramLayer extends Waves.core.Layer {
     const getSamples = ((buffer, channel) => {
       const nch = buffer.numberOfChannels;
       if (channel >= 0 || nch == 1) {
+	if (channel < 0) channel = 0;
 	return buffer.getChannelData(channel);
       } else {
         const before = performance.now();
