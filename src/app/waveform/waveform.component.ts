@@ -16,7 +16,6 @@ import {toSeconds} from "piper";
 import {FeatureList, Feature} from "piper/Feature";
 import * as Hammer from 'hammerjs';
 import {WavesSpectrogramLayer} from "../spectrogram/Spectrogram";
-import {PartialEventEmitter} from "../notebook-feed/notebook-feed.component";
 
 type Layer = any;
 type Track = any;
@@ -31,9 +30,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('track') trackDiv: ElementRef;
 
-  @Input() timeContext: TimelineTimeContext & PartialEventEmitter;
+  @Input() timeline: Timeline;
+  @Input() trackIdPrefix: string;
   private _audioBuffer: AudioBuffer;
-  private timeline: Timeline;
   private cursorLayer: any;
   private layers: Layer[];
 
@@ -103,6 +102,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    this.trackIdPrefix = this.trackIdPrefix || "default";
     this.renderTimeline();
   }
 
@@ -118,19 +118,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
     }
-    if (this.timeContext instanceof wavesUI.core.TimelineTimeContext) {
-      console.warn('Has shared timeline');
-      this.timeline.timeContext = this.timeContext;
-      this.timeContext.on('zoom', () => {
-        this.timeline.tracks.update();
-      });
-      this.timeContext.on('offset', () => {
-        this.timeline.tracks.update();
-      });
-    }
-    this.timeline.createTrack(track, height, 'wave');
-    // this.timeline.createTrack(track, height/2, 'wave');
-    // this.timeline.createTrack(track, height/2, 'grid');
+    this.timeline.createTrack(track, height, `wave-${this.trackIdPrefix}`);
+    // this.timeline.createTrack(track, height/2, `wave-${this.trackIdPrefix}`);
+    // this.timeline.createTrack(track, height/2, `grid-${this.trackIdPrefix}`);
   }
 
   estimatePercentile(matrix, percentile) {
@@ -273,7 +263,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   renderWaveform(buffer: AudioBuffer): void {
     // const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
     const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const waveTrack = this.timeline.getTrackById('wave');
+    const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
     if (this.timeline) {
       // resize
       const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
@@ -298,7 +288,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const nchannels = buffer.numberOfChannels;
     const totalWaveHeight = height * 0.9;
     const waveHeight = totalWaveHeight / nchannels;
-    
+
     for (let ch = 0; ch < nchannels; ++ch) {
       console.log("about to construct a waveform layer for channel " + ch);
       const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
@@ -403,7 +393,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   renderSpectrogram(buffer: AudioBuffer): void {
     const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
-    const gridTrack = this.timeline.getTrackById('grid');
+    const gridTrack = this.timeline.getTrackById(`grid-${this.trackIdPrefix}`);
 
     const spectrogramLayer = new WavesSpectrogramLayer(buffer, {
       top: height * 0.05,
@@ -425,7 +415,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const features: FeatureCollection = (extracted.features as FeatureCollection);
     const outputDescriptor = extracted.outputDescriptor;
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
-    const waveTrack = this.timeline.getTrackById('wave');
+    const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
 
     // TODO refactor all of this
     switch (features.shape) {
@@ -616,19 +606,15 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const mustPageBackward = currentTime < -currentOffset;
 
         if (mustPageForward) {
-          console.warn('page forward', mustPageForward, offsetTimestamp, visibleDuration);
           const hasSkippedMultiplePages = offsetTimestamp - visibleDuration > visibleDuration;
 
             this.timeline.timeContext.offset = hasSkippedMultiplePages ?
                 -currentTime +  0.5 * visibleDuration :
                 currentOffset - visibleDuration;
           this.timeline.tracks.update();
-        } else {
-          console.warn('no page', mustPageForward, offsetTimestamp, visibleDuration);
         }
 
         if (mustPageBackward) {
-          console.warn('page back');
           const hasSkippedMultiplePages = currentTime + visibleDuration < -currentOffset;
             this.timeline.timeContext.offset = hasSkippedMultiplePages ?
                 -currentTime + 0.5 * visibleDuration :

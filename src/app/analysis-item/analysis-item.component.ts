@@ -16,7 +16,7 @@ export interface Analysis {
 })
 export class AnalysisItemComponent {
   private _audioBuffer: AudioBuffer;
-  @Input() timeContext: TimelineTimeContext;
+  @Input() timeline: Timeline;
   @Input() title: string;
   @Input() description: string;
 

@@ -3,48 +3,6 @@
  */
 import {Component, Input} from "@angular/core";
 import Waves from 'waves-ui';
-import {EventEmitter} from 'events';
-
-export interface PartialEventEmitter {
-  on(event: string|symbol, listener: Function): void;
-}
-
-class NotifyingTimeContext extends Waves.core.TimelineTimeContext
-  implements PartialEventEmitter {
-
-  private eventEmitter: EventEmitter;
-
-  constructor(pixelsPerSecond: number, visibleWidth: number) {
-    super(pixelsPerSecond, visibleWidth);
-    this.eventEmitter = new EventEmitter();
-  }
-
-  get offset(){
-    return super.offset;
-  }
-
-  set offset(value: number) {
-    if (value !== this.offset) {
-      this.eventEmitter.emit('offset');
-    }
-    super.offset = value;
-  }
-
-  get zoom(){
-    return super.zoom;
-  }
-
-  set zoom(value: number) {
-    if (value !== this.zoom) {
-      this.eventEmitter.emit('zoom');
-    }
-    super.zoom = value;
-  }
-
-  on(event: string|symbol, listener: Function): void {
-    this.eventEmitter.on(event, listener);
-  }
-}
 
 @Component({
   selector: 'ugly-notebook-feed',
@@ -53,7 +11,7 @@ class NotifyingTimeContext extends Waves.core.TimelineTimeContext
 })
 export class NotebookFeedComponent {
   private _audioBuffer: AudioBuffer;
-  sharedTimeContext: TimelineTimeContext;
+  sharedTimeline: Timeline;
 
 
   @Input()
@@ -69,6 +27,6 @@ export class NotebookFeedComponent {
   }
 
   constructor() {
-    this.sharedTimeContext = new NotifyingTimeContext(100, 1000);
+    this.sharedTimeline = new Waves.core.Timeline();
   }
 }
