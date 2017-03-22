@@ -35,6 +35,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private _audioBuffer: AudioBuffer;
   private timeline: Timeline;
   private cursorLayer: any;
+  private layers: Layer[];
 
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
@@ -62,6 +63,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
               public ngZone: NgZone) {
+    this.layers = [];
     this._audioBuffer = undefined;
     this.timeline = undefined;
     this.cursorLayer = undefined;
@@ -255,13 +257,15 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       const trackLayers = Array.from(track.layers);
       while (trackLayers.length) {
         let layer: Layer = trackLayers.pop();
-        track.remove(layer);
-
-        const index = timeContextChildren.indexOf(layer.timeContext);
-        if (index >= 0) {
-          timeContextChildren.splice(index, 1);
+        if (this.layers.includes(layer)) {
+          track.remove(layer);
+          this.layers.splice(this.layers.indexOf(layer), 1);
+          const index = timeContextChildren.indexOf(layer.timeContext);
+          if (index >= 0) {
+            timeContextChildren.splice(index, 1);
+          }
+          layer.destroy();
         }
-        layer.destroy();
       }
     }
   }
@@ -646,6 +650,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         timeContext : new wavesUI.core.LayerTimeContext(timeContext));
     }
     track.add(layer);
+    this.layers.push(layer);
     layer.render();
     layer.update();
     if (this.cursorLayer && track.$layout.contains(this.cursorLayer.$el)) {
