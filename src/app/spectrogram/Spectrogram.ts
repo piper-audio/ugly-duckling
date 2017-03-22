@@ -79,7 +79,7 @@ export class WavesSpectrogramLayer extends Waves.core.Layer {
     const defaults = {
       normalise: 'hybrid',
       gain: 40.0,
-      channel: 0,
+      channel: -1,
       stepSize: 512,
       blockSize: 1024
     };
@@ -87,13 +87,29 @@ export class WavesSpectrogramLayer extends Waves.core.Layer {
     const mergedOptions: Framing & Object & {channel: number} =
       Object.assign({}, defaults, options);
 
+    const getSamples = ((buffer, channel) => {
+      const nch = buffer.numberOfChannels;
+      if (channel >= 0 || nch == 1) {
+	return buffer.getChannelData(channel);
+      } else {
+	console.log("mixing down " + nch + " channels for spectrogram...");
+	const mixed = Float32Array.from(buffer.getChannelData(0));
+	const n = mixed.length;
+	for (let ch = 1; ch < nch; ++ch) {
+	  const buf = buffer.getChannelData(ch);
+	  for (let i = 0; i < n; ++i) mixed[i] += buf[i];
+	}
+	const scale = 1.0 / nch;
+	for (let i = 0; i < n; ++i) mixed[i] *= scale;
+	console.log("done");
+	return mixed;
+      }
+    });
+    
     super('entity',
-      new SpectrogramEntity(
-        buffer.getChannelData(mergedOptions.channel),
-        mergedOptions
-      ),
-      mergedOptions
-    );
+	  new SpectrogramEntity(getSamples(buffer, mergedOptions.channel),
+				mergedOptions),
+	  mergedOptions);
 
     this.configureShape(Waves.shapes.Matrix, {}, mergedOptions);
   }
