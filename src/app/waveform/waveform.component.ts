@@ -291,12 +291,20 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
 
-    const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
-      top: 10,
-      height: height * 0.9,
-      color: 'darkblue'
-    });
-    this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
+    const nchannels = buffer.numberOfChannels;
+    const totalWaveHeight = height * 0.9;
+    const waveHeight = totalWaveHeight / nchannels;
+    
+    for (let ch = 0; ch < nchannels; ++ch) {
+      console.log("about to construct a waveform layer for channel " + ch);
+      const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
+	top: (height - totalWaveHeight)/2 + waveHeight * ch,
+	height: waveHeight,
+	color: 'darkblue',
+	channel: ch
+      });
+      this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
+    }
 
     this.cursorLayer = new wavesUI.helpers.CursorLayer({
       height: height
