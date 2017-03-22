@@ -92,6 +92,7 @@ export class WavesSpectrogramLayer extends Waves.core.Layer {
       if (channel >= 0 || nch == 1) {
 	return buffer.getChannelData(channel);
       } else {
+        const before = performance.now();
 	console.log("mixing down " + nch + " channels for spectrogram...");
 	const mixed = Float32Array.from(buffer.getChannelData(0));
 	const n = mixed.length;
@@ -101,7 +102,7 @@ export class WavesSpectrogramLayer extends Waves.core.Layer {
 	}
 	const scale = 1.0 / nch;
 	for (let i = 0; i < n; ++i) mixed[i] *= scale;
-	console.log("done");
+	console.log("done in " + (performance.now() - before) + "ms");
 	return mixed;
       }
     });
