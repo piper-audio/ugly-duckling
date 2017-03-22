@@ -1,4 +1,14 @@
 md-card {
   padding-left: 0;
   padding-right: 0;
+  width: 100%;
+}
+
+md-card-actions {
+  width: calc(100% - 16px);
+  padding-left: 16px;
+}
+
+md-card-header {
+  margin-bottom: 8px;
 }
