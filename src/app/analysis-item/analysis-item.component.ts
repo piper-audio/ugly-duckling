@@ -17,6 +17,8 @@ export interface Analysis {
 export class AnalysisItemComponent {
   private _audioBuffer: AudioBuffer;
   @Input() timeContext: TimelineTimeContext;
+  @Input() title: string;
+  @Input() description: string;
 
   @Input()
   set audioBuffer(buffer: AudioBuffer) {
