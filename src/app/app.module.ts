@@ -64,14 +64,16 @@ export function createMediaRecorderFactory(): MediaRecorderConstructor {
   }
 }
 
-export const urlResourceManager: UrlResourceLifetimeManager = {
-  createUrlToResource: (resource: File | Blob): string => {
-    return URL.createObjectURL(resource);
-  },
-  revokeUrlToResource: (url: string) => {
-    URL.revokeObjectURL(url);
-  }
-};
+export function createUrlResourceManager(): UrlResourceLifetimeManager {
+  return {
+    createUrlToResource: (resource: File | Blob): string => {
+      return URL.createObjectURL(resource);
+    },
+    revokeUrlToResource: (url: string) => {
+      URL.revokeObjectURL(url);
+    }
+  };
+}
 
 export const readResource: ResourceReader = (resource) => {
   return new Promise((res, rej) => {
@@ -113,7 +115,7 @@ export const readResource: ResourceReader = (resource) => {
     FeatureExtractionService,
     {provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory},
     {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'},
-    {provide: 'UrlResourceLifetimeManager', useValue: urlResourceManager},
+    {provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager},
     {provide: 'ResourceReader', useValue: readResource}
   ],
   bootstrap: [AppComponent]
