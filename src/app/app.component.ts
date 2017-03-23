@@ -1,19 +1,24 @@
-import {Component} from '@angular/core';
-import {AudioPlayerService} from "./services/audio-player/audio-player.service";
+import {Component, OnDestroy} from '@angular/core';
+import {
+  AudioPlayerService,
+  AudioResourceError, AudioResource
+} from "./services/audio-player/audio-player.service";
 import {FeatureExtractionService} from "./services/feature-extraction/feature-extraction.service";
 import {ExtractorOutputInfo} from "./feature-extraction-menu/feature-extraction-menu.component";
 import {DomSanitizer} from '@angular/platform-browser';
 import {MdIconRegistry} from '@angular/material';
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
   audioBuffer: AudioBuffer; // TODO consider revising
   canExtract: boolean;
   isProcessing: boolean;
+  private onAudioDataSubscription: Subscription;
 
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
@@ -25,32 +30,28 @@ export class AppComponent {
       'duck',
       sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg')
     );
+
+    this.onAudioDataSubscription = this.audioService.audioLoaded$.subscribe(
+      resource => {
+        const wasError = (resource as AudioResourceError).message != null;
+        if (wasError) {
+          this.isProcessing = false;
+          this.canExtract = false;
+        } else {
+          this.audioBuffer = (resource as AudioResource).samples;
+          if (this.audioBuffer) {
+            this.canExtract = true;
+            this.isProcessing = false;
+          }
+        }
+      }
+    );
   }
 
   onFileOpened(file: File | Blob) {
     this.canExtract = false;
     this.isProcessing = true;
-    const reader: FileReader = new FileReader();
-    const mimeType = file.type;
-    reader.onload = (event: any) => {
-      const url: string = file instanceof Blob ? URL.createObjectURL(file) :
-        URL.createObjectURL(new Blob([event.target.result], {type: mimeType}));
-      this.audioService.loadAudioFromUrl(url);
-      // TODO use a rxjs/Subject instead?
-      this.audioService.decodeAudioData(event.target.result)
-        .then(audioBuffer => {
-        this.audioBuffer = audioBuffer;
-        if (this.audioBuffer) {
-          this.canExtract = true;
-          this.isProcessing = false;
-        }
-      }).catch(error => {
-        this.canExtract = false;
-        this.isProcessing = false;
-        console.warn(error);
-      });
-    };
-    reader.readAsArrayBuffer(file);
+    this.audioService.loadAudio(file);
   }
 
   extractFeatures(outputInfo: ExtractorOutputInfo): void {
@@ -74,5 +75,9 @@ export class AppComponent {
       this.isProcessing = false;
       console.error(err)
     });
+  }
+
+  ngOnDestroy(): void {
+    this.onAudioDataSubscription.unsubscribe();
   }
 }
