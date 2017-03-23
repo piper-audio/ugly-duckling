@@ -2,6 +2,11 @@ import {Injectable, Inject} from '@angular/core';
 import {Subject} from "rxjs/Subject";
 import {Observable} from "rxjs";
 
+export interface UrlResourceLifetimeManager {
+  createUrlToResource(resource: File | Blob): string;
+  revokeUrlToResource(url: string): void;
+}
+
 @Injectable()
 export class AudioPlayerService {
 
@@ -12,7 +17,10 @@ export class AudioPlayerService {
   seeked$: Observable<number>;
 
   constructor(@Inject(HTMLAudioElement) private audioElement: HTMLAudioElement /* TODO probably shouldn't play audio this way */,
-              @Inject('AudioContext') private audioContext: AudioContext) {
+              @Inject('AudioContext') private audioContext: AudioContext,
+              @Inject(
+                'UrlResourceLifetimeManager'
+              ) private resourceManager: UrlResourceLifetimeManager) {
     this.currentObjectUrl = '';
     this.playingStateChange = new Subject<boolean>();
     this.playingStateChange$ = this.playingStateChange.asObservable();
@@ -40,7 +48,7 @@ export class AudioPlayerService {
 
   loadAudioFromUrl(url: string): void {
     if (this.currentObjectUrl)
-      URL.revokeObjectURL(this.currentObjectUrl);
+      this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
     this.currentObjectUrl = url;
     this.audioElement.pause();
     this.audioElement.src = url;

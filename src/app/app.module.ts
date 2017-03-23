@@ -8,7 +8,10 @@ import { MaterialModule } from "@angular/material";
 import { WaveformComponent } from './waveform/waveform.component';
 import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
 import { PlaybackControlComponent } from './playback-control/playback-control.component';
-import { AudioPlayerService } from "./services/audio-player/audio-player.service";
+import {
+  AudioPlayerService,
+  UrlResourceLifetimeManager
+} from "./services/audio-player/audio-player.service";
 import { FeatureExtractionService } from "./services/feature-extraction/feature-extraction.service";
 import { FeatureExtractionMenuComponent } from "./feature-extraction-menu/feature-extraction-menu.component";
 import { ProgressSpinnerComponent } from "./progress-spinner/progress-spinner.component";
@@ -61,6 +64,15 @@ export function createMediaRecorderFactory(): MediaRecorderConstructor {
   }
 }
 
+export const urlResourceManager: UrlResourceLifetimeManager = {
+  createUrlToResource: (resource: File | Blob): string => {
+    return URL.createObjectURL(resource);
+  },
+  revokeUrlToResource: (url: string) => {
+    URL.revokeObjectURL(url);
+  }
+};
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -87,7 +99,8 @@ export function createMediaRecorderFactory(): MediaRecorderConstructor {
     AudioRecorderService,
     FeatureExtractionService,
     {provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory},
-    {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'}
+    {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'},
+    {provide: 'UrlResourceLifetimeManager', useValue: urlResourceManager}
   ],
   bootstrap: [AppComponent]
 })
