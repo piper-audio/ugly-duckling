@@ -75,18 +75,20 @@ export function createUrlResourceManager(): UrlResourceLifetimeManager {
   };
 }
 
-export const readResource: ResourceReader = (resource) => {
-  return new Promise((res, rej) => {
-    const reader: FileReader = new FileReader();
-    reader.onload = (event: any) => {
-      res(event.target.result);
-    };
-    reader.onerror = (event) => {
-      rej(event.message);
-    };
-    reader.readAsArrayBuffer(resource);
-  });
-};
+export function createResourceReader(): ResourceReader{
+  return (resource) => {
+    return new Promise((res, rej) => {
+      const reader: FileReader = new FileReader();
+      reader.onload = (event: any) => {
+        res(event.target.result);
+      };
+      reader.onerror = (event) => {
+        rej(event.message);
+      };
+      reader.readAsArrayBuffer(resource);
+    });
+  };;
+}
 
 @NgModule({
   declarations: [
@@ -116,7 +118,7 @@ export const readResource: ResourceReader = (resource) => {
     {provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory},
     {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'},
     {provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager},
-    {provide: 'ResourceReader', useValue: readResource}
+    {provide: 'ResourceReader', useFactory: createResourceReader}
   ],
   bootstrap: [AppComponent]
 })
