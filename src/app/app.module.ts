@@ -10,7 +10,7 @@ import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.compon
 import { PlaybackControlComponent } from './playback-control/playback-control.component';
 import {
   AudioPlayerService,
-  UrlResourceLifetimeManager
+  UrlResourceLifetimeManager, ResourceReader
 } from "./services/audio-player/audio-player.service";
 import { FeatureExtractionService } from "./services/feature-extraction/feature-extraction.service";
 import { FeatureExtractionMenuComponent } from "./feature-extraction-menu/feature-extraction-menu.component";
@@ -73,6 +73,19 @@ export const urlResourceManager: UrlResourceLifetimeManager = {
   }
 };
 
+export const readResource: ResourceReader = (resource) => {
+  return new Promise((res, rej) => {
+    const reader: FileReader = new FileReader();
+    reader.onload = (event: any) => {
+      res(event.target.result);
+    };
+    reader.onerror = (event) => {
+      rej(event.message);
+    };
+    reader.readAsArrayBuffer(resource);
+  });
+};
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -100,7 +113,8 @@ export const urlResourceManager: UrlResourceLifetimeManager = {
     FeatureExtractionService,
     {provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory},
     {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'},
-    {provide: 'UrlResourceLifetimeManager', useValue: urlResourceManager}
+    {provide: 'UrlResourceLifetimeManager', useValue: urlResourceManager},
+    {provide: 'ResourceReader', useValue: readResource}
   ],
   bootstrap: [AppComponent]
 })

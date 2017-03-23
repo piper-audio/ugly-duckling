@@ -7,6 +7,7 @@ export interface UrlResourceLifetimeManager {
   revokeUrlToResource(url: string): void;
 }
 
+export type ResourceReader = (resource: File | Blob) => Promise<ArrayBuffer>;
 @Injectable()
 export class AudioPlayerService {
 
@@ -18,6 +19,7 @@ export class AudioPlayerService {
 
   constructor(@Inject(HTMLAudioElement) private audioElement: HTMLAudioElement /* TODO probably shouldn't play audio this way */,
               @Inject('AudioContext') private audioContext: AudioContext,
+              @Inject('ResourceReader') private readResource: ResourceReader,
               @Inject(
                 'UrlResourceLifetimeManager'
               ) private resourceManager: UrlResourceLifetimeManager) {
