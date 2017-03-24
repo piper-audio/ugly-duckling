@@ -33,29 +33,14 @@
         </app-feature-extraction-menu>
       </md-sidenav>
       <ugly-notebook-feed
-        [audioBuffer]="audioBuffer"></ugly-notebook-feed>
-      <ugly-progress-spinner [isVisible]="isProcessing"></ugly-progress-spinner>
+        [analyses]="analyses"
+        [rootAudioUri]="rootAudioUri"></ugly-notebook-feed>
     </md-sidenav-container>
   </div>
 
   <div class="app-footer">
     <md-toolbar color="primary">
-      <md-icon svgIcon="duck"></md-icon>
 
-      <span class="app-toolbar-filler"></span>
-
-      <app-playback-control></app-playback-control>
-      <ugly-recording-control
-        (finishedRecording)="onFileOpened($event)"
-      ></ugly-recording-control>
-
-      <!-- This fills the remaining space of the current row -->
-      <span class="app-toolbar-filler"></span>
-
-
-      <app-audio-file-open
-        (fileOpened)="onFileOpened($event)"
-      ></app-audio-file-open>
       <!-- menu opens when trigger button is clicked -->
       <button md-icon-button (click)="sidenav.toggle()">
         <md-icon>extension</md-icon>
