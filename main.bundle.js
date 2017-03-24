@@ -1419,14 +1419,28 @@ let WaveformComponent = class WaveformComponent {
                 return Math.pow(Math.pow(p2.x - p1.x, 2) +
                     Math.pow(p2.y - p1.y, 2), 0.5);
             };
-            const hammertime = new __WEBPACK_IMPORTED_MODULE_5_hammerjs__(this.trackDiv.nativeElement);
+            const calculateMidPoint = (p1, p2) => {
+                return {
+                    x: 0.5 * (p1.x + p2.x),
+                    y: 0.5 * (p1.y + p2.y)
+                };
+            };
+            const hammertime = new __WEBPACK_IMPORTED_MODULE_5_hammerjs__["Manager"](this.trackDiv.nativeElement, {
+                recognizers: [
+                    [__WEBPACK_IMPORTED_MODULE_5_hammerjs__["Pan"], { direction: __WEBPACK_IMPORTED_MODULE_5_hammerjs__["DIRECTION_HORIZONTAL"] }]
+                ]
+            });
             // it seems HammerJs binds the event to the window?
             // causing these events to propagate to other components?
             const componentTimeline = this.timeline;
             let initialZoom;
             let initialDistance;
             let offsetAtPanStart;
+            let startX;
+            let isZooming;
             const scroll = (ev) => {
+                if (ev.center.x - startX === 0)
+                    return;
                 if (zoomGestureJustEnded) {
                     zoomGestureJustEnded = false;
                     console.log("Skip this event: likely a single touch dangling from pinch");
@@ -1437,44 +1451,56 @@ let WaveformComponent = class WaveformComponent {
                 componentTimeline.tracks.update();
             };
             const zoom = (ev) => {
+                if (ev.touches.length < 2)
+                    return;
                 const minZoom = componentTimeline.state.minZoom;
                 const maxZoom = componentTimeline.state.maxZoom;
-                const distance = calculateDistance({
-                    x: ev.pointers[0].clientX,
-                    y: ev.pointers[0].clientY
-                }, {
-                    x: ev.pointers[1].clientX,
-                    y: ev.pointers[1].clientY
-                });
-                const lastCenterTime = componentTimeline.timeContext.timeToPixel.invert(ev.center.x);
+                const p1 = {
+                    x: ev.touches[0].clientX,
+                    y: ev.touches[0].clientY
+                };
+                const p2 = {
+                    x: ev.touches[1].clientX,
+                    y: ev.touches[1].clientY
+                };
+                const distance = calculateDistance(p1, p2);
+                const midPoint = calculateMidPoint(p1, p2);
+                const lastCenterTime = componentTimeline.timeContext.timeToPixel.invert(midPoint.x);
                 const exponent = pixelToExponent(distance - initialDistance);
                 const targetZoom = initialZoom * Math.pow(2, exponent);
                 componentTimeline.timeContext.zoom =
                     Math.min(Math.max(targetZoom, minZoom), maxZoom);
-                const newCenterTime = componentTimeline.timeContext.timeToPixel.invert(ev.center.x);
+                const newCenterTime = componentTimeline.timeContext.timeToPixel.invert(midPoint.x);
                 componentTimeline.timeContext.offset += newCenterTime - lastCenterTime;
                 componentTimeline.tracks.update();
             };
-            hammertime.get('pinch').set({ enable: true });
-            hammertime.on('panstart', () => {
+            hammertime.on('panstart', (ev) => {
                 offsetAtPanStart = componentTimeline.timeContext.offset;
+                startX = ev.center.x;
             });
             hammertime.on('panleft', scroll);
             hammertime.on('panright', scroll);
-            hammertime.on('pinchstart', (e) => {
+            const element = this.trackDiv.nativeElement;
+            element.addEventListener('touchstart', (e) => {
+                if (e.touches.length < 2)
+                    return;
+                isZooming = true;
                 initialZoom = componentTimeline.timeContext.zoom;
                 initialDistance = calculateDistance({
-                    x: e.pointers[0].clientX,
-                    y: e.pointers[0].clientY
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY
                 }, {
-                    x: e.pointers[1].clientX,
-                    y: e.pointers[1].clientY
+                    x: e.touches[1].clientX,
+                    y: e.touches[1].clientY
                 });
             });
-            hammertime.on('pinch', zoom);
-            hammertime.on('pinchend', () => {
-                zoomGestureJustEnded = true;
+            element.addEventListener('touchend', () => {
+                if (isZooming) {
+                    isZooming = false;
+                    zoomGestureJustEnded = true;
+                }
             });
+            element.addEventListener('touchmove', zoom);
         }
         // this.timeline.createTrack(track, height/2, `wave-${this.trackIdPrefix}`);
         // this.timeline.createTrack(track, height/2, `grid-${this.trackIdPrefix}`);
