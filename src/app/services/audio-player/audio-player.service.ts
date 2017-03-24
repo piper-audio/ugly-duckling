@@ -62,7 +62,7 @@ export class AudioPlayerService {
   }
 
 
-  loadAudio(resource: File | Blob): void {
+  loadAudio(resource: File | Blob): string {
     if (this.currentObjectUrl)
       this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
     const url: string = this.resourceManager.createUrlToResource(resource);
@@ -91,6 +91,7 @@ export class AudioPlayerService {
           message: err.message
         });
       });
+    return url;
   }
 
   togglePlaying(): void {
