@@ -3,6 +3,7 @@
  */
 import {Component, Input} from "@angular/core";
 import Waves from 'waves-ui';
+import {AnalysisItem} from "../analysis-item/analysis-item.component";
 
 @Component({
   selector: 'ugly-notebook-feed',
@@ -10,23 +11,24 @@ import Waves from 'waves-ui';
   styleUrls: ['./notebook-feed.component.css']
 })
 export class NotebookFeedComponent {
-  private _audioBuffer: AudioBuffer;
   sharedTimeline: Timeline;
+  @Input() analyses: AnalysisItem[];
+  @Input() set rootAudioUri(uri: string) {
+    this._rootAudioUri = uri;
 
-
-  @Input()
-  set audioBuffer(buffer: AudioBuffer) {
-    this._audioBuffer = buffer || undefined;
-    if (this.audioBuffer) {
-
-    }
+    // TODO is this safe? will the fact references are held elsewhere
+    // keep the previous instance alive? Or will it get garbage collected in
+    // screw previous layers up?
+    this.sharedTimeline = new Waves.core.Timeline();
   }
 
-  get audioBuffer(): AudioBuffer {
-    return this._audioBuffer;
+  get rootAudioUri(): string {
+    return this._rootAudioUri;
   }
+  private _rootAudioUri: string;
 
   constructor() {
     this.sharedTimeline = new Waves.core.Timeline();
+    this.analyses = [];
   }
 }
