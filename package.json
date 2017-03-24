@@ -26,7 +26,7 @@
     "piper": "piper-audio/piper-js",
     "requirejs": "^2.3.2",
     "rxjs": "^5.1.0",
-    "waves-ui": "github:cannam/waves-ui",
+    "waves-ui": "github:cannam/waves-ui#feature-waveform-interpolated",
     "zone.js": "^0.7.6"
   },
   "devDependencies": {
