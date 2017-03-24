@@ -72,9 +72,14 @@ export class AudioPlayerService {
     this.audioElement.load();
 
     const decode: (buffer: ArrayBuffer) => Promise<AudioBuffer> = buffer => {
-      return new Promise(
-        (res, rej) => this.audioContext.decodeAudioData(buffer, res, rej)
-      );
+      try {
+        return this.audioContext.decodeAudioData(buffer) as Promise<AudioBuffer>;
+      } catch (e) {
+        console.warn('Falling back to callback style decodeAudioData');
+        return new Promise(
+          (res, rej) => this.audioContext.decodeAudioData(buffer, res, rej)
+        );
+      }
     };
 
     this.readResource(resource)
@@ -87,8 +92,9 @@ export class AudioPlayerService {
         });
       })
       .catch(err => {
+        const message = err && err.message ? err.message : "Read error";
         this.audioLoaded.next({
-          message: err.message
+          message: message
         });
       });
     return url;
