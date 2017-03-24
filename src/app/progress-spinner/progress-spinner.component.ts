@@ -19,8 +19,8 @@ import {Component, Input} from "@angular/core";
       height: 40px;
       width: 40px;
       position: absolute;
-      top: calc(100% - 40px);
-      left: calc(100% - 40px);
+      top: calc(50% - 20px);
+      left: calc(50% - 20px);
     }
     
     .spinner {
