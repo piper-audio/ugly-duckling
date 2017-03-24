@@ -11,6 +11,7 @@ export interface AnalysisItem {
   extractorKey: string;
   title?: string;
   description?: string;
+  id?: string;
 }
 
 @Component({
@@ -24,4 +25,5 @@ export class AnalysisItemComponent {
   @Input() description: string;
   @Input() isActive: boolean;
   @Input() isRoot: boolean;
+  @Input() id: string;
 }

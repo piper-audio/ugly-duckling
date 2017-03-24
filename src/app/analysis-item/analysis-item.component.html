@@ -6,7 +6,7 @@
   <md-card-content>
     <app-waveform
       [timeline]="timeline"
-      [trackIdPrefix]="title"
+      [trackIdPrefix]=" id || title"
       [isSubscribedToAudioService]="isActive && isRoot"
       [isSubscribedToExtractionService]="isActive && !isRoot"
       [isOneShotExtractor]="true"

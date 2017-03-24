@@ -21,6 +21,7 @@ export class AppComponent implements OnDestroy {
   private onAudioDataSubscription: Subscription;
   private analyses: AnalysisItem[]; // TODO some immutable state container describing entire session
   private nRecordings: number; // TODO user control for naming a recording
+  private countingId: number; // TODO improve uniquely identifying items
   private rootAudioUri: string;
 
   constructor(private audioService: AudioPlayerService,
@@ -30,6 +31,8 @@ export class AppComponent implements OnDestroy {
     this.analyses = [];
     this.canExtract = false;
     this.nRecordings = 0;
+    this.countingId = 1;
+
     iconRegistry.addSvgIcon(
       'duck',
       sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg')
@@ -76,7 +79,8 @@ export class AppComponent implements OnDestroy {
       extractorKey: 'not:real',
       isRoot: true,
       title: title,
-      description: new Date().toLocaleString()
+      description: new Date().toLocaleString(),
+      id: `${this.countingId++}`
     });
   }
 
@@ -90,7 +94,8 @@ export class AppComponent implements OnDestroy {
       extractorKey: outputInfo.combinedKey,
       isRoot: false,
       title: outputInfo.name,
-      description: outputInfo.outputId
+      description: outputInfo.outputId,
+      id: `${this.countingId++}`
     });
 
     this.piperService.collect({
