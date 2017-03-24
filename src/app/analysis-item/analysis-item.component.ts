@@ -4,9 +4,13 @@
 import {Component, Input} from "@angular/core";
 import Waves from 'waves-ui';
 
-export interface Analysis {
-  audioUri: string;
-  combinedKey: string;
+export interface AnalysisItem {
+  rootAudioUri: string;
+  hasSharedTimeline: boolean;
+  isRoot: boolean;
+  extractorKey: string;
+  title?: string;
+  description?: string;
 }
 
 @Component({
@@ -15,20 +19,9 @@ export interface Analysis {
   styleUrls: ['./analysis-item.component.css']
 })
 export class AnalysisItemComponent {
-  private _audioBuffer: AudioBuffer;
   @Input() timeline: Timeline;
   @Input() title: string;
   @Input() description: string;
-
-  @Input()
-  set audioBuffer(buffer: AudioBuffer) {
-    this._audioBuffer = buffer || undefined;
-    if (this.audioBuffer) {
-
-    }
-  }
-
-  get audioBuffer(): AudioBuffer {
-    return this._audioBuffer;
-  }
+  @Input() isActive: boolean;
+  @Input() isRoot: boolean;
 }
