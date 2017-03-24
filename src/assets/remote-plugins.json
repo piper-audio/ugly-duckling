@@ -4,5 +4,6 @@
   "nnls-chroma": "assets/NNLSChroma.js",
   "cqvamp": "assets/CQ.js",
   "tipic": "assets/Tipic.js",
-  "cepstral-pitchtracker": "assets/CepstralPitchTracker.umd.js"
+  "cepstral-pitchtracker": "assets/CepstralPitchTracker.umd.js",
+  "pyin": "assets/PYin.umd.js"
 }
