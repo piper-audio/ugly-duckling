@@ -1410,6 +1410,66 @@ let WaveformComponent = class WaveformComponent {
             });
             this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
         }
+        if ('ontouchstart' in window) {
+            let zoomGestureJustEnded = false;
+            const pixelToExponent = __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.utils.scales.linear()
+                .domain([0, 100]) // 100px => factor 2
+                .range([0, 1]);
+            const calculateDistance = (p1, p2) => {
+                return Math.pow(Math.pow(p2.x - p1.x, 2) +
+                    Math.pow(p2.y - p1.y, 2), 0.5);
+            };
+            const hammertime = new __WEBPACK_IMPORTED_MODULE_5_hammerjs__(this.trackDiv.nativeElement);
+            const scroll = (ev) => {
+                if (zoomGestureJustEnded) {
+                    zoomGestureJustEnded = false;
+                    console.log("Skip this event: likely a single touch dangling from pinch");
+                    return;
+                }
+                this.timeline.timeContext.offset = this.offsetAtPanStart +
+                    this.timeline.timeContext.timeToPixel.invert(ev.deltaX);
+                this.timeline.tracks.update();
+            };
+            const zoom = (ev) => {
+                const minZoom = this.timeline.state.minZoom;
+                const maxZoom = this.timeline.state.maxZoom;
+                const distance = calculateDistance({
+                    x: ev.pointers[0].clientX,
+                    y: ev.pointers[0].clientY
+                }, {
+                    x: ev.pointers[1].clientX,
+                    y: ev.pointers[1].clientY
+                });
+                const lastCenterTime = this.timeline.timeContext.timeToPixel.invert(ev.center.x);
+                const exponent = pixelToExponent(distance - this.initialDistance);
+                const targetZoom = this.initialZoom * Math.pow(2, exponent);
+                this.timeline.timeContext.zoom =
+                    Math.min(Math.max(targetZoom, minZoom), maxZoom);
+                const newCenterTime = this.timeline.timeContext.timeToPixel.invert(ev.center.x);
+                this.timeline.timeContext.offset += newCenterTime - lastCenterTime;
+                this.timeline.tracks.update();
+            };
+            hammertime.get('pinch').set({ enable: true });
+            hammertime.on('panstart', () => {
+                this.offsetAtPanStart = this.timeline.timeContext.offset;
+            });
+            hammertime.on('panleft', scroll);
+            hammertime.on('panright', scroll);
+            hammertime.on('pinchstart', (e) => {
+                this.initialZoom = this.timeline.timeContext.zoom;
+                this.initialDistance = calculateDistance({
+                    x: e.pointers[0].clientX,
+                    y: e.pointers[0].clientY
+                }, {
+                    x: e.pointers[1].clientX,
+                    y: e.pointers[1].clientY
+                });
+            });
+            hammertime.on('pinch', zoom);
+            hammertime.on('pinchend', () => {
+                zoomGestureJustEnded = true;
+            });
+        }
         // this.timeline.createTrack(track, height/2, `wave-${this.trackIdPrefix}`);
         // this.timeline.createTrack(track, height/2, `grid-${this.trackIdPrefix}`);
     }
@@ -1601,66 +1661,6 @@ let WaveformComponent = class WaveformComponent {
         this.timeline.state = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.states.CenteredZoomState(this.timeline);
         waveTrack.render();
         waveTrack.update();
-        if ('ontouchstart' in window) {
-            let zoomGestureJustEnded = false;
-            const pixelToExponent = __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.utils.scales.linear()
-                .domain([0, 100]) // 100px => factor 2
-                .range([0, 1]);
-            const calculateDistance = (p1, p2) => {
-                return Math.pow(Math.pow(p2.x - p1.x, 2) +
-                    Math.pow(p2.y - p1.y, 2), 0.5);
-            };
-            const hammertime = new __WEBPACK_IMPORTED_MODULE_5_hammerjs__(this.trackDiv.nativeElement);
-            const scroll = (ev) => {
-                if (zoomGestureJustEnded) {
-                    zoomGestureJustEnded = false;
-                    console.log("Skip this event: likely a single touch dangling from pinch");
-                    return;
-                }
-                this.timeline.timeContext.offset = this.offsetAtPanStart +
-                    this.timeline.timeContext.timeToPixel.invert(ev.deltaX);
-                this.timeline.tracks.update();
-            };
-            const zoom = (ev) => {
-                const minZoom = this.timeline.state.minZoom;
-                const maxZoom = this.timeline.state.maxZoom;
-                const distance = calculateDistance({
-                    x: ev.pointers[0].clientX,
-                    y: ev.pointers[0].clientY
-                }, {
-                    x: ev.pointers[1].clientX,
-                    y: ev.pointers[1].clientY
-                });
-                const lastCenterTime = this.timeline.timeContext.timeToPixel.invert(ev.center.x);
-                const exponent = pixelToExponent(distance - this.initialDistance);
-                const targetZoom = this.initialZoom * Math.pow(2, exponent);
-                this.timeline.timeContext.zoom =
-                    Math.min(Math.max(targetZoom, minZoom), maxZoom);
-                const newCenterTime = this.timeline.timeContext.timeToPixel.invert(ev.center.x);
-                this.timeline.timeContext.offset += newCenterTime - lastCenterTime;
-                this.timeline.tracks.update();
-            };
-            hammertime.get('pinch').set({ enable: true });
-            hammertime.on('panstart', () => {
-                this.offsetAtPanStart = this.timeline.timeContext.offset;
-            });
-            hammertime.on('panleft', scroll);
-            hammertime.on('panright', scroll);
-            hammertime.on('pinchstart', (e) => {
-                this.initialZoom = this.timeline.timeContext.zoom;
-                this.initialDistance = calculateDistance({
-                    x: e.pointers[0].clientX,
-                    y: e.pointers[0].clientY
-                }, {
-                    x: e.pointers[1].clientX,
-                    y: e.pointers[1].clientY
-                });
-            });
-            hammertime.on('pinch', zoom);
-            hammertime.on('pinchend', () => {
-                zoomGestureJustEnded = true;
-            });
-        }
         this.isLoading = false;
         this.animate();
     }
