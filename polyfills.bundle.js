@@ -236,7 +236,7 @@ class FeatureExtractionWorker {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = FeatureExtractionWorker;
 
-//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/FeatureExtractionWorker.js.map
+//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/FeatureExtractionWorker.js.map
 
 /***/ }),
 
@@ -812,7 +812,7 @@ if (typeof self.importScripts === 'function' /* in a worker */) {
             throw new Error(`Cannot find module '${moduleName}'`);
     };
 }
-//# sourceMappingURL=/Users/lucast/code/ugly-duckling/src/externals.js.map
+//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/externals.js.map
 
 /***/ }),
 
