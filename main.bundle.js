@@ -506,6 +506,8 @@ class WavesSpectrogramLayer extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___defau
         const getSamples = ((buffer, channel) => {
             const nch = buffer.numberOfChannels;
             if (channel >= 0 || nch == 1) {
+                if (channel < 0)
+                    channel = 0;
                 return buffer.getChannelData(channel);
             }
             else {
@@ -710,6 +712,7 @@ let AppComponent = class AppComponent {
         this.analyses = [];
         this.canExtract = false;
         this.nRecordings = 0;
+        this.countingId = 1;
         iconRegistry.addSvgIcon('duck', sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg'));
         this.onAudioDataSubscription = this.audioService.audioLoaded$.subscribe(resource => {
             const wasError = resource.message != null;
@@ -747,7 +750,8 @@ let AppComponent = class AppComponent {
             extractorKey: 'not:real',
             isRoot: true,
             title: title,
-            description: new Date().toLocaleString()
+            description: new Date().toLocaleString(),
+            id: `${this.countingId++}`
         });
     }
     extractFeatures(outputInfo) {
@@ -760,7 +764,8 @@ let AppComponent = class AppComponent {
             extractorKey: outputInfo.combinedKey,
             isRoot: false,
             title: outputInfo.name,
-            description: outputInfo.outputId
+            description: outputInfo.outputId,
+            id: `${this.countingId++}`
         });
         this.piperService.collect({
             audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
@@ -817,7 +822,7 @@ module.exports = module.exports.toString();
 /***/ "cqUy":
 /***/ (function(module, exports) {
 
-module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{title}}</md-card-title>\n    <md-card-subtitle>{{description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <app-waveform\n      [timeline]=\"timeline\"\n      [trackIdPrefix]=\"title\"\n      [isSubscribedToAudioService]=\"isActive && isRoot\"\n      [isSubscribedToExtractionService]=\"isActive && !isRoot\"\n      [isOneShotExtractor]=\"true\"\n      [isSeeking]=\"isActive\"\n    ></app-waveform>\n  </md-card-content>\n</md-card>\n"
+module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{title}}</md-card-title>\n    <md-card-subtitle>{{description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <app-waveform\n      [timeline]=\"timeline\"\n      [trackIdPrefix]=\" id || title\"\n      [isSubscribedToAudioService]=\"isActive && isRoot\"\n      [isSubscribedToExtractionService]=\"isActive && !isRoot\"\n      [isOneShotExtractor]=\"true\"\n      [isSeeking]=\"isActive\"\n    ></app-waveform>\n  </md-card-content>\n</md-card>\n"
 
 /***/ }),
 
@@ -940,6 +945,10 @@ __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
     __metadata("design:type", Boolean)
 ], AnalysisItemComponent.prototype, "isRoot", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __metadata("design:type", String)
+], AnalysisItemComponent.prototype, "id", void 0);
 AnalysisItemComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
         selector: 'ugly-analysis-item',
@@ -2148,7 +2157,13 @@ let AudioPlayerService = class AudioPlayerService {
         this.audioElement.src = url;
         this.audioElement.load();
         const decode = buffer => {
-            return new Promise((res, rej) => this.audioContext.decodeAudioData(buffer, res, rej));
+            try {
+                return this.audioContext.decodeAudioData(buffer);
+            }
+            catch (e) {
+                console.warn('Falling back to callback style decodeAudioData');
+                return new Promise((res, rej) => this.audioContext.decodeAudioData(buffer, res, rej));
+            }
         };
         this.readResource(resource)
             .then(decode)
@@ -2160,8 +2175,9 @@ let AudioPlayerService = class AudioPlayerService {
             });
         })
             .catch(err => {
+            const message = err && err.message ? err.message : "Read error";
             this.audioLoaded.next({
-                message: err.message
+                message: message
             });
         });
         return url;
@@ -2216,7 +2232,7 @@ AudioPlayerService = __decorate([
 /***/ "vB4/":
 /***/ (function(module, exports) {
 
-module.exports = "\n<template ngFor let-item [ngForOf]=\"analyses\">\n  <div [class.break]=\"item.isRoot\">\n      <ugly-analysis-item\n        [timeline]=\"item.hasSharedTimeline ? sharedTimeline : undefined\"\n        [title]=\"item.title\"\n        [description]=\"item.description\"\n        [isActive]=\"rootAudioUri === item.rootAudioUri\"\n        [isRoot]=\"item.isRoot\"></ugly-analysis-item>\n  </div>\n</template>\n"
+module.exports = "\n<template ngFor let-item [ngForOf]=\"analyses\">\n  <div [class.break]=\"item.isRoot\">\n      <ugly-analysis-item\n        [timeline]=\"item.hasSharedTimeline ? sharedTimeline : undefined\"\n        [title]=\"item.title\"\n        [description]=\"item.description\"\n        [isActive]=\"rootAudioUri === item.rootAudioUri\"\n        [isRoot]=\"item.isRoot\"\n        [id]=\"item.id\"></ugly-analysis-item>\n  </div>\n</template>\n"
 
 /***/ }),
 
