@@ -164,9 +164,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private seekedSubscription: Subscription;
   private onAudioDataSubscription: Subscription;
   private isPlaying: boolean;
-  private offsetAtPanStart: number;
-  private initialZoom: number;
-  private initialDistance: number;
   private zoomOnMouseDown: number;
   private offsetOnMouseDown: number;
   private hasShot: boolean;
@@ -251,20 +248,28 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       };
 
       const hammertime = new Hammer(this.trackDiv.nativeElement);
+
+      // it seems HammerJs binds the event to the window?
+      // causing these events to propagate to other components?
+      const componentTimeline = this.timeline;
+      let initialZoom;
+      let initialDistance;
+      let offsetAtPanStart;
+
       const scroll = (ev) => {
         if (zoomGestureJustEnded) {
           zoomGestureJustEnded = false;
           console.log("Skip this event: likely a single touch dangling from pinch");
           return;
         }
-        this.timeline.timeContext.offset = this.offsetAtPanStart +
-          this.timeline.timeContext.timeToPixel.invert(ev.deltaX);
-        this.timeline.tracks.update();
+        componentTimeline.timeContext.offset = offsetAtPanStart +
+          componentTimeline.timeContext.timeToPixel.invert(ev.deltaX);
+        componentTimeline.tracks.update();
       };
 
       const zoom = (ev) => {
-        const minZoom = this.timeline.state.minZoom;
-        const maxZoom = this.timeline.state.maxZoom;
+        const minZoom = componentTimeline.state.minZoom;
+        const maxZoom = componentTimeline.state.maxZoom;
         const distance = calculateDistance({
           x: ev.pointers[0].clientX,
           y: ev.pointers[0].clientY
@@ -274,30 +279,30 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         });
 
         const lastCenterTime =
-          this.timeline.timeContext.timeToPixel.invert(ev.center.x);
+          componentTimeline.timeContext.timeToPixel.invert(ev.center.x);
 
-        const exponent = pixelToExponent(distance - this.initialDistance);
-        const targetZoom = this.initialZoom * Math.pow(2, exponent);
+        const exponent = pixelToExponent(distance - initialDistance);
+        const targetZoom = initialZoom * Math.pow(2, exponent);
 
-        this.timeline.timeContext.zoom =
+        componentTimeline.timeContext.zoom =
           Math.min(Math.max(targetZoom, minZoom), maxZoom);
 
         const newCenterTime =
-          this.timeline.timeContext.timeToPixel.invert(ev.center.x);
+          componentTimeline.timeContext.timeToPixel.invert(ev.center.x);
 
-        this.timeline.timeContext.offset += newCenterTime - lastCenterTime;
-        this.timeline.tracks.update();
+        componentTimeline.timeContext.offset += newCenterTime - lastCenterTime;
+        componentTimeline.tracks.update();
       };
       hammertime.get('pinch').set({ enable: true });
       hammertime.on('panstart', () => {
-        this.offsetAtPanStart = this.timeline.timeContext.offset;
+        offsetAtPanStart = componentTimeline.timeContext.offset;
       });
       hammertime.on('panleft', scroll);
       hammertime.on('panright', scroll);
       hammertime.on('pinchstart', (e) => {
-        this.initialZoom = this.timeline.timeContext.zoom;
+        initialZoom = componentTimeline.timeContext.zoom;
 
-        this.initialDistance = calculateDistance({
+        initialDistance = calculateDistance({
           x: e.pointers[0].clientX,
           y: e.pointers[0].clientY
         }, {
