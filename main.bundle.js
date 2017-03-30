@@ -1464,18 +1464,18 @@ let WaveformComponent = class WaveformComponent {
                 componentTimeline.tracks.update();
             };
             const zoom = (ev) => {
-                if (ev.targetTouches.length < 2)
+                if (ev.touches.length < 2)
                     return;
                 ev.preventDefault();
                 const minZoom = componentTimeline.state.minZoom;
                 const maxZoom = componentTimeline.state.maxZoom;
                 const p1 = {
-                    x: ev.targetTouches[0].clientX,
-                    y: ev.targetTouches[0].clientY
+                    x: ev.touches[0].clientX,
+                    y: ev.touches[0].clientY
                 };
                 const p2 = {
-                    x: ev.targetTouches[1].clientX,
-                    y: ev.targetTouches[1].clientY
+                    x: ev.touches[1].clientX,
+                    y: ev.touches[1].clientY
                 };
                 const distance = calculateDistance(p1, p2);
                 const midPoint = calculateMidPoint(p1, p2);
@@ -1496,16 +1496,16 @@ let WaveformComponent = class WaveformComponent {
             hammertime.on('panright', scroll);
             const element = this.trackDiv.nativeElement;
             element.addEventListener('touchstart', (e) => {
-                if (e.targetTouches.length < 2)
+                if (e.touches.length < 2)
                     return;
                 isZooming = true;
                 initialZoom = componentTimeline.timeContext.zoom;
                 initialDistance = calculateDistance({
-                    x: e.targetTouches[0].clientX,
-                    y: e.targetTouches[0].clientY
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY
                 }, {
-                    x: e.targetTouches[1].clientX,
-                    y: e.targetTouches[1].clientY
+                    x: e.touches[1].clientX,
+                    y: e.touches[1].clientY
                 });
             });
             element.addEventListener('touchend', () => {
