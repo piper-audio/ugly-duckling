@@ -450,9 +450,10 @@ AppModule = __decorate([
 
 
 class SpectrogramEntity extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.utils.MatrixEntity {
-    constructor(samples, options) {
+    constructor(samples, options, sampleRate) {
         super();
         this.samples = samples;
+        this.sampleRate = sampleRate;
         this.framing = options;
         this.real = new Float32Array(this.framing.blockSize);
         this.nCols = Math.floor(this.samples.length / this.framing.stepSize); //!!! not correct
@@ -468,6 +469,9 @@ class SpectrogramEntity extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a
     }
     getColumnHeight() {
         return this.columnHeight;
+    }
+    getStepDuration() {
+        return this.framing.stepSize / this.sampleRate;
     }
     getColumn(n) {
         const startSample = n * this.framing.stepSize;
@@ -527,7 +531,7 @@ class WavesSpectrogramLayer extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___defau
                 return mixed;
             }
         });
-        super('entity', new SpectrogramEntity(getSamples(buffer, mergedOptions.channel), mergedOptions), mergedOptions);
+        super('entity', new SpectrogramEntity(getSamples(buffer, mergedOptions.channel), mergedOptions, buffer.sampleRate), mergedOptions);
         this.configureShape(__WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.shapes.Matrix, {}, mergedOptions);
     }
 }
@@ -1462,6 +1466,7 @@ let WaveformComponent = class WaveformComponent {
             const zoom = (ev) => {
                 if (ev.targetTouches.length < 2)
                     return;
+                ev.preventDefault();
                 const minZoom = componentTimeline.state.minZoom;
                 const maxZoom = componentTimeline.state.maxZoom;
                 const p1 = {
@@ -1483,25 +1488,14 @@ let WaveformComponent = class WaveformComponent {
                 componentTimeline.timeContext.offset += newCenterTime - lastCenterTime;
                 componentTimeline.tracks.update();
             };
-            // hammertime.on('panstart', (ev) => {
-            //   offsetAtPanStart = componentTimeline.timeContext.offset;
-            //   startX = ev.center.x;
-            // });
-            // hammertime.on('panleft', scroll);
-            // hammertime.on('panright', scroll);
-            const element = this.trackDiv.nativeElement;
-            window.addEventListener('touchmove', (e) => {
-                if (e.targetTouches.length !== e.touches.length) {
-                    e.preventDefault();
-                    console.warn('zooming page?');
-                }
+            hammertime.on('panstart', (ev) => {
+                offsetAtPanStart = componentTimeline.timeContext.offset;
+                startX = ev.center.x;
             });
+            hammertime.on('panleft', scroll);
+            hammertime.on('panright', scroll);
+            const element = this.trackDiv.nativeElement;
             element.addEventListener('touchstart', (e) => {
-                if (e.targetTouches.length === 1) {
-                    offsetAtPanStart = componentTimeline.timeContext.offset;
-                    startX = e.targetTouches[0].clientX;
-                    return;
-                }
                 if (e.targetTouches.length < 2)
                     return;
                 isZooming = true;
@@ -1520,26 +1514,7 @@ let WaveformComponent = class WaveformComponent {
                     zoomGestureJustEnded = true;
                 }
             });
-            element.addEventListener('touchmove', (ev) => {
-                if (ev.targetTouches.length === 1) {
-                    const touch = ev.targetTouches[0];
-                    if (touch.clientX - startX === 0)
-                        return;
-                    if (zoomGestureJustEnded) {
-                        zoomGestureJustEnded = false;
-                        console.log("Skip this event: likely a single touch dangling from pinch");
-                        return;
-                    }
-                    componentTimeline.timeContext.offset = offsetAtPanStart +
-                        componentTimeline.timeContext.timeToPixel.invert(touch.clientX - startX);
-                    componentTimeline.tracks.update();
-                    return;
-                }
-                if (ev.targetTouches.length === 2) {
-                    zoom(ev);
-                    return;
-                }
-            });
+            element.addEventListener('touchmove', zoom);
         }
         // this.timeline.createTrack(track, height/2, `wave-${this.trackIdPrefix}`);
         // this.timeline.createTrack(track, height/2, `grid-${this.trackIdPrefix}`);
