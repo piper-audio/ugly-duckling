@@ -9,6 +9,7 @@ import Waves from 'waves-ui';
 class SpectrogramEntity extends Waves.utils.MatrixEntity {
 
   private samples: Float32Array;
+  private sampleRate: number;
   private framing: Framing;
   private fft: RealFft;
   private real: Float32Array;
@@ -16,9 +17,10 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
   private columnHeight: number;
   private window: Float32Array;
 
-  constructor(samples: Float32Array, options: Framing & Object) {
+  constructor(samples: Float32Array, options: Framing & Object, sampleRate: number) {
     super();
     this.samples = samples;
+    this.sampleRate = sampleRate;
     this.framing = options;
     this.real = new Float32Array(this.framing.blockSize);
     this.nCols = Math.floor(this.samples.length / this.framing.stepSize); //!!! not correct
@@ -39,6 +41,10 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
     return this.columnHeight;
   }
 
+  getStepDuration(): number {
+    return this.framing.stepSize / this.sampleRate;
+  }
+  
   getColumn(n: number): Float32Array {
 
     const startSample = n * this.framing.stepSize;
@@ -110,7 +116,8 @@ export class WavesSpectrogramLayer extends Waves.core.Layer {
     
     super('entity',
 	  new SpectrogramEntity(getSamples(buffer, mergedOptions.channel),
-				mergedOptions),
+				mergedOptions,
+				buffer.sampleRate),
 	  mergedOptions);
 
     this.configureShape(Waves.shapes.Matrix, {}, mergedOptions);
