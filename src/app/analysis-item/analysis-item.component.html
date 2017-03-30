@@ -1,0 +1,16 @@
+<md-card>
+  <md-card-header>
+    <md-card-title>{{title}}</md-card-title>
+    <md-card-subtitle>{{description}}</md-card-subtitle>
+  </md-card-header>
+  <md-card-content>
+    <app-waveform
+      [timeline]="timeline"
+      [trackIdPrefix]=" id || title"
+      [isSubscribedToAudioService]="isActive && isRoot"
+      [isSubscribedToExtractionService]="isActive && !isRoot"
+      [isOneShotExtractor]="true"
+      [isSeeking]="isActive"
+    ></app-waveform>
+  </md-card-content>
+</md-card>

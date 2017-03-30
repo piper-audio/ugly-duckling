@@ -8,7 +8,10 @@ import { MaterialModule } from "@angular/material";
 import { WaveformComponent } from './waveform/waveform.component';
 import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
 import { PlaybackControlComponent } from './playback-control/playback-control.component';
-import { AudioPlayerService } from "./services/audio-player/audio-player.service";
+import {
+  AudioPlayerService,
+  UrlResourceLifetimeManager, ResourceReader
+} from "./services/audio-player/audio-player.service";
 import { FeatureExtractionService } from "./services/feature-extraction/feature-extraction.service";
 import { FeatureExtractionMenuComponent } from "./feature-extraction-menu/feature-extraction-menu.component";
 import { ProgressSpinnerComponent } from "./progress-spinner/progress-spinner.component";
@@ -21,6 +24,8 @@ import {
   ThrowingMediaRecorder,
 } from "./services/audio-recorder/audio-recorder.service";
 import {RecordingControlComponent} from "./recording-control/recording-control.component";
+import {NotebookFeedComponent} from "./notebook-feed/notebook-feed.component";
+import {AnalysisItemComponent} from "./analysis-item/analysis-item.component";
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -59,6 +64,32 @@ export function createMediaRecorderFactory(): MediaRecorderConstructor {
   }
 }
 
+export function createUrlResourceManager(): UrlResourceLifetimeManager {
+  return {
+    createUrlToResource: (resource: File | Blob): string => {
+      return URL.createObjectURL(resource);
+    },
+    revokeUrlToResource: (url: string) => {
+      URL.revokeObjectURL(url);
+    }
+  };
+}
+
+export function createResourceReader(): ResourceReader{
+  return (resource) => {
+    return new Promise((res, rej) => {
+      const reader: FileReader = new FileReader();
+      reader.onload = (event: any) => {
+        res(event.target.result);
+      };
+      reader.onerror = (event) => {
+        rej(event.message);
+      };
+      reader.readAsArrayBuffer(resource);
+    });
+  };;
+}
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -67,7 +98,9 @@ export function createMediaRecorderFactory(): MediaRecorderConstructor {
     PlaybackControlComponent,
     RecordingControlComponent,
     FeatureExtractionMenuComponent,
-    ProgressSpinnerComponent
+    ProgressSpinnerComponent,
+    AnalysisItemComponent,
+    NotebookFeedComponent
   ],
   imports: [
     BrowserModule,
@@ -83,7 +116,9 @@ export function createMediaRecorderFactory(): MediaRecorderConstructor {
     AudioRecorderService,
     FeatureExtractionService,
     {provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory},
-    {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'}
+    {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'},
+    {provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager},
+    {provide: 'ResourceReader', useFactory: createResourceReader}
   ],
   bootstrap: [AppComponent]
 })

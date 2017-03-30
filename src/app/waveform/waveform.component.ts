@@ -2,7 +2,10 @@ import {
   Component, OnInit, ViewChild, ElementRef, Input, AfterViewInit, NgZone,
   OnDestroy
 } from '@angular/core';
-import {AudioPlayerService} from "../services/audio-player/audio-player.service";
+import {
+  AudioPlayerService, AudioResource,
+  AudioResourceError
+} from "../services/audio-player/audio-player.service";
 import wavesUI from 'waves-ui';
 import {
   FeatureExtractionService
@@ -17,7 +20,6 @@ import {FeatureList, Feature} from "piper/Feature";
 import * as Hammer from 'hammerjs';
 import {WavesSpectrogramLayer} from "../spectrogram/Spectrogram";
 
-type Timeline = any; // TODO what type actually is it.. start a .d.ts for waves-ui?
 type Layer = any;
 type Track = any;
 type Colour = string;
@@ -31,16 +33,119 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('track') trackDiv: ElementRef;
 
-  private _audioBuffer: AudioBuffer;
-  private timeline: Timeline;
-  private cursorLayer: any;
+  @Input() timeline: Timeline;
+  @Input() trackIdPrefix: string;
+  @Input() set isSubscribedToExtractionService(isSubscribed: boolean) {
+    if (isSubscribed) {
+      if (this.featureExtractionSubscription) {
+        return;
+      }
 
-  @Input()
+      const colours = function* () {
+        const circularColours = [
+          'black',
+          'red',
+          'green',
+          'purple',
+          'orange'
+        ];
+        let index = 0;
+        const nColours = circularColours.length;
+        while (true) {
+          yield circularColours[index = ++index % nColours];
+        }
+      }();
+
+      this.featureExtractionSubscription =
+        this.piperService.featuresExtracted$.subscribe(
+          features => {
+            this.renderFeatures(features, colours.next().value);
+          });
+    } else {
+      if (this.featureExtractionSubscription) {
+        this.featureExtractionSubscription.unsubscribe();
+      }
+    }
+  }
+  @Input() set isSubscribedToAudioService(isSubscribed: boolean) {
+    this._isSubscribedToAudioService = isSubscribed;
+    if (isSubscribed) {
+      if (this.onAudioDataSubscription) {
+        return;
+      }
+
+      this.onAudioDataSubscription =
+        this.audioService.audioLoaded$.subscribe(res => {
+          const wasError = (res as AudioResourceError).message != null;
+
+          if (wasError) {
+            console.warn('No audio, display error?');
+          } else {
+            this.audioBuffer = (res as AudioResource).samples;
+          }
+        });
+    } else {
+      if (this.onAudioDataSubscription) {
+        this.onAudioDataSubscription.unsubscribe();
+      }
+    }
+  }
+
+  get isSubscribedToAudioService(): boolean {
+    return this._isSubscribedToAudioService;
+  }
+
+  @Input() set isOneShotExtractor(isOneShot: boolean) {
+    this._isOneShotExtractor = isOneShot;
+  }
+
+  get isOneShotExtractor(): boolean {
+    return this._isOneShotExtractor;
+  }
+
+  @Input() set isSeeking(isSeeking: boolean) {
+    this._isSeeking = isSeeking;
+    if (isSeeking) {
+      if (this.seekedSubscription) {
+        return;
+      }
+      if(this.playingStateSubscription) {
+        return;
+      }
+
+      this.seekedSubscription = this.audioService.seeked$.subscribe(() => {
+        if (!this.isPlaying)
+          this.animate();
+      });
+      this.playingStateSubscription =
+        this.audioService.playingStateChange$.subscribe(
+          isPlaying => {
+            this.isPlaying = isPlaying;
+            if (this.isPlaying)
+              this.animate();
+          });
+    } else {
+      if (this.isPlaying) {
+        this.isPlaying = false;
+      }
+      if (this.playingStateSubscription) {
+        this.playingStateSubscription.unsubscribe();
+      }
+      if (this.seekedSubscription) {
+        this.seekedSubscription.unsubscribe();
+      }
+    }
+  }
+
+  get isSeeking(): boolean {
+    return this._isSeeking;
+  }
+
   set audioBuffer(buffer: AudioBuffer) {
     this._audioBuffer = buffer || undefined;
     if (this.audioBuffer) {
       this.renderWaveform(this.audioBuffer);
-      this.renderSpectrogram(this.audioBuffer);
+      // this.renderSpectrogram(this.audioBuffer);
     }
   }
 
@@ -48,71 +153,197 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     return this._audioBuffer;
   }
 
+  private _audioBuffer: AudioBuffer;
+  private _isSubscribedToAudioService: boolean;
+  private _isOneShotExtractor: boolean;
+  private _isSeeking: boolean;
+  private cursorLayer: any;
+  private layers: Layer[];
   private featureExtractionSubscription: Subscription;
   private playingStateSubscription: Subscription;
   private seekedSubscription: Subscription;
+  private onAudioDataSubscription: Subscription;
   private isPlaying: boolean;
-  private offsetAtPanStart: number;
-  private initialZoom: number;
-  private initialDistance: number;
   private zoomOnMouseDown: number;
   private offsetOnMouseDown: number;
+  private hasShot: boolean;
+  private isLoading: boolean;
 
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
               public ngZone: NgZone) {
-    this._audioBuffer = undefined;
+    this.isSubscribedToAudioService = true;
+    this.isSeeking = true;
+    this.layers = [];
+    this.audioBuffer = undefined;
     this.timeline = undefined;
     this.cursorLayer = undefined;
     this.isPlaying = false;
-    const colours = function* () {
-      const circularColours = [
-        'black',
-        'red',
-        'green',
-        'purple',
-        'orange'
-      ];
-      let index = 0;
-      const nColours = circularColours.length;
-      while (true) {
-        yield circularColours[index = ++index % nColours];
-      }
-    }();
-
-    this.featureExtractionSubscription = piperService.featuresExtracted$.subscribe(
-      features => {
-        this.renderFeatures(features, colours.next().value);
-      });
-    this.playingStateSubscription = audioService.playingStateChange$.subscribe(
-      isPlaying => {
-        this.isPlaying = isPlaying;
-        if (this.isPlaying)
-          this.animate();
-      });
-    this.seekedSubscription = audioService.seeked$.subscribe(() => {
-      if (!this.isPlaying)
-        this.animate();
-    });
+    this.isLoading = true;
   }
 
   ngOnInit() {
   }
 
   ngAfterViewInit(): void {
-    this.timeline = this.renderTimeline();
+    this.trackIdPrefix = this.trackIdPrefix || "default";
+    if (this.timeline) {
+      this.renderTimeline(null, true, true);
+    } else {
+      this.renderTimeline();
+    }
   }
 
-  renderTimeline(duration: number = 1.0): Timeline {
+  renderTimeline(duration: number = 1.0,
+                 useExistingDuration: boolean = false,
+                 isInitialRender: boolean = false): Timeline {
     const track: HTMLElement = this.trackDiv.nativeElement;
     track.innerHTML = "";
     const height: number = track.getBoundingClientRect().height;
     const width: number = track.getBoundingClientRect().width;
     const pixelsPerSecond = width / duration;
-    const timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
-    timeline.createTrack(track, height/2, 'wave');
-    timeline.createTrack(track, height/2, 'grid');
-    return timeline;
+    const hasExistingTimeline = this.timeline instanceof wavesUI.core.Timeline;
+
+    if (hasExistingTimeline) {
+      if (!useExistingDuration) {
+        this.timeline.pixelsPerSecond = pixelsPerSecond;
+        this.timeline.visibleWidth = width;
+      }
+    } else {
+      this.timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
+    }
+    const waveTrack = this.timeline.createTrack(
+      track,
+      height,
+      `wave-${this.trackIdPrefix}`
+    );
+    if (isInitialRender && hasExistingTimeline) {
+      // time axis
+      const timeAxis = new wavesUI.helpers.TimeAxisLayer({
+        height: height,
+        color: '#b0b0b0'
+      });
+      this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
+      this.cursorLayer = new wavesUI.helpers.CursorLayer({
+        height: height
+      });
+      this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
+    }
+    if ('ontouchstart' in window) {
+      interface Point {
+        x: number;
+        y: number;
+      }
+
+      let zoomGestureJustEnded: boolean = false;
+
+      const pixelToExponent: Function = wavesUI.utils.scales.linear()
+        .domain([0, 100]) // 100px => factor 2
+        .range([0, 1]);
+
+      const calculateDistance: (p1: Point, p2: Point) => number = (p1, p2) => {
+        return Math.pow(
+          Math.pow(p2.x - p1.x, 2) +
+          Math.pow(p2.y - p1.y, 2), 0.5);
+      };
+
+      const calculateMidPoint: (p1: Point, p2: Point) => Point = (p1, p2) => {
+        return {
+          x: 0.5 * (p1.x + p2.x),
+          y: 0.5 * (p1.y + p2.y)
+        };
+      };
+
+      const hammertime = new Hammer.Manager(this.trackDiv.nativeElement, {
+        recognizers: [
+          [Hammer.Pan, { direction: Hammer.DIRECTION_HORIZONTAL }]
+        ]
+      });
+
+      // it seems HammerJs binds the event to the window?
+      // causing these events to propagate to other components?
+      const componentTimeline = this.timeline;
+      let initialZoom;
+      let initialDistance;
+      let offsetAtPanStart;
+      let startX;
+      let isZooming;
+
+      const scroll = (ev) => {
+        if (ev.center.x - startX === 0) return;
+        if (zoomGestureJustEnded) {
+          zoomGestureJustEnded = false;
+          console.log("Skip this event: likely a single touch dangling from pinch");
+          return;
+        }
+        componentTimeline.timeContext.offset = offsetAtPanStart +
+          componentTimeline.timeContext.timeToPixel.invert(ev.deltaX);
+        componentTimeline.tracks.update();
+      };
+
+      const zoom = (ev) => {
+        if (ev.touches.length < 2) return;
+        ev.preventDefault();
+        const minZoom = componentTimeline.state.minZoom;
+        const maxZoom = componentTimeline.state.maxZoom;
+        const p1: Point = {
+          x: ev.touches[0].clientX,
+          y: ev.touches[0].clientY
+        };
+        const p2: Point = {
+          x: ev.touches[1].clientX,
+          y: ev.touches[1].clientY
+        };
+        const distance = calculateDistance(p1, p2);
+        const midPoint = calculateMidPoint(p1, p2);
+
+        const lastCenterTime =
+          componentTimeline.timeContext.timeToPixel.invert(midPoint.x);
+
+        const exponent = pixelToExponent(distance - initialDistance);
+        const targetZoom = initialZoom * Math.pow(2, exponent);
+
+        componentTimeline.timeContext.zoom =
+          Math.min(Math.max(targetZoom, minZoom), maxZoom);
+
+        const newCenterTime =
+          componentTimeline.timeContext.timeToPixel.invert(midPoint.x);
+
+        componentTimeline.timeContext.offset += newCenterTime - lastCenterTime;
+        componentTimeline.tracks.update();
+      };
+      hammertime.on('panstart', (ev) => {
+        offsetAtPanStart = componentTimeline.timeContext.offset;
+        startX = ev.center.x;
+      });
+      hammertime.on('panleft', scroll);
+      hammertime.on('panright', scroll);
+
+
+      const element: HTMLElement = this.trackDiv.nativeElement;
+      element.addEventListener('touchstart', (e) => {
+        if (e.touches.length < 2) return;
+        isZooming = true;
+        initialZoom = componentTimeline.timeContext.zoom;
+
+        initialDistance = calculateDistance({
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY
+        }, {
+          x: e.touches[1].clientX,
+          y: e.touches[1].clientY
+        });
+      });
+      element.addEventListener('touchend', () => {
+        if (isZooming) {
+          isZooming = false;
+          zoomGestureJustEnded = true;
+        }
+       });
+      element.addEventListener('touchmove', zoom);
+    }
+    // this.timeline.createTrack(track, height/2, `wave-${this.trackIdPrefix}`);
+    // this.timeline.createTrack(track, height/2, `grid-${this.trackIdPrefix}`);
   }
 
   estimatePercentile(matrix, percentile) {
@@ -239,20 +470,23 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       const trackLayers = Array.from(track.layers);
       while (trackLayers.length) {
         let layer: Layer = trackLayers.pop();
-        track.remove(layer);
-
-        const index = timeContextChildren.indexOf(layer.timeContext);
-        if (index >= 0) {
-          timeContextChildren.splice(index, 1);
+        if (this.layers.includes(layer)) {
+          track.remove(layer);
+          this.layers.splice(this.layers.indexOf(layer), 1);
+          const index = timeContextChildren.indexOf(layer.timeContext);
+          if (index >= 0) {
+            timeContextChildren.splice(index, 1);
+          }
+          layer.destroy();
         }
-        layer.destroy();
       }
     }
   }
 
   renderWaveform(buffer: AudioBuffer): void {
-    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
-    const waveTrack = this.timeline.getTrackById('wave');
+    // const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
+    const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
     if (this.timeline) {
       // resize
       const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
@@ -263,7 +497,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       this.timeline.pixelsPerSecond = width / buffer.duration;
       waveTrack.height = height;
     } else {
-      this.timeline = this.renderTimeline(buffer.duration)
+      this.renderTimeline(buffer.duration)
     }
     this.timeline.timeContext.offset = 0.5 * this.timeline.timeContext.visibleDuration;
 
@@ -277,7 +511,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const nchannels = buffer.numberOfChannels;
     const totalWaveHeight = height * 0.9;
     const waveHeight = totalWaveHeight / nchannels;
-    
+
     for (let ch = 0; ch < nchannels; ++ch) {
       console.log("about to construct a waveform layer for channel " + ch);
       const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
@@ -297,92 +531,13 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     waveTrack.render();
     waveTrack.update();
 
-
-    if ('ontouchstart' in window) {
-      interface Point {
-        x: number;
-        y: number;
-      }
-
-      let zoomGestureJustEnded: boolean = false;
-
-      const pixelToExponent: Function = wavesUI.utils.scales.linear()
-        .domain([0, 100]) // 100px => factor 2
-        .range([0, 1]);
-
-      const calculateDistance: (p1: Point, p2: Point) => number = (p1, p2) => {
-        return Math.pow(
-          Math.pow(p2.x - p1.x, 2) +
-          Math.pow(p2.y - p1.y, 2), 0.5);
-      };
-
-      const hammertime = new Hammer(this.trackDiv.nativeElement);
-      const scroll = (ev) => {
-        if (zoomGestureJustEnded) {
-          zoomGestureJustEnded = false;
-          console.log("Skip this event: likely a single touch dangling from pinch");
-          return;
-        }
-        this.timeline.timeContext.offset = this.offsetAtPanStart +
-          this.timeline.timeContext.timeToPixel.invert(ev.deltaX);
-        this.timeline.tracks.update();
-      };
-
-      const zoom = (ev) => {
-        const minZoom = this.timeline.state.minZoom;
-        const maxZoom = this.timeline.state.maxZoom;
-        const distance = calculateDistance({
-          x: ev.pointers[0].clientX,
-          y: ev.pointers[0].clientY
-        }, {
-          x: ev.pointers[1].clientX,
-          y: ev.pointers[1].clientY
-        });
-
-        const lastCenterTime =
-          this.timeline.timeContext.timeToPixel.invert(ev.center.x);
-
-        const exponent = pixelToExponent(distance - this.initialDistance);
-        const targetZoom = this.initialZoom * Math.pow(2, exponent);
-
-        this.timeline.timeContext.zoom =
-          Math.min(Math.max(targetZoom, minZoom), maxZoom);
-
-        const newCenterTime =
-          this.timeline.timeContext.timeToPixel.invert(ev.center.x);
-
-        this.timeline.timeContext.offset += newCenterTime - lastCenterTime;
-        this.timeline.tracks.update();
-      };
-      hammertime.get('pinch').set({ enable: true });
-      hammertime.on('panstart', () => {
-        this.offsetAtPanStart = this.timeline.timeContext.offset;
-      });
-      hammertime.on('panleft', scroll);
-      hammertime.on('panright', scroll);
-      hammertime.on('pinchstart', (e) => {
-        this.initialZoom = this.timeline.timeContext.zoom;
-
-        this.initialDistance = calculateDistance({
-          x: e.pointers[0].clientX,
-          y: e.pointers[0].clientY
-        }, {
-          x: e.pointers[1].clientX,
-          y: e.pointers[1].clientY
-        });
-      });
-      hammertime.on('pinch', zoom);
-      hammertime.on('pinchend', () => {
-        zoomGestureJustEnded = true;
-      });
-    }
-
+    this.isLoading = false;
     this.animate();
   }
 
   renderSpectrogram(buffer: AudioBuffer): void {
     const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
-    const gridTrack = this.timeline.getTrackById('grid');
+    const gridTrack = this.timeline.getTrackById(`grid-${this.trackIdPrefix}`);
 
     const spectrogramLayer = new WavesSpectrogramLayer(buffer, {
       top: height * 0.05,
@@ -399,12 +554,18 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // TODO refactor - this doesn't belong here
   private renderFeatures(extracted: SimpleResponse, colour: Colour): void {
+    if (this.isOneShotExtractor && !this.hasShot) {
+      this.featureExtractionSubscription.unsubscribe();
+      this.hasShot = true;
+    }
+
     if (!extracted.hasOwnProperty('features') || !extracted.hasOwnProperty('outputDescriptor')) return;
     if (!extracted.features.hasOwnProperty('shape') || !extracted.features.hasOwnProperty('data')) return;
     const features: FeatureCollection = (extracted.features as FeatureCollection);
     const outputDescriptor = extracted.outputDescriptor;
-    const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
-    const waveTrack = this.timeline.getTrackById('wave');
+    // const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
+    const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
+    const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
 
     // TODO refactor all of this
     switch (features.shape) {
@@ -573,10 +734,13 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
                     features.shape + "'");
     }
 
+    this.isLoading = false;
     this.timeline.tracks.update();
   }
 
   private animate(): void {
+    if (!this.isSeeking) return;
+
     this.ngZone.runOutsideAngular(() => {
       // listen for time passing...
       const updateSeekingCursor = () => {
@@ -625,6 +789,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         timeContext : new wavesUI.core.LayerTimeContext(timeContext));
     }
     track.add(layer);
+    this.layers.push(layer);
     layer.render();
     layer.update();
     if (this.cursorLayer && track.$layout.contains(this.cursorLayer.$el)) {
@@ -646,9 +811,14 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.featureExtractionSubscription.unsubscribe();
-    this.playingStateSubscription.unsubscribe();
-    this.seekedSubscription.unsubscribe();
+    if (this.featureExtractionSubscription)
+      this.featureExtractionSubscription.unsubscribe();
+    if (this.playingStateSubscription)
+      this.playingStateSubscription.unsubscribe();
+    if (this.seekedSubscription)
+      this.seekedSubscription.unsubscribe();
+    if (this.onAudioDataSubscription)
+      this.onAudioDataSubscription.unsubscribe();
   }
 
   seekStart(): void {
@@ -669,9 +839,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   seek(x: number): void {
     if (this.timeline) {
       const timeContext: any = this.timeline.timeContext;
-      this.audioService.seekTo(
-        timeContext.timeToPixel.invert(x)- timeContext.offset
-      );
+      if (this.isSeeking) {
+        this.audioService.seekTo(
+          timeContext.timeToPixel.invert(x)- timeContext.offset
+        );
+      }
     }
   }
 }

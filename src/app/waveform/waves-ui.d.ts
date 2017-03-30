@@ -101,4 +101,22 @@ interface Core {
   Layer: LayerConstructor;
   LayerTimeContext: any; // TODO
   Timeline: any; // TODO
+  TimelineTimeContext: TimelineTimeContextConstructor;
+}
+
+type Timeline = any;
+
+interface TimelineTimeContext {
+  pixelsPerSecond: number;
+  readonly computedPixelsPerSecond: number;
+  offset: number;
+  zoom: number;
+  visibleWidth: number;
+  readonly visibleDuration: number;
+  maintainVisibleDuration: boolean;
+  timeToPixel: (time: number) => number;
+}
+
+interface TimelineTimeContextConstructor {
+  new(pixelsPerSecond: number, visibleWidth: number): TimelineTimeContext;
 }
