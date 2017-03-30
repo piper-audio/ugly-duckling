@@ -540,8 +540,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const gridTrack = this.timeline.getTrackById(`grid-${this.trackIdPrefix}`);
 
     const spectrogramLayer = new WavesSpectrogramLayer(buffer, {
-      top: height * 0.05,
-      height: height * 0.9,
+      top: 0,
+      height: height,
       stepSize: 512,
       blockSize: 1024,
       normalise: 'none',
@@ -717,8 +717,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
                                                   stepDuration);
         let matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
           gain,
-          height: height * 0.9,
-          top: height * 0.05,
+          top: 0,
+          height: height,
           normalise: 'none',
           mapper: this.iceMapper()
         });
