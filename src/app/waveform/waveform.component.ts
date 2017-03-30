@@ -283,6 +283,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const zoom = (ev) => {
         if (ev.targetTouches.length < 2) return;
+        ev.preventDefault();
         const minZoom = componentTimeline.state.minZoom;
         const maxZoom = componentTimeline.state.maxZoom;
         const p1: Point = {
@@ -320,7 +321,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
       const element: HTMLElement = this.trackDiv.nativeElement;
-      window.addEventListener('touchmove', (e) => e.preventDefault());
       element.addEventListener('touchstart', (e) => {
         if (e.targetTouches.length < 2) return;
         isZooming = true;
