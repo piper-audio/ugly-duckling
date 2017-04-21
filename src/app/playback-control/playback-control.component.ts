@@ -1,6 +1,5 @@
 import {Component, OnInit} from '@angular/core';
 import {AudioPlayerService} from "../services/audio-player/audio-player.service";
-import {FeatureExtractionService} from "../services/feature-extraction/feature-extraction.service";
 
 @Component({
   selector: 'app-playback-control',
@@ -9,8 +8,7 @@ import {FeatureExtractionService} from "../services/feature-extraction/feature-e
 })
 export class PlaybackControlComponent implements OnInit {
 
-  constructor(private audioService: AudioPlayerService,
-              private featureExtractionService: FeatureExtractionService) {
+  constructor(private audioService: AudioPlayerService) {
   }
 
   ngOnInit() {}
