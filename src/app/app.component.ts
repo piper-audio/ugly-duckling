@@ -103,7 +103,8 @@ export class AppComponent implements OnDestroy {
       isRoot: false,
       title: outputInfo.name,
       description: outputInfo.outputId,
-      id: `${++this.countingId}`
+      id: `${++this.countingId}`,
+      progress: 0
     });
 
     this.piperService.extract(`${this.countingId}`, {
