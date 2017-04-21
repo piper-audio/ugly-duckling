@@ -18,6 +18,7 @@ import {
   StreamingService
 } from "piper/StreamingService";
 import {Observable} from "rxjs/Observable";
+import {EmscriptenModule} from "piper/PiperVampService";
 
 
 interface MessageEvent {
@@ -69,7 +70,6 @@ class AggregateStreamingService implements StreamingService {
 
 export default class FeatureExtractionWorker {
   private workerScope: DedicatedWorkerGlobalScope;
-  private services: Map<LibraryKey, PiperStreamingService>;
   private remoteLibraries: Map<LibraryKey, LibraryUri>;
   private server: WebWorkerStreamingServer;
   private service: AggregateStreamingService;
@@ -77,7 +77,6 @@ export default class FeatureExtractionWorker {
   constructor(workerScope: DedicatedWorkerGlobalScope,
               private requireJs: RequireJs) {
     this.workerScope = workerScope;
-    this.services = new Map<LibraryKey, PiperStreamingService>();
     this.remoteLibraries = new Map<LibraryKey, LibraryUri>();
     this.service = new AggregateStreamingService();
     this.setupImportLibraryListener();
@@ -88,6 +87,7 @@ export default class FeatureExtractionWorker {
   }
 
   private setupImportLibraryListener(): void {
+
     this.workerScope.onmessage = (ev: MessageEvent) => {
       const sendResponse = (result) => {
         this.workerScope.postMessage({
@@ -100,13 +100,13 @@ export default class FeatureExtractionWorker {
           const key: LibraryKey = ev.data.params;
           if (this.remoteLibraries.has(key)) {
             this.requireJs([this.remoteLibraries.get(key)], (plugin) => {
-              this.services.set(
-                key,
-                new PiperStreamingService(
-                  new PiperVampService(plugin.createLibrary())
-                )
-              ); // TODO won't always be an emscripten module
-              this.service.addService(key, this.services.get(key));
+              // TODO a factory with more logic probably belongs in piper-js
+              const lib: any | EmscriptenModule = plugin.createLibrary();
+              const isEmscriptenModule = typeof lib.cwrap === 'function';
+              const service = new PiperStreamingService(
+                isEmscriptenModule ? new PiperVampService(lib) : lib // TODO
+              );
+              this.service.addService(key, service);
               this.service.list({}).then(sendResponse);
             });
           } else {
