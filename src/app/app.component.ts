@@ -26,7 +26,7 @@ export class AppComponent implements OnDestroy {
   private rootAudioUri: string;
 
   constructor(private audioService: AudioPlayerService,
-              private piperService: FeatureExtractionService,
+              private featureService: FeatureExtractionService,
               private iconRegistry: MdIconRegistry,
               private sanitizer: DomSanitizer) {
     this.analyses = [];
@@ -53,7 +53,7 @@ export class AppComponent implements OnDestroy {
         }
       }
     );
-    this.onProgressUpdated = this.piperService.progressUpdated$.subscribe(
+    this.onProgressUpdated = this.featureService.progressUpdated$.subscribe(
       progress => {
         const index = this.analyses.findIndex(val => val.id === progress.id);
         if (index === -1) return;
@@ -107,7 +107,7 @@ export class AppComponent implements OnDestroy {
       progress: 0
     });
 
-    this.piperService.extract(`${this.countingId}`, {
+    this.featureService.extract(`${this.countingId}`, {
       audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
         .map(i => this.audioBuffer.getChannelData(i)),
       audioFormat: {
