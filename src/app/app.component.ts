@@ -19,6 +19,7 @@ export class AppComponent implements OnDestroy {
   audioBuffer: AudioBuffer; // TODO consider revising
   canExtract: boolean;
   private onAudioDataSubscription: Subscription;
+  private onProgressUpdated: Subscription;
   private analyses: AnalysisItem[]; // TODO some immutable state container describing entire session
   private nRecordings: number; // TODO user control for naming a recording
   private countingId: number; // TODO improve uniquely identifying items
@@ -31,7 +32,7 @@ export class AppComponent implements OnDestroy {
     this.analyses = [];
     this.canExtract = false;
     this.nRecordings = 0;
-    this.countingId = 1;
+    this.countingId = 0;
 
     iconRegistry.addSvgIcon(
       'duck',
@@ -50,6 +51,13 @@ export class AppComponent implements OnDestroy {
             this.canExtract = true;
           }
         }
+      }
+    );
+    this.onProgressUpdated = this.piperService.progressUpdated$.subscribe(
+      progress => {
+        const index = this.analyses.findIndex(val => val.id === progress.id);
+        if (index === -1) return;
+        this.analyses[index].progress = progress.value;
       }
     );
   }
@@ -80,7 +88,7 @@ export class AppComponent implements OnDestroy {
       isRoot: true,
       title: title,
       description: new Date().toLocaleString(),
-      id: `${this.countingId++}`
+      id: `${++this.countingId}`
     });
   }
 
@@ -95,15 +103,16 @@ export class AppComponent implements OnDestroy {
       isRoot: false,
       title: outputInfo.name,
       description: outputInfo.outputId,
-      id: `${this.countingId++}`
+      id: `${++this.countingId}`
     });
 
-    this.piperService.collect({
+    this.piperService.extract(`${this.countingId}`, {
       audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
         .map(i => this.audioBuffer.getChannelData(i)),
       audioFormat: {
         sampleRate: this.audioBuffer.sampleRate,
-        channelCount: this.audioBuffer.numberOfChannels
+        channelCount: this.audioBuffer.numberOfChannels,
+        length: this.audioBuffer.length
       },
       key: outputInfo.extractorKey,
       outputId: outputInfo.outputId
@@ -111,11 +120,13 @@ export class AppComponent implements OnDestroy {
       this.canExtract = true;
     }).catch(err => {
       this.canExtract = true;
-      console.error(err)
+      this.analyses.shift();
+      console.error(`Error whilst extracting: ${err}`);
     });
   }
 
   ngOnDestroy(): void {
     this.onAudioDataSubscription.unsubscribe();
+    this.onProgressUpdated.unsubscribe();
   }
 }
