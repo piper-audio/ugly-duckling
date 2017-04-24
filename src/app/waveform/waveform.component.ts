@@ -1,6 +1,6 @@
 import {
   Component, OnInit, ViewChild, ElementRef, Input, AfterViewInit, NgZone,
-  OnDestroy
+  OnDestroy, ChangeDetectorRef
 } from '@angular/core';
 import {
   AudioPlayerService, AudioResource,
@@ -171,7 +171,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
-              public ngZone: NgZone) {
+              private ngZone: NgZone,
+              private ref: ChangeDetectorRef) {
     this.isSubscribedToAudioService = true;
     this.isSeeking = true;
     this.layers = [];
@@ -532,6 +533,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     waveTrack.update();
 
     this.isLoading = false;
+    this.ref.markForCheck();
     this.animate();
   }
 
@@ -735,6 +737,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.isLoading = false;
+    this.ref.markForCheck();
     this.timeline.tracks.update();
   }
 
