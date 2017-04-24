@@ -26,6 +26,7 @@ import {
 import {RecordingControlComponent} from "./recording-control/recording-control.component";
 import {NotebookFeedComponent} from "./notebook-feed/notebook-feed.component";
 import {AnalysisItemComponent} from "./analysis-item/analysis-item.component";
+import {ProgressBarComponent} from "./progress-bar/progress-bar";
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -87,7 +88,7 @@ export function createResourceReader(): ResourceReader{
       };
       reader.readAsArrayBuffer(resource);
     });
-  };;
+  };
 }
 
 @NgModule({
@@ -100,7 +101,8 @@ export function createResourceReader(): ResourceReader{
     FeatureExtractionMenuComponent,
     ProgressSpinnerComponent,
     AnalysisItemComponent,
-    NotebookFeedComponent
+    NotebookFeedComponent,
+    ProgressBarComponent
   ],
   imports: [
     BrowserModule,
