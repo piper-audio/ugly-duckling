@@ -1,21 +1,21 @@
 <md-card>
   <md-card-header>
-    <md-card-title>{{title}}</md-card-title>
-    <md-card-subtitle>{{description}}</md-card-subtitle>
+    <md-card-title>{{item.title}}</md-card-title>
+    <md-card-subtitle>{{item.description}}</md-card-subtitle>
   </md-card-header>
   <md-card-content>
     <template [ngIf]="isLoading()">
-      <ugly-progress-spinner
+      <ugly-progress-bar
         [isDeterminate]="true"
-        [progress]="progress"
-      ></ugly-progress-spinner>
+        [progress]="item.progress"
+      ></ugly-progress-bar>
     </template>
     <template [ngIf]="!isLoading()">
       <app-waveform
         [timeline]="timeline"
-        [trackIdPrefix]=" id || title"
-        [isSubscribedToAudioService]="isActive && isRoot"
-        [isSubscribedToExtractionService]="isActive && !isRoot"
+        [trackIdPrefix]=" item.id || item.title"
+        [isSubscribedToAudioService]="isActive && item.isRoot"
+        [isSubscribedToExtractionService]="isActive && !item.isRoot"
         [isOneShotExtractor]="true"
         [isSeeking]="isActive"
       ></app-waveform>
