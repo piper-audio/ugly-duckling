@@ -1,14 +1,19 @@
 /**
  * Created by lucast on 21/03/2017.
  */
-import {Component, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input
+} from "@angular/core";
 import Waves from 'waves-ui';
 import {AnalysisItem} from "../analysis-item/analysis-item.component";
 
 @Component({
   selector: 'ugly-notebook-feed',
   templateUrl: './notebook-feed.component.html',
-  styleUrls: ['./notebook-feed.component.css']
+  styleUrls: ['./notebook-feed.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookFeedComponent {
   sharedTimeline: Timeline;
@@ -29,6 +34,5 @@ export class NotebookFeedComponent {
 
   constructor() {
     this.sharedTimeline = new Waves.core.Timeline();
-    this.analyses = [];
   }
 }
