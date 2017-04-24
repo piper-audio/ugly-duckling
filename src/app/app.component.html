@@ -33,19 +33,8 @@
         </app-feature-extraction-menu>
       </md-sidenav>
       <ugly-notebook-feed
-        [analyses]="analyses"
+        [analyses]="analyses.toIterable()"
         [rootAudioUri]="rootAudioUri"></ugly-notebook-feed>
     </md-sidenav-container>
-  </div>
-
-  <div class="app-footer">
-    <md-toolbar color="primary">
-
-      <!-- menu opens when trigger button is clicked -->
-      <button md-icon-button (click)="sidenav.toggle()">
-        <md-icon>extension</md-icon>
-      </button>
-    </md-toolbar>
-
   </div>
 </div>
