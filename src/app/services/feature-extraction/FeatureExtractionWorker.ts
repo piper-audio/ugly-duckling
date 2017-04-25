@@ -7,19 +7,18 @@ import {
   SimpleRequest
 } from 'piper/HigherLevelUtilities';
 import { VampExamplePlugins } from 'piper/ext/VampExamplePluginsModule';
-import {AvailableLibraries} from "./feature-extraction.service";
+import {AvailableLibraries} from './feature-extraction.service';
 import {
   DedicatedWorkerGlobalScope,
   WebWorkerStreamingServer
-} from "piper/servers/WebWorkerStreamingServer";
+} from 'piper/servers/WebWorkerStreamingServer';
 import {
   PiperStreamingService,
   StreamingResponse,
   StreamingService
-} from "piper/StreamingService";
-import {Observable} from "rxjs/Observable";
-import {EmscriptenModule} from "piper/PiperVampService";
-
+} from 'piper/StreamingService';
+import {Observable} from 'rxjs/Observable';
+import {EmscriptenModule} from 'piper/PiperVampService';
 
 interface MessageEvent {
   readonly data: any;
@@ -64,7 +63,7 @@ class AggregateStreamingService implements StreamingService {
   collect(request: SimpleRequest): Observable<StreamingResponse> {
     const key = request.key.split(':')[0];
     return this.services.has(key) ?
-      this.services.get(key).collect(request) : Observable.throw("Invalid key");
+      this.services.get(key).collect(request) : Observable.throw('Invalid key');
   }
 }
 
@@ -115,8 +114,8 @@ export default class FeatureExtractionWorker {
           break;
         case 'addRemoteLibraries': // TODO rename
           const available: AvailableLibraries = ev.data.params;
-          Object.keys(available).forEach(key => {
-            this.remoteLibraries.set(key, available[key]);
+          Object.keys(available).forEach(libraryKey => {
+            this.remoteLibraries.set(libraryKey, available[libraryKey]);
           });
       }
     };

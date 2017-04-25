@@ -2,13 +2,13 @@ import {Component, OnDestroy} from '@angular/core';
 import {
   AudioPlayerService,
   AudioResourceError, AudioResource
-} from "./services/audio-player/audio-player.service";
-import {FeatureExtractionService} from "./services/feature-extraction/feature-extraction.service";
-import {ExtractorOutputInfo} from "./feature-extraction-menu/feature-extraction-menu.component";
+} from './services/audio-player/audio-player.service';
+import {FeatureExtractionService} from './services/feature-extraction/feature-extraction.service';
+import {ExtractorOutputInfo} from './feature-extraction-menu/feature-extraction-menu.component';
 import {DomSanitizer} from '@angular/platform-browser';
 import {MdIconRegistry} from '@angular/material';
-import {Subscription} from "rxjs";
-import {AnalysisItem} from "./analysis-item/analysis-item.component";
+import {Subscription} from 'rxjs/Subscription';
+import {AnalysisItem} from './analysis-item/analysis-item.component';
 
 class PersistentStack<T> {
   private stack: T[];
@@ -26,8 +26,7 @@ class PersistentStack<T> {
     return item;
   }
 
-  unshift(item: T): number
-  {
+  unshift(item: T): number {
     this.history.push([...this.stack]);
     this.stack = [item, ...this.stack];
     return this.stack.length;
@@ -62,7 +61,7 @@ class PersistentStack<T> {
 }
 
 @Component({
-  selector: 'app-root',
+  selector: 'ugly-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -107,7 +106,9 @@ export class AppComponent implements OnDestroy {
     this.onProgressUpdated = this.featureService.progressUpdated$.subscribe(
       progress => {
         const index = this.analyses.findIndex(val => val.id === progress.id);
-        if (index === -1) return;
+        if (index === -1) {
+          return;
+        }
 
         this.analyses.set(
           index,
@@ -152,7 +153,10 @@ export class AppComponent implements OnDestroy {
   }
 
   extractFeatures(outputInfo: ExtractorOutputInfo): void {
-    if (!this.canExtract || !outputInfo) return;
+    if (!this.canExtract || !outputInfo) {
+      return;
+    }
+
     this.canExtract = false;
 
     this.analyses.unshift({

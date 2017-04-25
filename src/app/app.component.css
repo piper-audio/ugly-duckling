@@ -1,4 +1,4 @@
-.app-toolbar-filler {
+.ugly-toolbar-filler {
   flex: 1 1 auto;
 }
 
@@ -12,22 +12,22 @@ md-sidenav {
   text-align: center;
 }
 
-.app-container {
+.ugly-container {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.app-header {
+.ugly-header {
   flex: 0 0 auto;
 }
 
-.app-content {
+.ugly-content {
   flex: 1 1 auto;
   overflow-y: auto;
   position: relative;
 }
 
-.app-footer {
+.ugly-footer {
   flex: 0 0 auto;
 }

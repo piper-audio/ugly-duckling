@@ -1,29 +1,19 @@
 import {Injectable, Inject} from '@angular/core';
 import {
   ListResponse
-} from "piper";
+} from 'piper';
 import {
   SimpleRequest,
   SimpleResponse
-} from "piper/HigherLevelUtilities";
-import {Subject} from "rxjs/Subject";
-import {Observable} from "rxjs";
-import {Http, Response} from "@angular/http";
+} from 'piper/HigherLevelUtilities';
+import {Subject} from 'rxjs/Subject';
+import {Observable} from 'rxjs/Observable';
+import {Http, Response} from '@angular/http';
 import {
   countingIdProvider,
   WebWorkerStreamingClient
-} from "piper/client-stubs/WebWorkerStreamingClient";
-import {RequestId} from "piper/protocols/WebWorkerProtocol";
-
-interface RequestMessage<RequestType> {
-  method: string;
-  params: RequestType;
-}
-
-interface ResponseMessage<ResponseType> {
-  method: string;
-  result: ResponseType;
-}
+} from 'piper/client-stubs/WebWorkerStreamingClient';
+import {RequestId} from 'piper/protocols/WebWorkerProtocol';
 
 type RepoUri = string;
 export interface AvailableLibraries {
@@ -47,7 +37,8 @@ export class FeatureExtractionService {
   progressUpdated$: Observable<Progress>;
   private client: WebWorkerStreamingClient;
 
-  constructor(private http: Http, @Inject('PiperRepoUri') private repositoryUri: RepoUri) {
+  constructor(private http: Http,
+              @Inject('PiperRepoUri') private repositoryUri: RepoUri) {
     this.worker = new Worker('bootstrap-feature-extraction-worker.js');
     this.featuresExtracted = new Subject<SimpleResponse>();
     this.featuresExtracted$ = this.featuresExtracted.asObservable();
@@ -67,7 +58,7 @@ export class FeatureExtractionService {
     this.client = new WebWorkerStreamingClient(
       this.worker,
       countingIdProvider(0)
-    )
+    );
   }
 
   list(): Promise<ListResponse> {
@@ -104,7 +95,7 @@ export class FeatureExtractionService {
             val.features.data
           );
         } else {
-          throw "Invalid feature output. Aborting";
+          throw new Error('Invalid feature output. Aborting');
         }
         return acc;
       })

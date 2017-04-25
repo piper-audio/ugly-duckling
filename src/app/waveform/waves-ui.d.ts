@@ -1,7 +1,4 @@
-import EventEmitter = NodeJS.EventEmitter;
-/**
- * Created by lucas on 01/12/2016.
- */
+/// <reference path="../../../node_modules/@types/node/index.d.ts"/>
 declare const AmbientInstance: WavesUserInterface;
 
 declare module 'waves-ui' {
@@ -34,9 +31,7 @@ interface Area {
   height: number;
 }
 
-interface Layer extends EventEmitter {
-  destroy(): void;
-  configureTimeContextBehaviour(ctor: ObjectConstructor): void;
+interface Layer extends NodeJS.EventEmitter {
   start: number;
   offset: number;
   duration: number;
@@ -46,7 +41,10 @@ interface Layer extends EventEmitter {
   readonly timeToPixel: () => (time: number) => number;
   readonly valueToPixel: () => (value: number) => number;
   readonly items: Element[];
+  readonly selectedItems: Element[];
   data: ArrayLike<any> | Object;
+  destroy(): void;
+  configureTimeContextBehaviour(ctor: ObjectConstructor): void;
   setTimeContext(context: TimeContext): void;
   configureShape(ctor: ObjectConstructor /* TODO BaseShape*/,
                  accessors: Object,
@@ -55,7 +53,6 @@ interface Layer extends EventEmitter {
                        accessors: Object,
                        options: Object): void;
   setBehaviour(behaviour: Object /* TODO BaseBehavior */): void;
-  readonly selectedItems: Element[];
   select(...$items: Element[]);
   unselect(...$items: Element[]);
   toggleSelection(...$items: Element[]);
@@ -76,7 +73,7 @@ interface Layer extends EventEmitter {
 }
 
 interface LayerConstructor {
-  new(dataType: "entity" | "collection",
+  new(dataType: 'entity' | 'collection',
       data: ArrayLike<any> | Object,
       options: Object): Layer;
 }

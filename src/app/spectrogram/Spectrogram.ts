@@ -1,9 +1,9 @@
 /**
  * Created by lucast on 16/03/2017.
  */
-import {RealFft, KissRealFft} from "piper/fft/RealFft";
-import {hann} from "piper/FftUtilities";
-import {Framing} from "piper";
+import {RealFft, KissRealFft} from 'piper/fft/RealFft';
+import {hann} from 'piper/FftUtilities';
+import {Framing} from 'piper';
 import Waves from 'waves-ui';
 
 class SpectrogramEntity extends Waves.utils.MatrixEntity {
@@ -23,7 +23,7 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
     this.sampleRate = sampleRate;
     this.framing = options;
     this.real = new Float32Array(this.framing.blockSize);
-    this.nCols = Math.floor(this.samples.length / this.framing.stepSize); //!!! not correct
+    this.nCols = Math.floor(this.samples.length / this.framing.stepSize); // !!! not correct
     this.columnHeight = Math.round(this.framing.blockSize / 2) + 1;
     this.fft = new KissRealFft(this.framing.blockSize);
     this.window = hann(this.framing.blockSize);
@@ -44,7 +44,7 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
   getStepDuration(): number {
     return this.framing.stepSize / this.sampleRate;
   }
-  
+
   getColumn(n: number): Float32Array {
 
     const startSample = n * this.framing.stepSize;
@@ -68,10 +68,9 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
 
     const scale = 1.0 / Math.sqrt(sz);
     for (let i = 0; i < h; ++i) {
-      const re : number = complex[i*2] * scale;
-      const im : number = complex[i*2+1] * scale;
-      const mag = Math.sqrt(re * re + im * im);
-      col[i] = mag;
+      const re: number = complex[i * 2] * scale;
+      const im: number = complex[i * 2 + 1] * scale;
+      col[i] = Math.sqrt(re * re + im * im);
     }
 
     return col;
@@ -79,7 +78,7 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
 }
 
 export class WavesSpectrogramLayer extends Waves.core.Layer {
-  constructor(buffer: AudioBuffer,
+  constructor(bufferIn: AudioBuffer,
               options: Framing & Object) {
 
     const defaults = {
@@ -95,30 +94,38 @@ export class WavesSpectrogramLayer extends Waves.core.Layer {
 
     const getSamples = ((buffer, channel) => {
       const nch = buffer.numberOfChannels;
-      if (channel >= 0 || nch == 1) {
-	if (channel < 0) channel = 0;
-	return buffer.getChannelData(channel);
+      if (channel >= 0 || nch === 1) {
+        if (channel < 0) {
+          channel = 0;
+        }
+        return buffer.getChannelData(channel);
       } else {
         const before = performance.now();
-	console.log("mixing down " + nch + " channels for spectrogram...");
-	const mixed = Float32Array.from(buffer.getChannelData(0));
-	const n = mixed.length;
-	for (let ch = 1; ch < nch; ++ch) {
-	  const buf = buffer.getChannelData(ch);
-	  for (let i = 0; i < n; ++i) mixed[i] += buf[i];
-	}
-	const scale = 1.0 / nch;
-	for (let i = 0; i < n; ++i) mixed[i] *= scale;
-	console.log("done in " + (performance.now() - before) + "ms");
-	return mixed;
+        console.log('mixing down ' + nch + ' channels for spectrogram...');
+        const mixed = Float32Array.from(buffer.getChannelData(0));
+        const n = mixed.length;
+        for (let ch = 1; ch < nch; ++ch) {
+          const buf = buffer.getChannelData(ch);
+          for (let i = 0; i < n; ++i) {
+            mixed[i] += buf[i];
+          }
+        }
+        const scale = 1.0 / nch;
+        for (let i = 0; i < n; ++i) {
+          mixed[i] *= scale;
+        }
+        console.log('done in ' + (performance.now() - before) + 'ms');
+        return mixed;
       }
     });
-    
-    super('entity',
-	  new SpectrogramEntity(getSamples(buffer, mergedOptions.channel),
-				mergedOptions,
-				buffer.sampleRate),
-	  mergedOptions);
+
+    super(
+      'entity',
+      new SpectrogramEntity(getSamples(bufferIn, mergedOptions.channel),
+        mergedOptions,
+        bufferIn.sampleRate),
+      mergedOptions
+    );
 
     this.configureShape(Waves.shapes.Matrix, {}, mergedOptions);
   }

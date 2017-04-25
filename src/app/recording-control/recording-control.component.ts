@@ -8,12 +8,12 @@ import {
   OnDestroy,
   Output,
   EventEmitter
-} from "@angular/core";
+} from '@angular/core';
 import {
   AudioRecorderService,
   RecorderServiceStatus
-} from "../services/audio-recorder/audio-recorder.service";
-import {Subscription} from "rxjs";
+} from '../services/audio-recorder/audio-recorder.service';
+import {Subscription} from 'rxjs/Subscription';
 
 @Component({
   selector: 'ugly-recording-control',
@@ -26,7 +26,7 @@ export class RecordingControlComponent implements OnInit, OnDestroy {
   @Output() finishedRecording: EventEmitter<Blob>;
 
   constructor(private recordingService: AudioRecorderService) {
-    this.recordingStatus = "disabled";
+    this.recordingStatus = 'disabled';
     this.finishedRecording = new EventEmitter<Blob>();
   }
 

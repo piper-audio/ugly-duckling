@@ -5,9 +5,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input
-} from "@angular/core";
+} from '@angular/core';
 import Waves from 'waves-ui';
-import {AnalysisItem} from "../analysis-item/analysis-item.component";
+import {AnalysisItem} from '../analysis-item/analysis-item.component';
 
 @Component({
   selector: 'ugly-notebook-feed',

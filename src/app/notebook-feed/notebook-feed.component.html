@@ -1,5 +1,5 @@
 
-<template ngFor let-item [ngForOf]="analyses">
+<ng-template ngFor let-item [ngForOf]="analyses">
   <div [class.break]="item.isRoot">
     <ugly-analysis-item
       [timeline]="item.hasSharedTimeline ? sharedTimeline : undefined"
@@ -7,4 +7,4 @@
       [item]="item"
     ></ugly-analysis-item>
   </div>
-</template>
+</ng-template>

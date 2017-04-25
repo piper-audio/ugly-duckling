@@ -20,15 +20,16 @@
 import extractionWorker from './app/services/feature-extraction/FeatureExtractionWorker';
 
 const modules = {
-  'feature-extraction-worker': extractionWorker,
+  'feature-extraction-worker': extractionWorker
 };
 
 if (typeof (self as any).importScripts === 'function' /* in a worker */) {
 
   self['require'] = (moduleName) => {
-    if (modules.hasOwnProperty(moduleName))
+    if (modules.hasOwnProperty(moduleName)) {
       return modules[moduleName];
-    else
+    } else {
       throw new Error(`Cannot find module '${moduleName}'`);
+    }
   };
 }

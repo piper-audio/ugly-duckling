@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {AudioPlayerService} from "../services/audio-player/audio-player.service";
+import {AudioPlayerService} from '../services/audio-player/audio-player.service';
 
 @Component({
-  selector: 'app-playback-control',
+  selector: 'ugly-playback-control',
   templateUrl: './playback-control.component.html',
   styleUrls: ['./playback-control.component.css']
 })
