@@ -11,7 +11,6 @@ import {
 } from '../services/feature-extraction/feature-extraction.service';
 import {ListResponse} from 'piper';
 import {Subscription} from 'rxjs/Subscription';
-import {MdSelect} from '@angular/material';
 
 export interface ExtractorOutputInfo {
   extractorKey: string;
@@ -85,10 +84,7 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  load(select: MdSelect): void {
-    console.warn(select, select._keyManager);
-    const item = select._keyManager.activeItemIndex;
-    select._keyManager.setFirstItemActive();
+  load(): void {
     this.piperService.updateAvailableLibraries().subscribe(res => {
       Object.keys(res).forEach(key => this.piperService.load(key));
     });
