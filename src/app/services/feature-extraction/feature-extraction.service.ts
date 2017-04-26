@@ -66,38 +66,12 @@ export class FeatureExtractionService {
   }
 
   extract(analysisItemId: string, request: SimpleRequest): Promise<void> {
-    const arrayReducer = (acc, val) => {
-      acc.push.apply(acc, val);
-      return acc;
-    };
-    const typedArrayReducer = (acc: Float32Array,
-                               val: Float32Array): Float32Array => {
-      return Float32Array.of(...acc, ...val);
-    };
     return this.client.collect(request)
       .do(val => {
         this.progressUpdated.next({
           id: analysisItemId,
           value: (val.processedBlockCount / val.totalBlockCount) * 100
         });
-      })
-      .reduce((acc, val) => {
-        if (acc.features.data instanceof Array &&
-          val.features.data instanceof Array) {
-          acc.features.data = arrayReducer(
-            acc.features.data,
-            val.features.data
-          );
-        } else if (acc.features.data instanceof Float32Array &&
-          val.features.data instanceof Float32Array) {
-          acc.features.data = typedArrayReducer(
-            acc.features.data,
-            val.features.data
-          );
-        } else {
-          throw new Error('Invalid feature output. Aborting');
-        }
-        return acc;
       })
       .toPromise()
       .then((response) => {
