@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
-import { MaterialModule } from "@angular/material";
 import { WaveformComponent } from './waveform/waveform.component';
 import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
 import { PlaybackControlComponent } from './playback-control/playback-control.component';
 import {
   AudioPlayerService,
-  UrlResourceLifetimeManager, ResourceReader
-} from "./services/audio-player/audio-player.service";
-import { FeatureExtractionService } from "./services/feature-extraction/feature-extraction.service";
-import { FeatureExtractionMenuComponent } from "./feature-extraction-menu/feature-extraction-menu.component";
-import { ProgressSpinnerComponent } from "./progress-spinner/progress-spinner.component";
+  UrlResourceLifetimeManager,
+  ResourceReader
+} from './services/audio-player/audio-player.service';
+import { FeatureExtractionService } from './services/feature-extraction/feature-extraction.service';
+import { FeatureExtractionMenuComponent } from './feature-extraction-menu/feature-extraction-menu.component';
+import { ProgressSpinnerComponent } from './progress-spinner/progress-spinner.component';
 import {
   AudioRecorderService,
   AudioInputProvider,
@@ -22,10 +22,12 @@ import {
   MediaRecorder as IMediaRecorder,
   MediaRecorderOptions,
   ThrowingMediaRecorder,
-} from "./services/audio-recorder/audio-recorder.service";
-import {RecordingControlComponent} from "./recording-control/recording-control.component";
-import {NotebookFeedComponent} from "./notebook-feed/notebook-feed.component";
-import {AnalysisItemComponent} from "./analysis-item/analysis-item.component";
+} from './services/audio-recorder/audio-recorder.service';
+import {RecordingControlComponent} from './recording-control/recording-control.component';
+import {NotebookFeedComponent} from './notebook-feed/notebook-feed.component';
+import {AnalysisItemComponent} from './analysis-item/analysis-item.component';
+import {ProgressBarComponent} from './progress-bar/progress-bar';
+import {UglyMaterialModule} from './ugly-material.module';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -75,7 +77,7 @@ export function createUrlResourceManager(): UrlResourceLifetimeManager {
   };
 }
 
-export function createResourceReader(): ResourceReader{
+export function createResourceReader(): ResourceReader {
   return (resource) => {
     return new Promise((res, rej) => {
       const reader: FileReader = new FileReader();
@@ -87,7 +89,7 @@ export function createResourceReader(): ResourceReader{
       };
       reader.readAsArrayBuffer(resource);
     });
-  };;
+  };
 }
 
 @NgModule({
@@ -100,13 +102,14 @@ export function createResourceReader(): ResourceReader{
     FeatureExtractionMenuComponent,
     ProgressSpinnerComponent,
     AnalysisItemComponent,
-    NotebookFeedComponent
+    NotebookFeedComponent,
+    ProgressBarComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpModule,
-    MaterialModule
+    UglyMaterialModule
   ],
   providers: [
     {provide: HTMLAudioElement, useFactory: createAudioElement}, // TODO use something more generic than HTMLAudioElement
@@ -116,7 +119,7 @@ export function createResourceReader(): ResourceReader{
     AudioRecorderService,
     FeatureExtractionService,
     {provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory},
-    {provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json'},
+    {provide: 'PiperRepoUri', useValue: 'assets/remote-extractors.json'},
     {provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager},
     {provide: 'ResourceReader', useFactory: createResourceReader}
   ],

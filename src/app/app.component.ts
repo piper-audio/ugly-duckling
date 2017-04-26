@@ -2,16 +2,66 @@ import {Component, OnDestroy} from '@angular/core';
 import {
   AudioPlayerService,
   AudioResourceError, AudioResource
-} from "./services/audio-player/audio-player.service";
-import {FeatureExtractionService} from "./services/feature-extraction/feature-extraction.service";
-import {ExtractorOutputInfo} from "./feature-extraction-menu/feature-extraction-menu.component";
+} from './services/audio-player/audio-player.service';
+import {FeatureExtractionService} from './services/feature-extraction/feature-extraction.service';
+import {ExtractorOutputInfo} from './feature-extraction-menu/feature-extraction-menu.component';
 import {DomSanitizer} from '@angular/platform-browser';
 import {MdIconRegistry} from '@angular/material';
-import {Subscription} from "rxjs";
-import {AnalysisItem} from "./analysis-item/analysis-item.component";
+import {Subscription} from 'rxjs/Subscription';
+import {AnalysisItem} from './analysis-item/analysis-item.component';
+
+class PersistentStack<T> {
+  private stack: T[];
+  private history: T[][];
+
+  constructor() {
+    this.stack = [];
+    this.history = [];
+  }
+
+  shift(): T {
+    this.history.push([...this.stack]);
+    const item = this.stack[0];
+    this.stack = this.stack.slice(1);
+    return item;
+  }
+
+  unshift(item: T): number {
+    this.history.push([...this.stack]);
+    this.stack = [item, ...this.stack];
+    return this.stack.length;
+  }
+
+  findIndex(predicate: (value: T,
+                        index: number,
+                        array: T[]) => boolean): number {
+    return this.stack.findIndex(predicate);
+  }
+
+  filter(predicate: (value: T, index: number, array: T[]) => boolean): T[] {
+    return this.stack.filter(predicate);
+  }
+
+  get(index: number): T {
+    return this.stack[index];
+  }
+
+  set(index: number, value: T) {
+    this.history.push([...this.stack]);
+    this.stack = [
+      ...this.stack.slice(0, index),
+      value,
+      ...this.stack.slice(index + 1)
+    ];
+  }
+
+  toIterable(): Iterable<T> {
+    return this.stack;
+  }
+}
 
 @Component({
-  selector: 'app-root',
+  selector: 'ugly-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -20,7 +70,7 @@ export class AppComponent implements OnDestroy {
   canExtract: boolean;
   private onAudioDataSubscription: Subscription;
   private onProgressUpdated: Subscription;
-  private analyses: AnalysisItem[]; // TODO some immutable state container describing entire session
+  private analyses: PersistentStack<AnalysisItem>; // TODO some immutable state container describing entire session
   private nRecordings: number; // TODO user control for naming a recording
   private countingId: number; // TODO improve uniquely identifying items
   private rootAudioUri: string;
@@ -29,7 +79,7 @@ export class AppComponent implements OnDestroy {
               private featureService: FeatureExtractionService,
               private iconRegistry: MdIconRegistry,
               private sanitizer: DomSanitizer) {
-    this.analyses = [];
+    this.analyses = new PersistentStack<AnalysisItem>();
     this.canExtract = false;
     this.nRecordings = 0;
     this.countingId = 0;
@@ -56,8 +106,18 @@ export class AppComponent implements OnDestroy {
     this.onProgressUpdated = this.featureService.progressUpdated$.subscribe(
       progress => {
         const index = this.analyses.findIndex(val => val.id === progress.id);
-        if (index === -1) return;
-        this.analyses[index].progress = progress.value;
+        if (index === -1) {
+          return;
+        }
+
+        this.analyses.set(
+          index,
+          Object.assign(
+            {},
+            this.analyses.get(index),
+            {progress: progress.value}
+          )
+        );
       }
     );
   }
@@ -93,7 +153,10 @@ export class AppComponent implements OnDestroy {
   }
 
   extractFeatures(outputInfo: ExtractorOutputInfo): void {
-    if (!this.canExtract || !outputInfo) return;
+    if (!this.canExtract || !outputInfo) {
+      return;
+    }
+
     this.canExtract = false;
 
     this.analyses.unshift({

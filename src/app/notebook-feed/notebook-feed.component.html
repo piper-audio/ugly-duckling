@@ -1,14 +1,10 @@
 
-<template ngFor let-item [ngForOf]="analyses">
+<ng-template ngFor let-item [ngForOf]="analyses">
   <div [class.break]="item.isRoot">
     <ugly-analysis-item
       [timeline]="item.hasSharedTimeline ? sharedTimeline : undefined"
-      [title]="item.title"
-      [description]="item.description"
       [isActive]="rootAudioUri === item.rootAudioUri"
-      [isRoot]="item.isRoot"
-      [id]="item.id"
-      [progress]="item.progress"
+      [item]="item"
     ></ugly-analysis-item>
   </div>
-</template>
+</ng-template>
