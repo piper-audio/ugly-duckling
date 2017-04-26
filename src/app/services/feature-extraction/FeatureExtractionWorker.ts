@@ -7,7 +7,9 @@ import {
   SimpleRequest
 } from 'piper/HigherLevelUtilities';
 import { VampExamplePlugins } from 'piper/ext/VampExamplePluginsModule';
-import {AvailableLibraries} from './feature-extraction.service';
+import {
+  AvailableLibraries
+} from './feature-extraction.service';
 import {
   DedicatedWorkerGlobalScope,
   WebWorkerStreamingServer
@@ -19,6 +21,7 @@ import {
 } from 'piper/StreamingService';
 import {Observable} from 'rxjs/Observable';
 import {EmscriptenModule} from 'piper/PiperVampService';
+import {streamingResponseReducer} from './FeatureReducers';
 
 interface MessageEvent {
   readonly data: any;
@@ -67,6 +70,29 @@ class AggregateStreamingService implements StreamingService {
   }
 }
 
+class ReducingAggregateService extends AggregateStreamingService {
+  constructor() {
+    super();
+  }
+
+  collect(request: SimpleRequest): Observable<StreamingResponse> {
+    let lastPercentagePoint = 0;
+    return super.collect(request)
+      .scan(streamingResponseReducer)
+      .filter(val => {
+        const percentage =
+          100 * (val.processedBlockCount / val.totalBlockCount) | 0;
+        const pointDifference = (percentage - lastPercentagePoint);
+        if (pointDifference === 1 || percentage === 100) {
+          lastPercentagePoint = percentage;
+          return true;
+        } else {
+          return false;
+        }
+      });
+  }
+}
+
 export default class FeatureExtractionWorker {
   private workerScope: DedicatedWorkerGlobalScope;
   private remoteLibraries: Map<LibraryKey, LibraryUri>;
@@ -77,7 +103,7 @@ export default class FeatureExtractionWorker {
               private requireJs: RequireJs) {
     this.workerScope = workerScope;
     this.remoteLibraries = new Map<LibraryKey, LibraryUri>();
-    this.service = new AggregateStreamingService();
+    this.service = new ReducingAggregateService();
     this.setupImportLibraryListener();
     this.server = new WebWorkerStreamingServer(
       this.workerScope,
