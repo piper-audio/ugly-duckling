@@ -3,7 +3,7 @@
  */
 
 
-import {Component, Input} from "@angular/core";
+import {Component, Input} from '@angular/core';
 @Component({
   selector: 'ugly-progress-spinner',
   template: `
@@ -32,10 +32,10 @@ import {Component, Input} from "@angular/core";
   `]
 })
 export class ProgressSpinnerComponent {
-  private currentProcess: number = 0;
+  private currentProcess = 0;
 
-  @Input() isVisible: boolean = true;
-  @Input() isDeterminate: boolean = false;
+  @Input() isVisible = true;
+  @Input() isDeterminate = false;
   @Input()
   set progress(value: number) {
     if (value < 0) {

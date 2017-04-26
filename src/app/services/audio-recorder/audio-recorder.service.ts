@@ -1,8 +1,9 @@
 /**
  * Created by lucas on 17/03/2017.
  */
-import {Injectable, Inject, NgZone} from "@angular/core";
-import {Subject, Observable} from "rxjs";
+import {Injectable, Inject, NgZone} from '@angular/core';
+import {Observable} from 'rxjs/Observable';
+import {Subject} from 'rxjs/Subject';
 
 
 // seems the TypeScript definitions are not up to date,
@@ -17,7 +18,7 @@ export interface MediaRecorderOptions {
   bitsPerSecond?: number;
 }
 
-export type RecordingState = "inactive" | "recording" | "paused";
+export type RecordingState = 'inactive' | 'recording' | 'paused';
 
 export interface BlobEvent extends Event {
   readonly data: Blob;
@@ -36,17 +37,17 @@ export interface MediaRecorder {
   readonly videoBitsPerSecond: number;
   readonly audioBitsPerSecond: number;
   // isTypeSupported(mimeType: string): boolean;
-  pause(): void;
-  requestData(): void;
-  resume(): void;
-  start(timeslice?: number): void;
-  stop(): void;
   onstart: (evt: Event) => void;
   onstop: (evt: Event) => void;
   ondataavailable: (evt: BlobEvent) => void;
   onpause: (evt: Event) => void;
   onresume: (evt: Event) => void;
   onerror: (evt: MediaRecorderErrorEvent) => void;
+  pause(): void;
+  requestData(): void;
+  resume(): void;
+  start(timeslice?: number): void;
+  stop(): void;
 }
 
 export interface MediaRecorderConstructor {
@@ -55,7 +56,7 @@ export interface MediaRecorderConstructor {
   isTypeSupported(mimeType: string): boolean;
 }
 
-export type RecorderServiceStatus = "disabled" | "enabled" | "recording";
+export type RecorderServiceStatus = 'disabled' | 'enabled' | 'recording';
 
 export class ThrowingMediaRecorder implements MediaRecorder {
   mimeType: string;
@@ -71,14 +72,15 @@ export class ThrowingMediaRecorder implements MediaRecorder {
   onresume: (evt: Event) => void;
   onerror: (evt: MediaRecorderErrorEvent) => void;
 
-  constructor(stream: MediaStream,
-              options?: MediaRecorderOptions) {
-    throw "MediaRecorder not available in this browser."
-  }
-
   static isTypeSupported(mimeType: string): boolean {
     return false;
   }
+
+  constructor(stream: MediaStream,
+              options?: MediaRecorderOptions) {
+    throw new Error('MediaRecorder not available in this browser.');
+  }
+
 
   pause(): void {
   }
@@ -142,21 +144,23 @@ export class AudioRecorderService {
           });
         };
         this.isRecordingAble = true;
-        this.recordingStateChange.next("enabled");
+        this.recordingStateChange.next('enabled');
       } catch (e) {
         this.isRecordingAble = false;
-        this.recordingStateChange.next("disabled"); // don't really need to do this
+        this.recordingStateChange.next('disabled'); // don't really need to do this
         console.warn(e); // TODO emit an error message for display?
       }
     }, rejectMessage => {
       this.isRecordingAble = false;
-      this.recordingStateChange.next("disabled"); // again, probably not needed
+      this.recordingStateChange.next('disabled'); // again, probably not needed
       console.warn(rejectMessage); // TODO something better
     });
   }
 
   toggleRecording(): void {
-    if (!this.isRecordingAble) return;
+    if (!this.isRecordingAble) {
+      return;
+    }
 
     if (this.isRecording) {
       this.endRecording();
@@ -169,7 +173,7 @@ export class AudioRecorderService {
     if (this.recorder) {
       this.isRecording = true;
       this.recorder.start();
-      this.recordingStateChange.next("recording");
+      this.recordingStateChange.next('recording');
     }
   }
 
@@ -178,7 +182,7 @@ export class AudioRecorderService {
       this.isRecording = false;
       this.recorder.stop();
       this.chunks.length = 0; // empty the array
-      this.recordingStateChange.next("enabled");
+      this.recordingStateChange.next('enabled');
     }
   }
 }

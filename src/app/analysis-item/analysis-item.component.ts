@@ -6,7 +6,7 @@ import {
   Component,
   Input,
   OnInit
-} from "@angular/core";
+} from '@angular/core';
 
 export interface AnalysisItem {
   rootAudioUri: string;

@@ -4,21 +4,21 @@
     <md-card-subtitle>{{item.description}}</md-card-subtitle>
   </md-card-header>
   <md-card-content>
-    <template [ngIf]="isLoading()">
+    <ng-template [ngIf]="isLoading()">
       <ugly-progress-bar
         [isDeterminate]="true"
         [progress]="item.progress"
       ></ugly-progress-bar>
-    </template>
-    <template [ngIf]="!isLoading()">
-      <app-waveform
+    </ng-template>
+    <ng-template [ngIf]="!isLoading()">
+      <ugly-waveform
         [timeline]="timeline"
         [trackIdPrefix]=" item.id || item.title"
         [isSubscribedToAudioService]="isActive && item.isRoot"
         [isSubscribedToExtractionService]="isActive && !item.isRoot"
         [isOneShotExtractor]="true"
         [isSeeking]="isActive"
-      ></app-waveform>
-    </template>
+      ></ugly-waveform>
+    </ng-template>
   </md-card-content>
 </md-card>

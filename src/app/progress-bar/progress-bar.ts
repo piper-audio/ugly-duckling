@@ -3,7 +3,7 @@
  */
 
 
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 @Component({
   selector: 'ugly-progress-bar',
   template: `
@@ -16,6 +16,6 @@ import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProgressBarComponent {
-  @Input() isDeterminate: boolean = false;
+  @Input() isDeterminate = false;
   @Input() progress: number;
 }
