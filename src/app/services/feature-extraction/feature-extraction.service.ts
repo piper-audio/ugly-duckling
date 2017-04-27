@@ -68,10 +68,12 @@ export class FeatureExtractionService {
   extract(analysisItemId: string, request: SimpleRequest): Promise<void> {
     return this.client.collect(request)
       .do(val => {
-        this.progressUpdated.next({
-          id: analysisItemId,
-          value: (val.processedBlockCount / val.totalBlockCount) * 100
-        });
+        if (val.totalBlockCount > 0) {
+          this.progressUpdated.next({
+            id: analysisItemId,
+            value: (val.processedBlockCount / val.totalBlockCount) * 100
+          });
+        }
       })
       .toPromise()
       .then((response) => {
