@@ -60,13 +60,18 @@ class AggregateStreamingService implements StreamingService {
   }
 
   process(request: SimpleRequest): Observable<StreamingResponse> {
-    return undefined;
+    return this.dispatch('process', request);
   }
 
   collect(request: SimpleRequest): Observable<StreamingResponse> {
+    return this.dispatch('collect', request);
+  }
+
+  protected dispatch(method: 'process' | 'collect',
+                     request: SimpleRequest): Observable<StreamingResponse> {
     const key = request.key.split(':')[0];
     return this.services.has(key) ?
-      this.services.get(key).collect(request) : Observable.throw('Invalid key');
+      this.services.get(key)[method](request) : Observable.throw('Invalid key');
   }
 }
 
@@ -75,9 +80,10 @@ class ReducingAggregateService extends AggregateStreamingService {
     super();
   }
 
-  collect(request: SimpleRequest): Observable<StreamingResponse> {
+  protected dispatch(method: 'process' | 'collect',
+                     request: SimpleRequest): Observable<StreamingResponse> {
     let lastPercentagePoint = 0;
-    return super.collect(request)
+    return super.dispatch(method, request)
       .scan(streamingResponseReducer)
       .filter(val => {
         const percentage =
