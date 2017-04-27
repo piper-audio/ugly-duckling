@@ -89,12 +89,11 @@ class ReducingAggregateService extends AggregateStreamingService {
         const percentage =
           100 * (val.processedBlockCount / val.totalBlockCount) | 0;
         const pointDifference = (percentage - lastPercentagePoint);
-        if (pointDifference === 1 || percentage === 100) {
+        const shouldEmit = pointDifference === 1 || percentage === 100;
+        if (shouldEmit) {
           lastPercentagePoint = percentage;
-          return true;
-        } else {
-          return false;
         }
+        return shouldEmit;
       });
   }
 }
