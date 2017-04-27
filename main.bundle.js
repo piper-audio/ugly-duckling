@@ -1462,6 +1462,7 @@ let WaveformComponent = class WaveformComponent {
         this.audioBuffer = undefined;
         this.timeline = undefined;
         this.cursorLayer = undefined;
+        this.highlightLayer = undefined;
         this.isPlaying = false;
         this.isLoading = true;
     }
@@ -1976,7 +1977,8 @@ let WaveformComponent = class WaveformComponent {
                 const plotData = [...featureData].map((feature, i) => {
                     return {
                         cx: i * stepDuration,
-                        cy: feature * normalisationFactor
+                        cy: feature * normalisationFactor,
+                        value: feature
                     };
                 });
                 const lineLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.LineLayer(plotData, {
@@ -1984,6 +1986,12 @@ let WaveformComponent = class WaveformComponent {
                     height: height
                 });
                 this.addLayer(lineLayer, waveTrack, this.timeline.timeContext);
+                this.highlightLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.HighlightLayer(lineLayer, {
+                    color: colour,
+                    opacity: 0.7,
+                    height: height
+                });
+                this.addLayer(this.highlightLayer, waveTrack, this.timeline.timeContext);
                 break;
             }
             case 'list': {
@@ -2106,6 +2114,10 @@ let WaveformComponent = class WaveformComponent {
                 const currentTime = this.audioService.getCurrentTime();
                 this.cursorLayer.currentPosition = currentTime;
                 this.cursorLayer.update();
+                if (typeof (this.highlightLayer) !== 'undefined') {
+                    this.highlightLayer.currentPosition = currentTime;
+                    this.highlightLayer.update();
+                }
                 const currentOffset = this.timeline.timeContext.offset;
                 const offsetTimestamp = currentOffset
                     + currentTime;
