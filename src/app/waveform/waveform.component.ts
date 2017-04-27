@@ -158,6 +158,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private _isOneShotExtractor: boolean;
   private _isSeeking: boolean;
   private cursorLayer: any;
+  private highlightLayer: any;
   private layers: Layer[];
   private featureExtractionSubscription: Subscription;
   private playingStateSubscription: Subscription;
@@ -178,6 +179,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.audioBuffer = undefined;
     this.timeline = undefined;
     this.cursorLayer = undefined;
+    this.highlightLayer = undefined;
     this.isPlaying = false;
     this.isLoading = true;
   }
@@ -582,7 +584,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const plotData = [...featureData].map((feature, i) => {
           return {
             cx: i * stepDuration,
-            cy: feature * normalisationFactor
+            cy: feature * normalisationFactor,
+            value: feature
           };
         });
 
@@ -592,6 +595,16 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         this.addLayer(
           lineLayer,
+          waveTrack,
+          this.timeline.timeContext
+        );
+        this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayer, {
+          color: colour,
+          opacity: 0.7,
+          height: height
+        });
+        this.addLayer(
+          this.highlightLayer,
           waveTrack,
           this.timeline.timeContext
         );
@@ -748,6 +761,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cursorLayer.currentPosition = currentTime;
         this.cursorLayer.update();
 
+        if (typeof(this.highlightLayer) !== 'undefined') {
+          this.highlightLayer.currentPosition = currentTime;
+          this.highlightLayer.update();
+        }
+        
         const currentOffset = this.timeline.timeContext.offset;
         const offsetTimestamp = currentOffset
           + currentTime;
