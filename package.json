@@ -27,7 +27,7 @@
     "piper": "github:lucasthompson/piper-js#cfc36d1ea5d854e8262b39bd125e5fded2e76ea2",
     "requirejs": "^2.3.3",
     "rxjs": "^5.1.0",
-    "waves-ui": "github:cannam/waves-ui#709ab8162fa0e09ab68028ef74c98f3c00ce3b31",
+    "waves-ui": "github:cannam/waves-ui",
     "zone.js": "0.8.7"
   },
   "devDependencies": {

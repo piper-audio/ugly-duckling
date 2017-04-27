@@ -3017,8 +3017,8 @@ jasmine-core@~2.5.2:
   resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-2.5.2.tgz#6f61bd79061e27f43e6f9355e44b3c6cab6ff297"
 
 jasmine-core@~2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-2.6.0.tgz#95e80740cc4d2c16741750e8b79e53c7ee15056a"
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-2.6.1.tgz#66a61cddb699958e3613edef346c996f6311fc3b"
 
 jasmine-spec-reporter@~3.2.0:
   version "3.2.0"
@@ -5850,9 +5850,9 @@ watchpack@^1.2.0:
     chokidar "^1.4.3"
     graceful-fs "^4.1.2"
 
-"waves-ui@github:cannam/waves-ui#709ab8162fa0e09ab68028ef74c98f3c00ce3b31":
+"waves-ui@github:cannam/waves-ui":
   version "0.3.0"
-  resolved "https://codeload.github.com/cannam/waves-ui/tar.gz/709ab8162fa0e09ab68028ef74c98f3c00ce3b31"
+  resolved "https://codeload.github.com/cannam/waves-ui/tar.gz/a6b9f250e7767a771b51be0a8e59d2aaff37916d"
   dependencies:
     babel-runtime "^5.8.12"
 
@@ -6026,8 +6026,8 @@ wrappy@1:
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
 
 write-file-atomic@^1.1.2:
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/write-file-atomic/-/write-file-atomic-1.3.3.tgz#831dd22d491bdc135180bb996a0eb3f8bf587791"
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/write-file-atomic/-/write-file-atomic-1.3.4.tgz#f807a4f0b1d9e913ae7a48112e6cc3af1991b45f"
   dependencies:
     graceful-fs "^4.1.11"
     imurmurhash "^0.1.4"
