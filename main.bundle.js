@@ -1,13 +1,13 @@
-webpackJsonp([0,5],{
+webpackJsonp([1,5],{
 
 /***/ "+V6z":
 /***/ (function(module, exports) {
 
-module.exports = "<button md-icon-button (click)=\"emitToggleRecording()\">\n  <md-icon>\n    <template [ngIf]=\"recordingStatus == 'enabled'\">mic_none</template>\n    <template [ngIf]=\"recordingStatus == 'disabled'\">mic_off</template>\n    <template [ngIf]=\"recordingStatus == 'recording'\">mic_on</template>\n  </md-icon>\n</button>\n\n"
+module.exports = "<button md-icon-button (click)=\"emitToggleRecording()\">\n  <md-icon>\n    <ng-template [ngIf]=\"recordingStatus == 'enabled'\">mic_none</ng-template>\n    <ng-template [ngIf]=\"recordingStatus == 'disabled'\">mic_off</ng-template>\n    <ng-template [ngIf]=\"recordingStatus == 'recording'\">mic_on</ng-template>\n  </md-icon>\n</button>\n\n"
 
 /***/ }),
 
-/***/ 1:
+/***/ 0:
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__("x35b");
@@ -18,7 +18,7 @@ module.exports = __webpack_require__("x35b");
 /***/ "1RzP":
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__("FZ+f")();
+exports = module.exports = __webpack_require__("FZ+f")(false);
 // imports
 
 
@@ -37,12 +37,14 @@ module.exports = module.exports.toString();
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__ = __webpack_require__("EEr4");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs__ = __webpack_require__("Gvdl");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__("24R9");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__("rCTf");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__("Fzro");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__ = __webpack_require__("4AhG");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FeatureExtractionService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -60,6 +62,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 
 
 
+
 let FeatureExtractionService = class FeatureExtractionService {
     constructor(http, repositoryUri) {
         this.http = http;
@@ -69,27 +72,34 @@ let FeatureExtractionService = class FeatureExtractionService {
         this.featuresExtracted$ = this.featuresExtracted.asObservable();
         this.librariesUpdated = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__["Subject"]();
         this.librariesUpdated$ = this.librariesUpdated.asObservable();
+        this.progressUpdated = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__["Subject"]();
+        this.progressUpdated$ = this.progressUpdated.asObservable();
         this.worker.addEventListener('message', (ev) => {
             const isValidResponse = ev.data.method === 'import'
-                && ev.data.result.available !== undefined;
+                && ev.data.result && ev.data.result.available;
             if (isValidResponse) {
+                ev.stopImmediatePropagation();
                 this.librariesUpdated.next(ev.data.result);
             }
-        });
+        }, true);
+        this.client = new __WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__["WebWorkerStreamingClient"](this.worker, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__["countingIdProvider"])(0));
     }
     list() {
-        return this.request({ method: 'list', params: {} }, (ev) => ev.data.result.available !== undefined).then(msg => msg.result);
+        return this.client.list({});
     }
-    process(request) {
-        return this.request({ method: 'process', params: request }, (ev) => ev.data.method === 'process').then(msg => {
-            this.featuresExtracted.next(msg.result);
-            return msg.result;
-        });
-    }
-    collect(request) {
-        return this.request({ method: 'collect', params: request }, (ev) => ev.data.method === 'collect').then(msg => {
-            this.featuresExtracted.next(msg.result);
-            return msg.result;
+    extract(analysisItemId, request) {
+        return this.client.collect(request)
+            .do(val => {
+            if (val.totalBlockCount > 0) {
+                this.progressUpdated.next({
+                    id: analysisItemId,
+                    value: (val.processedBlockCount / val.totalBlockCount) * 100
+                });
+            }
+        })
+            .toPromise()
+            .then((response) => {
+            this.featuresExtracted.next(response);
         });
     }
     updateAvailableLibraries() {
@@ -104,22 +114,11 @@ let FeatureExtractionService = class FeatureExtractionService {
         })
             .catch((error) => {
             console.error(error);
-            return __WEBPACK_IMPORTED_MODULE_2_rxjs__["Observable"].throw(error);
+            return __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__["Observable"].throw(error);
         });
     }
     load(libraryKey) {
         this.worker.postMessage({ method: 'import', params: libraryKey });
-    }
-    request(request, predicate) {
-        return new Promise(res => {
-            const listener = (ev) => {
-                this.worker.removeEventListener('message', listener);
-                if (predicate(ev))
-                    res(ev.data);
-            };
-            this.worker.addEventListener('message', listener);
-            this.worker.postMessage(request);
-        }).catch(err => console.error(err));
     }
 };
 FeatureExtractionService = __decorate([
@@ -129,7 +128,7 @@ FeatureExtractionService = __decorate([
 ], FeatureExtractionService);
 
 var _a;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/feature-extraction.service.js.map
+//# sourceMappingURL=feature-extraction.service.js.map
 
 /***/ }),
 
@@ -143,14 +142,14 @@ module.exports = "<input #open type=\"file\" accept=\"audio/*\" (change)=\"decod
 /***/ "5xMp":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"app-container\">\n  <div class=\"app-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"app-toolbar-filler\"></span>\n\n      <app-playback-control></app-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event)\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"app-toolbar-filler\"></span>\n\n\n      <app-audio-file-open\n        (fileOpened)=\"onFileOpened($event)\"\n      ></app-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"sidenav.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <div class=\"app-content\">\n    <md-sidenav-container>\n      <md-sidenav #sidenav align=\"start\" mode=\"over\">\n        <app-feature-extraction-menu\n          (requestOutput)=\"extractFeatures($event)\"\n          [disabled]=\"!canExtract\">\n        </app-feature-extraction-menu>\n      </md-sidenav>\n      <ugly-notebook-feed\n        [analyses]=\"analyses\"\n        [rootAudioUri]=\"rootAudioUri\"></ugly-notebook-feed>\n    </md-sidenav-container>\n  </div>\n\n  <div class=\"app-footer\">\n    <md-toolbar color=\"primary\">\n\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"sidenav.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n\n  </div>\n</div>\n"
+module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event)\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event)\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"sidenav.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <div class=\"ugly-content\">\n    <md-sidenav-container>\n      <md-sidenav #sidenav align=\"start\" mode=\"over\">\n        <ugly-feature-extraction-menu\n          (requestOutput)=\"extractFeatures($event)\"\n          [disabled]=\"!canExtract\">\n        </ugly-feature-extraction-menu>\n      </md-sidenav>\n      <ugly-notebook-feed\n        [analyses]=\"analyses.toIterable()\"\n        [rootAudioUri]=\"rootAudioUri\"></ugly-notebook-feed>\n    </md-sidenav-container>\n  </div>\n</div>\n"
 
 /***/ }),
 
 /***/ "6o5O":
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__("FZ+f")();
+exports = module.exports = __webpack_require__("FZ+f")(false);
 // imports
 
 
@@ -165,17 +164,53 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
-/***/ "7G6f":
+/***/ "7itA":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__app_component__ = __webpack_require__("YWx4");
-/* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__("Iksp");
-/* harmony namespace reexport (by used) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_1__app_module__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ProgressBarComponent; });
+/**
+ * Created by lucas on 24/04/2017.
+ */
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 
+let ProgressBarComponent = class ProgressBarComponent {
+    constructor() {
+        this.isDeterminate = false;
+    }
+};
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
+    __metadata("design:type", Object)
+], ProgressBarComponent.prototype, "isDeterminate", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
+    __metadata("design:type", Number)
+], ProgressBarComponent.prototype, "progress", void 0);
+ProgressBarComponent = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
+        selector: 'ugly-progress-bar',
+        template: `
+    <md-progress-bar
+      [attr.color]="'primary'"
+      [mode]="isDeterminate ? 'determinate' : 'indeterminate'"
+      [value]="progress"
+    ></md-progress-bar>
+  `,
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_6" /* ChangeDetectionStrategy */].OnPush
+    })
+], ProgressBarComponent);
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/index.js.map
+//# sourceMappingURL=progress-bar.js.map
 
 /***/ }),
 
@@ -183,7 +218,7 @@ module.exports = module.exports.toString();
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_audio_recorder_audio_recorder_service__ = __webpack_require__("pcIR");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return RecordingControlComponent; });
 /**
@@ -203,8 +238,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 let RecordingControlComponent = class RecordingControlComponent {
     constructor(recordingService) {
         this.recordingService = recordingService;
-        this.recordingStatus = "disabled";
-        this.finishedRecording = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]();
+        this.recordingStatus = 'disabled';
+        this.finishedRecording = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* EventEmitter */]();
     }
     ngOnInit() {
         this.recordingState = this.recordingService.recordingStateChange$.subscribe((status) => {
@@ -223,11 +258,11 @@ let RecordingControlComponent = class RecordingControlComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["W" /* Output */])(),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]) === "function" && _a || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* Output */])(),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* EventEmitter */]) === "function" && _a || Object)
 ], RecordingControlComponent.prototype, "finishedRecording", void 0);
 RecordingControlComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
         selector: 'ugly-recording-control',
         template: __webpack_require__("+V6z")
     }),
@@ -235,7 +270,7 @@ RecordingControlComponent = __decorate([
 ], RecordingControlComponent);
 
 var _a, _b;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/recording-control.component.js.map
+//# sourceMappingURL=recording-control.component.js.map
 
 /***/ }),
 
@@ -243,7 +278,7 @@ var _a, _b;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AudioFileOpenComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -257,7 +292,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 let AudioFileOpenComponent = class AudioFileOpenComponent {
     constructor() {
-        this.fileOpened = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]();
+        this.fileOpened = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* EventEmitter */]();
     }
     ngOnInit() {
     }
@@ -271,16 +306,16 @@ let AudioFileOpenComponent = class AudioFileOpenComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ViewChild */])('open'),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */]) === "function" && _a || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_5" /* ViewChild */])('open'),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["K" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["K" /* ElementRef */]) === "function" && _a || Object)
 ], AudioFileOpenComponent.prototype, "open", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["W" /* Output */])(),
-    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]) === "function" && _b || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* Output */])(),
+    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* EventEmitter */]) === "function" && _b || Object)
 ], AudioFileOpenComponent.prototype, "fileOpened", void 0);
 AudioFileOpenComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
-        selector: 'app-audio-file-open',
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
+        selector: 'ugly-audio-file-open',
         template: __webpack_require__("4Wxe"),
         styles: [__webpack_require__("t89E")]
     }),
@@ -288,7 +323,7 @@ AudioFileOpenComponent = __decorate([
 ], AudioFileOpenComponent);
 
 var _a, _b;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/audio-file-open.component.js.map
+//# sourceMappingURL=audio-file-open.component.js.map
 
 /***/ }),
 
@@ -296,23 +331,24 @@ var _a, _b;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__("D8Yg");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("Rw+2");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__("36+m");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__("24R9");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__("Qbdm");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("3j3K");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__("NVOs");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__("Fzro");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_component__ = __webpack_require__("YWx4");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_material__ = __webpack_require__("TC1X");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__waveform_waveform_component__ = __webpack_require__("tem0");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__audio_file_open_audio_file_open_component__ = __webpack_require__("A7Tv");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__playback_control_playback_control_component__ = __webpack_require__("kETe");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__services_audio_player_audio_player_service__ = __webpack_require__("vATj");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__services_feature_extraction_feature_extraction_service__ = __webpack_require__("3lao");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__feature_extraction_menu_feature_extraction_menu_component__ = __webpack_require__("tfge");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__progress_spinner_progress_spinner_component__ = __webpack_require__("iHFK");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__services_audio_recorder_audio_recorder_service__ = __webpack_require__("pcIR");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__recording_control_recording_control_component__ = __webpack_require__("7vD/");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__notebook_feed_notebook_feed_component__ = __webpack_require__("Qvmv");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__analysis_item_analysis_item_component__ = __webpack_require__("jat4");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__waveform_waveform_component__ = __webpack_require__("tem0");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__audio_file_open_audio_file_open_component__ = __webpack_require__("A7Tv");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__playback_control_playback_control_component__ = __webpack_require__("kETe");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__services_audio_player_audio_player_service__ = __webpack_require__("vATj");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__services_feature_extraction_feature_extraction_service__ = __webpack_require__("3lao");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__feature_extraction_menu_feature_extraction_menu_component__ = __webpack_require__("tfge");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__progress_spinner_progress_spinner_component__ = __webpack_require__("iHFK");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__services_audio_recorder_audio_recorder_service__ = __webpack_require__("pcIR");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__recording_control_recording_control_component__ = __webpack_require__("7vD/");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__notebook_feed_notebook_feed_component__ = __webpack_require__("Qvmv");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__analysis_item_analysis_item_component__ = __webpack_require__("jat4");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__progress_bar_progress_bar__ = __webpack_require__("7itA");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__ugly_material_module__ = __webpack_require__("SYN/");
 /* unused harmony export createAudioContext */
 /* unused harmony export createAudioElement */
 /* unused harmony export createAudioInputProvider */
@@ -326,6 +362,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -364,7 +401,7 @@ function createMediaRecorderFactory() {
         return MediaRecorder;
     }
     else {
-        return __WEBPACK_IMPORTED_MODULE_13__services_audio_recorder_audio_recorder_service__["a" /* ThrowingMediaRecorder */];
+        return __WEBPACK_IMPORTED_MODULE_12__services_audio_recorder_audio_recorder_service__["a" /* ThrowingMediaRecorder */];
     }
 }
 function createUrlResourceManager() {
@@ -390,7 +427,6 @@ function createResourceReader() {
             reader.readAsArrayBuffer(resource);
         });
     };
-    ;
 }
 let AppModule = class AppModule {
 };
@@ -398,30 +434,31 @@ AppModule = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["b" /* NgModule */])({
         declarations: [
             __WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */],
-            __WEBPACK_IMPORTED_MODULE_6__waveform_waveform_component__["a" /* WaveformComponent */],
-            __WEBPACK_IMPORTED_MODULE_7__audio_file_open_audio_file_open_component__["a" /* AudioFileOpenComponent */],
-            __WEBPACK_IMPORTED_MODULE_8__playback_control_playback_control_component__["a" /* PlaybackControlComponent */],
-            __WEBPACK_IMPORTED_MODULE_14__recording_control_recording_control_component__["a" /* RecordingControlComponent */],
-            __WEBPACK_IMPORTED_MODULE_11__feature_extraction_menu_feature_extraction_menu_component__["a" /* FeatureExtractionMenuComponent */],
-            __WEBPACK_IMPORTED_MODULE_12__progress_spinner_progress_spinner_component__["a" /* ProgressSpinnerComponent */],
-            __WEBPACK_IMPORTED_MODULE_16__analysis_item_analysis_item_component__["a" /* AnalysisItemComponent */],
-            __WEBPACK_IMPORTED_MODULE_15__notebook_feed_notebook_feed_component__["a" /* NotebookFeedComponent */]
+            __WEBPACK_IMPORTED_MODULE_5__waveform_waveform_component__["a" /* WaveformComponent */],
+            __WEBPACK_IMPORTED_MODULE_6__audio_file_open_audio_file_open_component__["a" /* AudioFileOpenComponent */],
+            __WEBPACK_IMPORTED_MODULE_7__playback_control_playback_control_component__["a" /* PlaybackControlComponent */],
+            __WEBPACK_IMPORTED_MODULE_13__recording_control_recording_control_component__["a" /* RecordingControlComponent */],
+            __WEBPACK_IMPORTED_MODULE_10__feature_extraction_menu_feature_extraction_menu_component__["a" /* FeatureExtractionMenuComponent */],
+            __WEBPACK_IMPORTED_MODULE_11__progress_spinner_progress_spinner_component__["a" /* ProgressSpinnerComponent */],
+            __WEBPACK_IMPORTED_MODULE_15__analysis_item_analysis_item_component__["a" /* AnalysisItemComponent */],
+            __WEBPACK_IMPORTED_MODULE_14__notebook_feed_notebook_feed_component__["a" /* NotebookFeedComponent */],
+            __WEBPACK_IMPORTED_MODULE_16__progress_bar_progress_bar__["a" /* ProgressBarComponent */]
         ],
         imports: [
             __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
             __WEBPACK_IMPORTED_MODULE_2__angular_forms__["a" /* FormsModule */],
             __WEBPACK_IMPORTED_MODULE_3__angular_http__["a" /* HttpModule */],
-            __WEBPACK_IMPORTED_MODULE_5__angular_material__["a" /* MaterialModule */]
+            __WEBPACK_IMPORTED_MODULE_17__ugly_material_module__["a" /* UglyMaterialModule */]
         ],
         providers: [
             { provide: HTMLAudioElement, useFactory: createAudioElement },
             { provide: 'AudioContext', useFactory: createAudioContext },
-            __WEBPACK_IMPORTED_MODULE_9__services_audio_player_audio_player_service__["a" /* AudioPlayerService */],
+            __WEBPACK_IMPORTED_MODULE_8__services_audio_player_audio_player_service__["a" /* AudioPlayerService */],
             { provide: 'AudioInputProvider', useFactory: createAudioInputProvider },
-            __WEBPACK_IMPORTED_MODULE_13__services_audio_recorder_audio_recorder_service__["b" /* AudioRecorderService */],
-            __WEBPACK_IMPORTED_MODULE_10__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */],
+            __WEBPACK_IMPORTED_MODULE_12__services_audio_recorder_audio_recorder_service__["b" /* AudioRecorderService */],
+            __WEBPACK_IMPORTED_MODULE_9__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */],
             { provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory },
-            { provide: 'PiperRepoUri', useValue: 'assets/remote-plugins.json' },
+            { provide: 'PiperRepoUri', useValue: 'assets/remote-extractors.json' },
             { provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager },
             { provide: 'ResourceReader', useFactory: createResourceReader }
         ],
@@ -429,7 +466,7 @@ AppModule = __decorate([
     })
 ], AppModule);
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/app.module.js.map
+//# sourceMappingURL=app.module.js.map
 
 /***/ }),
 
@@ -456,7 +493,7 @@ class SpectrogramEntity extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a
         this.sampleRate = sampleRate;
         this.framing = options;
         this.real = new Float32Array(this.framing.blockSize);
-        this.nCols = Math.floor(this.samples.length / this.framing.stepSize); //!!! not correct
+        this.nCols = Math.floor(this.samples.length / this.framing.stepSize); // !!! not correct
         this.columnHeight = Math.round(this.framing.blockSize / 2) + 1;
         this.fft = new __WEBPACK_IMPORTED_MODULE_0_piper_fft_RealFft__["KissRealFft"](this.framing.blockSize);
         this.window = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_piper_FftUtilities__["hann"])(this.framing.blockSize);
@@ -491,14 +528,13 @@ class SpectrogramEntity extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a
         for (let i = 0; i < h; ++i) {
             const re = complex[i * 2] * scale;
             const im = complex[i * 2 + 1] * scale;
-            const mag = Math.sqrt(re * re + im * im);
-            col[i] = mag;
+            col[i] = Math.sqrt(re * re + im * im);
         }
         return col;
     }
 }
 class WavesSpectrogramLayer extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.core.Layer {
-    constructor(buffer, options) {
+    constructor(bufferIn, options) {
         const defaults = {
             normalise: 'hybrid',
             gain: 40.0,
@@ -509,35 +545,38 @@ class WavesSpectrogramLayer extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___defau
         const mergedOptions = Object.assign({}, defaults, options);
         const getSamples = ((buffer, channel) => {
             const nch = buffer.numberOfChannels;
-            if (channel >= 0 || nch == 1) {
-                if (channel < 0)
+            if (channel >= 0 || nch === 1) {
+                if (channel < 0) {
                     channel = 0;
+                }
                 return buffer.getChannelData(channel);
             }
             else {
                 const before = performance.now();
-                console.log("mixing down " + nch + " channels for spectrogram...");
+                console.log('mixing down ' + nch + ' channels for spectrogram...');
                 const mixed = Float32Array.from(buffer.getChannelData(0));
                 const n = mixed.length;
                 for (let ch = 1; ch < nch; ++ch) {
                     const buf = buffer.getChannelData(ch);
-                    for (let i = 0; i < n; ++i)
+                    for (let i = 0; i < n; ++i) {
                         mixed[i] += buf[i];
+                    }
                 }
                 const scale = 1.0 / nch;
-                for (let i = 0; i < n; ++i)
+                for (let i = 0; i < n; ++i) {
                     mixed[i] *= scale;
-                console.log("done in " + (performance.now() - before) + "ms");
+                }
+                console.log('done in ' + (performance.now() - before) + 'ms');
                 return mixed;
             }
         });
-        super('entity', new SpectrogramEntity(getSamples(buffer, mergedOptions.channel), mergedOptions, buffer.sampleRate), mergedOptions);
+        super('entity', new SpectrogramEntity(getSamples(bufferIn, mergedOptions.channel), mergedOptions, bufferIn.sampleRate), mergedOptions);
         this.configureShape(__WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.shapes.Matrix, {}, mergedOptions);
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = WavesSpectrogramLayer;
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/Spectrogram.js.map
+//# sourceMappingURL=Spectrogram.js.map
 
 /***/ }),
 
@@ -559,7 +598,7 @@ webpackEmptyContext.id = "MOVZ";
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui__ = __webpack_require__("myhA");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_waves_ui__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return NotebookFeedComponent; });
@@ -580,7 +619,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 let NotebookFeedComponent = class NotebookFeedComponent {
     constructor() {
         this.sharedTimeline = new __WEBPACK_IMPORTED_MODULE_1_waves_ui___default.a.core.Timeline();
-        this.analyses = [];
     }
     set rootAudioUri(uri) {
         this._rootAudioUri = uri;
@@ -594,24 +632,69 @@ let NotebookFeedComponent = class NotebookFeedComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Array)
 ], NotebookFeedComponent.prototype, "analyses", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", String),
     __metadata("design:paramtypes", [String])
 ], NotebookFeedComponent.prototype, "rootAudioUri", null);
 NotebookFeedComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
         selector: 'ugly-notebook-feed',
         template: __webpack_require__("vB4/"),
-        styles: [__webpack_require__("lZe/")]
+        styles: [__webpack_require__("lZe/")],
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_6" /* ChangeDetectionStrategy */].OnPush
     }),
     __metadata("design:paramtypes", [])
 ], NotebookFeedComponent);
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/notebook-feed.component.js.map
+//# sourceMappingURL=notebook-feed.component.js.map
+
+/***/ }),
+
+/***/ "SYN/":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_material__ = __webpack_require__("fYnu");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("3j3K");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_animations__ = __webpack_require__("KN8t");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return UglyMaterialModule; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Created by lucast on 25/04/2017.
+ */
+
+
+
+const importExports = [
+    __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_animations__["a" /* BrowserAnimationsModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["a" /* MdIconModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["b" /* MdSidenavModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["c" /* MdToolbarModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["d" /* MdButtonModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["e" /* MdSelectModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["f" /* MdProgressSpinnerModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["g" /* MdProgressBarModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["h" /* MdCardModule */]
+];
+let UglyMaterialModule = class UglyMaterialModule {
+};
+UglyMaterialModule = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["b" /* NgModule */])({
+        imports: importExports,
+        exports: importExports,
+    })
+], UglyMaterialModule);
+
+//# sourceMappingURL=ugly-material.module.js.map
 
 /***/ }),
 
@@ -660,8 +743,25 @@ module.exports = "<div class=\"container\">\n  <md-select #extractorSelect\n    
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_zone_js_dist_zone___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_zone_js_dist_zone__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_hammerjs__ = __webpack_require__("rxKx");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_hammerjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_16_hammerjs__);
-// This file includes polyfills needed by Angular 2 and is loaded before
-// the app. You can add your own extra polyfills to this file.
+/**
+ * This file includes polyfills needed by Angular and is loaded before the app.
+ * You can add your own extra polyfills to this file.
+ *
+ * This file is divided into 2 sections:
+ *   1. Browser polyfills. These are applied before loading ZoneJS and are sorted by browsers.
+ *   2. Application imports. Files imported after ZoneJS that should be loaded before your main
+ *      file.
+ *
+ * The current setup is for so-called "evergreen" browsers; the last versions of browsers that
+ * automatically update themselves. This includes Safari >= 10, Chrome >= 55 (including Opera),
+ * Edge >= 13 on the desktop, and iOS 10 and Chrome on mobile.
+ *
+ * Learn more in https://angular.io/docs/ts/latest/guide/browser-support.html
+ */
+/***************************************************************************************************
+ * BROWSER POLYFILLS
+ */
+/** IE9, IE10 and IE11 requires all of the following polyfills. **/
 
 
 
@@ -675,11 +775,29 @@ module.exports = "<div class=\"container\">\n  <md-select #extractorSelect\n    
 
 
 
+/** IE10 and IE11 requires the following for NgClass support on SVG elements */
+// import 'classlist.js';  // Run `npm install --save classlist.js`.
+/** IE10 and IE11 requires the following to support `@angular/animation`. */
+// import 'web-animations-js';  // Run `npm install --save web-animations-js`.
+/** Evergreen browsers require these. **/
 
 
+/** ALL Firefox browsers require the following to support `@angular/animation`. **/
+// import 'web-animations-js';  // Run `npm install --save web-animations-js`.
+/***************************************************************************************************
+ * Zone JS is required by Angular itself.
+ */
+ // Included with Angular CLI.
+/***************************************************************************************************
+ * APPLICATION IMPORTS
+ */
+/**
+ * Date, currency, decimal and percent pipes.
+ * Needed for: All but Chrome, Firefox, Edge, IE11 and Safari 10
+ */
+// import 'intl';  // Run `npm install --save intl`.
 
-
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/polyfills.js.map
+//# sourceMappingURL=polyfills.js.map
 
 /***/ }),
 
@@ -687,11 +805,11 @@ module.exports = "<div class=\"container\">\n  <md-select #extractorSelect\n    
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__ = __webpack_require__("vATj");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__ = __webpack_require__("3lao");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__("D8Yg");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_material__ = __webpack_require__("TC1X");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__("Qbdm");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_material__ = __webpack_require__("fYnu");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -707,16 +825,53 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+class PersistentStack {
+    constructor() {
+        this.stack = [];
+        this.history = [];
+    }
+    shift() {
+        this.history.push([...this.stack]);
+        const item = this.stack[0];
+        this.stack = this.stack.slice(1);
+        return item;
+    }
+    unshift(item) {
+        this.history.push([...this.stack]);
+        this.stack = [item, ...this.stack];
+        return this.stack.length;
+    }
+    findIndex(predicate) {
+        return this.stack.findIndex(predicate);
+    }
+    filter(predicate) {
+        return this.stack.filter(predicate);
+    }
+    get(index) {
+        return this.stack[index];
+    }
+    set(index, value) {
+        this.history.push([...this.stack]);
+        this.stack = [
+            ...this.stack.slice(0, index),
+            value,
+            ...this.stack.slice(index + 1)
+        ];
+    }
+    toIterable() {
+        return this.stack;
+    }
+}
 let AppComponent = class AppComponent {
-    constructor(audioService, piperService, iconRegistry, sanitizer) {
+    constructor(audioService, featureService, iconRegistry, sanitizer) {
         this.audioService = audioService;
-        this.piperService = piperService;
+        this.featureService = featureService;
         this.iconRegistry = iconRegistry;
         this.sanitizer = sanitizer;
-        this.analyses = [];
+        this.analyses = new PersistentStack();
         this.canExtract = false;
         this.nRecordings = 0;
-        this.countingId = 1;
+        this.countingId = 0;
         iconRegistry.addSvgIcon('duck', sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg'));
         this.onAudioDataSubscription = this.audioService.audioLoaded$.subscribe(resource => {
             const wasError = resource.message != null;
@@ -730,6 +885,13 @@ let AppComponent = class AppComponent {
                     this.canExtract = true;
                 }
             }
+        });
+        this.onProgressUpdated = this.featureService.progressUpdated$.subscribe(progress => {
+            const index = this.analyses.findIndex(val => val.id === progress.id);
+            if (index === -1) {
+                return;
+            }
+            this.analyses.set(index, Object.assign({}, this.analyses.get(index), { progress: progress.value }));
         });
     }
     onFileOpened(file) {
@@ -755,12 +917,13 @@ let AppComponent = class AppComponent {
             isRoot: true,
             title: title,
             description: new Date().toLocaleString(),
-            id: `${this.countingId++}`
+            id: `${++this.countingId}`
         });
     }
     extractFeatures(outputInfo) {
-        if (!this.canExtract || !outputInfo)
+        if (!this.canExtract || !outputInfo) {
             return;
+        }
         this.canExtract = false;
         this.analyses.unshift({
             rootAudioUri: this.rootAudioUri,
@@ -769,14 +932,16 @@ let AppComponent = class AppComponent {
             isRoot: false,
             title: outputInfo.name,
             description: outputInfo.outputId,
-            id: `${this.countingId++}`
+            id: `${++this.countingId}`,
+            progress: 0
         });
-        this.piperService.collect({
+        this.featureService.extract(`${this.countingId}`, {
             audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
                 .map(i => this.audioBuffer.getChannelData(i)),
             audioFormat: {
                 sampleRate: this.audioBuffer.sampleRate,
-                channelCount: this.audioBuffer.numberOfChannels
+                channelCount: this.audioBuffer.numberOfChannels,
+                length: this.audioBuffer.length
             },
             key: outputInfo.extractorKey,
             outputId: outputInfo.outputId
@@ -784,31 +949,33 @@ let AppComponent = class AppComponent {
             this.canExtract = true;
         }).catch(err => {
             this.canExtract = true;
-            console.error(err);
+            this.analyses.shift();
+            console.error(`Error whilst extracting: ${err}`);
         });
     }
     ngOnDestroy() {
         this.onAudioDataSubscription.unsubscribe();
+        this.onProgressUpdated.unsubscribe();
     }
 };
 AppComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
-        selector: 'app-root',
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
+        selector: 'ugly-root',
         template: __webpack_require__("5xMp"),
         styles: [__webpack_require__("okgc")]
     }),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["b" /* MdIconRegistry */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_material__["b" /* MdIconRegistry */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["e" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["e" /* DomSanitizer */]) === "function" && _d || Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["i" /* MdIconRegistry */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_material__["i" /* MdIconRegistry */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _d || Object])
 ], AppComponent);
 
 var _a, _b, _c, _d;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/app.component.js.map
+//# sourceMappingURL=app.component.js.map
 
 /***/ }),
 
 /***/ "c1nP":
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__("FZ+f")();
+exports = module.exports = __webpack_require__("FZ+f")(false);
 // imports
 
 
@@ -826,7 +993,7 @@ module.exports = module.exports.toString();
 /***/ "cqUy":
 /***/ (function(module, exports) {
 
-module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{title}}</md-card-title>\n    <md-card-subtitle>{{description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <app-waveform\n      [timeline]=\"timeline\"\n      [trackIdPrefix]=\" id || title\"\n      [isSubscribedToAudioService]=\"isActive && isRoot\"\n      [isSubscribedToExtractionService]=\"isActive && !isRoot\"\n      [isOneShotExtractor]=\"true\"\n      [isSeeking]=\"isActive\"\n    ></app-waveform>\n  </md-card-content>\n</md-card>\n"
+module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{item.title}}</md-card-title>\n    <md-card-subtitle>{{item.description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <ng-template [ngIf]=\"isLoading()\">\n      <ugly-progress-bar\n        [isDeterminate]=\"true\"\n        [progress]=\"item.progress\"\n      ></ugly-progress-bar>\n    </ng-template>\n    <ng-template [ngIf]=\"!isLoading()\">\n      <ugly-waveform\n        [timeline]=\"timeline\"\n        [trackIdPrefix]=\" item.id || item.title\"\n        [isSubscribedToAudioService]=\"isActive && item.isRoot\"\n        [isSubscribedToExtractionService]=\"isActive && !item.isRoot\"\n        [isOneShotExtractor]=\"true\"\n        [isSeeking]=\"isActive\"\n      ></ugly-waveform>\n    </ng-template>\n  </md-card-content>\n</md-card>\n"
 
 /***/ }),
 
@@ -834,7 +1001,7 @@ module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{title}}</m
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ProgressSpinnerComponent; });
 /**
  * Created by lucast on 14/03/2017.
@@ -851,21 +1018,45 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 let ProgressSpinnerComponent = class ProgressSpinnerComponent {
     constructor() {
+        this.currentProcess = 0;
         this.isVisible = true;
+        this.isDeterminate = false;
+    }
+    set progress(value) {
+        if (value < 0) {
+            this.currentProcess = 0;
+        }
+        else if (value > 100) {
+            this.currentProcess = 100;
+        }
+        else {
+            this.currentProcess = value;
+        }
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
-    __metadata("design:type", Boolean)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
+    __metadata("design:type", Object)
 ], ProgressSpinnerComponent.prototype, "isVisible", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
+    __metadata("design:type", Object)
+], ProgressSpinnerComponent.prototype, "isDeterminate", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
+    __metadata("design:type", Number),
+    __metadata("design:paramtypes", [Number])
+], ProgressSpinnerComponent.prototype, "progress", null);
 ProgressSpinnerComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
         selector: 'ugly-progress-spinner',
         template: `
     <div class="container" [hidden]="!isVisible">
       <md-spinner
         class="spinner"
-        color="primary"
+        [attr.color]="'primary'"
+        [mode]="isDeterminate ? 'determinate' : 'indeterminate'"
+        [value]="currentProcess"
       ></md-spinner>
     </div>
   `,
@@ -877,7 +1068,7 @@ ProgressSpinnerComponent = __decorate([
       top: calc(50% - 20px);
       left: calc(50% - 20px);
     }
-    
+
     .spinner {
       width: 100%;
       height: 100%;
@@ -886,14 +1077,14 @@ ProgressSpinnerComponent = __decorate([
     })
 ], ProgressSpinnerComponent);
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/progress-spinner.component.js.map
+//# sourceMappingURL=progress-spinner.component.js.map
 
 /***/ }),
 
 /***/ "jJWp":
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__("FZ+f")();
+exports = module.exports = __webpack_require__("FZ+f")(false);
 // imports
 
 
@@ -912,7 +1103,7 @@ module.exports = module.exports.toString();
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AnalysisItemComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -928,40 +1119,38 @@ var __metadata = (this && this.__metadata) || function (k, v) {
  */
 
 let AnalysisItemComponent = class AnalysisItemComponent {
+    constructor() {
+        this.hasProgressOnInit = false;
+    }
+    ngOnInit() {
+        this.hasProgressOnInit = this.item.progress != null;
+    }
+    isLoading() {
+        return this.hasProgressOnInit && this.item.progress < 100;
+    }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Object)
 ], AnalysisItemComponent.prototype, "timeline", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
-    __metadata("design:type", String)
-], AnalysisItemComponent.prototype, "title", void 0);
-__decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
-    __metadata("design:type", String)
-], AnalysisItemComponent.prototype, "description", void 0);
-__decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Boolean)
 ], AnalysisItemComponent.prototype, "isActive", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
-    __metadata("design:type", Boolean)
-], AnalysisItemComponent.prototype, "isRoot", void 0);
-__decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
-    __metadata("design:type", String)
-], AnalysisItemComponent.prototype, "id", void 0);
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
+    __metadata("design:type", Object)
+], AnalysisItemComponent.prototype, "item", void 0);
 AnalysisItemComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
         selector: 'ugly-analysis-item',
         template: __webpack_require__("cqUy"),
-        styles: [__webpack_require__("c1nP")]
+        styles: [__webpack_require__("c1nP")],
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_6" /* ChangeDetectionStrategy */].OnPush
     })
 ], AnalysisItemComponent);
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/analysis-item.component.js.map
+//# sourceMappingURL=analysis-item.component.js.map
 
 /***/ }),
 
@@ -969,9 +1158,8 @@ AnalysisItemComponent = __decorate([
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__ = __webpack_require__("vATj");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__ = __webpack_require__("3lao");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return PlaybackControlComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -984,11 +1172,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
-
 let PlaybackControlComponent = class PlaybackControlComponent {
-    constructor(audioService, featureExtractionService) {
+    constructor(audioService) {
         this.audioService = audioService;
-        this.featureExtractionService = featureExtractionService;
     }
     ngOnInit() { }
     emitPlayPause() {
@@ -1015,16 +1201,16 @@ let PlaybackControlComponent = class PlaybackControlComponent {
     }
 };
 PlaybackControlComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
-        selector: 'app-playback-control',
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
+        selector: 'ugly-playback-control',
         template: __webpack_require__("nKj7"),
         styles: [__webpack_require__("jJWp")]
     }),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object])
 ], PlaybackControlComponent);
 
-var _a, _b;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/playback-control.component.js.map
+var _a;
+//# sourceMappingURL=playback-control.component.js.map
 
 /***/ }),
 
@@ -1037,14 +1223,14 @@ const environment = {
 };
 /* harmony export (immutable) */ __webpack_exports__["a"] = environment;
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/environment.js.map
+//# sourceMappingURL=environment.js.map
 
 /***/ }),
 
 /***/ "lZe/":
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__("FZ+f")();
+exports = module.exports = __webpack_require__("FZ+f")(false);
 // imports
 
 
@@ -1062,19 +1248,19 @@ module.exports = module.exports.toString();
 /***/ "nKj7":
 /***/ (function(module, exports) {
 
-module.exports = "<button md-icon-button (click)=\"emitPlayPause()\">\n  <md-icon>\n    <template [ngIf]=\"isPlaying()\">pause</template>\n    <template [ngIf]=\"!isPlaying()\">play_arrow</template>\n  </md-icon>\n</button>\n"
+module.exports = "<button md-icon-button (click)=\"emitPlayPause()\">\n  <md-icon>\n    <ng-template [ngIf]=\"isPlaying()\">pause</ng-template>\n    <ng-template [ngIf]=\"!isPlaying()\">play_arrow</ng-template>\n  </md-icon>\n</button>\n"
 
 /***/ }),
 
 /***/ "okgc":
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__("FZ+f")();
+exports = module.exports = __webpack_require__("FZ+f")(false);
 // imports
 
 
 // module
-exports.push([module.i, ".app-toolbar-filler{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto}md-sidenav-container{height:100%;width:100%;position:absolute}md-sidenav{text-align:center}.app-container{height:100%;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;-ms-flex-direction:column;flex-direction:column}.app-header{-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto}.app-content{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto;overflow-y:auto;position:relative}.app-footer{-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto}", ""]);
+exports.push([module.i, ".ugly-toolbar-filler{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto}md-sidenav-container{height:100%;width:100%;position:absolute}md-sidenav{text-align:center}.ugly-container{height:100%;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;-ms-flex-direction:column;flex-direction:column}.ugly-header{-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto}.ugly-content{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto;overflow-y:auto;position:relative}.ugly-footer{-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto}", ""]);
 
 // exports
 
@@ -1088,9 +1274,9 @@ module.exports = module.exports.toString();
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs__ = __webpack_require__("Gvdl");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__ = __webpack_require__("EEr4");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return AudioRecorderService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1110,11 +1296,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 
 
 class ThrowingMediaRecorder {
-    constructor(stream, options) {
-        throw "MediaRecorder not available in this browser.";
-    }
     static isTypeSupported(mimeType) {
         return false;
+    }
+    constructor(stream, options) {
+        throw new Error('MediaRecorder not available in this browser.');
     }
     pause() {
     }
@@ -1134,9 +1320,9 @@ let AudioRecorderService = class AudioRecorderService {
         this.ngZone = ngZone;
         this.requestProvider = requestProvider;
         this.recorderImpl = recorderImpl;
-        this.recordingStateChange = new __WEBPACK_IMPORTED_MODULE_1_rxjs__["Subject"]();
+        this.recordingStateChange = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__["Subject"]();
         this.recordingStateChange$ = this.recordingStateChange.asObservable();
-        this.newRecording = new __WEBPACK_IMPORTED_MODULE_1_rxjs__["Subject"]();
+        this.newRecording = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__["Subject"]();
         this.newRecording$ = this.newRecording.asObservable();
         this.isRecordingAble = false;
         this.isRecording = false;
@@ -1156,22 +1342,23 @@ let AudioRecorderService = class AudioRecorderService {
                     });
                 };
                 this.isRecordingAble = true;
-                this.recordingStateChange.next("enabled");
+                this.recordingStateChange.next('enabled');
             }
             catch (e) {
                 this.isRecordingAble = false;
-                this.recordingStateChange.next("disabled"); // don't really need to do this
+                this.recordingStateChange.next('disabled'); // don't really need to do this
                 console.warn(e); // TODO emit an error message for display?
             }
         }, rejectMessage => {
             this.isRecordingAble = false;
-            this.recordingStateChange.next("disabled"); // again, probably not needed
+            this.recordingStateChange.next('disabled'); // again, probably not needed
             console.warn(rejectMessage); // TODO something better
         });
     }
     toggleRecording() {
-        if (!this.isRecordingAble)
+        if (!this.isRecordingAble) {
             return;
+        }
         if (this.isRecording) {
             this.endRecording();
         }
@@ -1183,7 +1370,7 @@ let AudioRecorderService = class AudioRecorderService {
         if (this.recorder) {
             this.isRecording = true;
             this.recorder.start();
-            this.recordingStateChange.next("recording");
+            this.recordingStateChange.next('recording');
         }
     }
     endRecording() {
@@ -1191,7 +1378,7 @@ let AudioRecorderService = class AudioRecorderService {
             this.isRecording = false;
             this.recorder.stop();
             this.chunks.length = 0; // empty the array
-            this.recordingStateChange.next("enabled");
+            this.recordingStateChange.next('enabled');
         }
     }
 };
@@ -1199,25 +1386,25 @@ AudioRecorderService = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
     __param(0, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('AudioInputProvider')),
     __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('MediaRecorderFactory')),
-    __metadata("design:paramtypes", [Function, Object, typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */]) === "function" && _a || Object])
+    __metadata("design:paramtypes", [Function, Object, typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* NgZone */]) === "function" && _a || Object])
 ], AudioRecorderService);
 
 var _a;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/audio-recorder.service.js.map
+//# sourceMappingURL=audio-recorder.service.js.map
 
 /***/ }),
 
 /***/ "pox9":
 /***/ (function(module, exports) {
 
-module.exports = "<div\n  #track class=\"track\"\n  (mousedown)=\"seekStart()\"\n  (mouseup)=\"seekEnd($event.clientX)\"></div>\n<template [ngIf]=\"isLoading\">\n  <ugly-progress-spinner [isVisible]=\"true\"></ugly-progress-spinner>\n</template>\n"
+module.exports = "<div\n  #track class=\"track\"\n  (mousedown)=\"seekStart()\"\n  (mouseup)=\"seekEnd($event.clientX)\"></div>\n<ng-template [ngIf]=\"isLoading\">\n  <ugly-progress-spinner></ugly-progress-spinner>\n</ng-template>\n"
 
 /***/ }),
 
 /***/ "t89E":
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__("FZ+f")();
+exports = module.exports = __webpack_require__("FZ+f")(false);
 // imports
 
 
@@ -1236,7 +1423,7 @@ module.exports = module.exports.toString();
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__ = __webpack_require__("vATj");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui__ = __webpack_require__("myhA");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_waves_ui__);
@@ -1264,10 +1451,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 let WaveformComponent = class WaveformComponent {
-    constructor(audioService, piperService, ngZone) {
+    constructor(audioService, piperService, ngZone, ref) {
         this.audioService = audioService;
         this.piperService = piperService;
         this.ngZone = ngZone;
+        this.ref = ref;
         this.isSubscribedToAudioService = true;
         this.isSeeking = true;
         this.layers = [];
@@ -1349,14 +1537,16 @@ let WaveformComponent = class WaveformComponent {
                 return;
             }
             this.seekedSubscription = this.audioService.seeked$.subscribe(() => {
-                if (!this.isPlaying)
+                if (!this.isPlaying) {
                     this.animate();
+                }
             });
             this.playingStateSubscription =
                 this.audioService.playingStateChange$.subscribe(isPlaying => {
                     this.isPlaying = isPlaying;
-                    if (this.isPlaying)
+                    if (this.isPlaying) {
                         this.animate();
+                    }
                 });
         }
         else {
@@ -1378,15 +1568,27 @@ let WaveformComponent = class WaveformComponent {
         this._audioBuffer = buffer || undefined;
         if (this.audioBuffer) {
             this.renderWaveform(this.audioBuffer);
+            // this.renderSpectrogram(this.audioBuffer);
         }
     }
     get audioBuffer() {
         return this._audioBuffer;
     }
+    static changeColour(layer, colour) {
+        const butcherShapes = (shape) => {
+            shape.install({ color: () => colour });
+            shape.params.color = colour;
+            shape.update(layer._renderingContext, layer.data);
+        };
+        layer._$itemCommonShapeMap.forEach(butcherShapes);
+        layer._$itemShapeMap.forEach(butcherShapes);
+        layer.render();
+        layer.update();
+    }
     ngOnInit() {
     }
     ngAfterViewInit() {
-        this.trackIdPrefix = this.trackIdPrefix || "default";
+        this.trackIdPrefix = this.trackIdPrefix || 'default';
         if (this.timeline) {
             this.renderTimeline(null, true, true);
         }
@@ -1396,7 +1598,7 @@ let WaveformComponent = class WaveformComponent {
     }
     renderTimeline(duration = 1.0, useExistingDuration = false, isInitialRender = false) {
         const track = this.trackDiv.nativeElement;
-        track.innerHTML = "";
+        track.innerHTML = '';
         const height = track.getBoundingClientRect().height;
         const width = track.getBoundingClientRect().width;
         const pixelsPerSecond = width / duration;
@@ -1452,11 +1654,12 @@ let WaveformComponent = class WaveformComponent {
             let startX;
             let isZooming;
             const scroll = (ev) => {
-                if (ev.center.x - startX === 0)
+                if (ev.center.x - startX === 0) {
                     return;
+                }
                 if (zoomGestureJustEnded) {
                     zoomGestureJustEnded = false;
-                    console.log("Skip this event: likely a single touch dangling from pinch");
+                    console.log('Skip this event: likely a single touch dangling from pinch');
                     return;
                 }
                 componentTimeline.timeContext.offset = offsetAtPanStart +
@@ -1464,8 +1667,9 @@ let WaveformComponent = class WaveformComponent {
                 componentTimeline.tracks.update();
             };
             const zoom = (ev) => {
-                if (ev.touches.length < 2)
+                if (ev.touches.length < 2) {
                     return;
+                }
                 ev.preventDefault();
                 const minZoom = componentTimeline.state.minZoom;
                 const maxZoom = componentTimeline.state.maxZoom;
@@ -1496,8 +1700,9 @@ let WaveformComponent = class WaveformComponent {
             hammertime.on('panright', scroll);
             const element = this.trackDiv.nativeElement;
             element.addEventListener('touchstart', (e) => {
-                if (e.touches.length < 2)
+                if (e.touches.length < 2) {
                     return;
+                }
                 isZooming = true;
                 initialZoom = componentTimeline.timeContext.zoom;
                 initialDistance = calculateDistance({
@@ -1532,9 +1737,10 @@ let WaveformComponent = class WaveformComponent {
         const n = w * h;
         const m = (n > 50000 ? 50000 : n); // should base that on the %ile
         let m_per = Math.floor(m / w);
-        if (m_per < 1)
+        if (m_per < 1) {
             m_per = 1;
-        let sample = [];
+        }
+        const sample = [];
         for (let x = 0; x < w; ++x) {
             for (let i = 0; i < m_per; ++i) {
                 const y = Math.floor(Math.random() * h);
@@ -1545,18 +1751,18 @@ let WaveformComponent = class WaveformComponent {
             }
         }
         if (sample.length === 0) {
-            console.log("WARNING: No samples gathered, even though we hoped for " +
-                (m_per * w) + " of them");
+            console.log('WARNING: No samples gathered, even though we hoped for ' +
+                (m_per * w) + ' of them');
             return 0.0;
         }
         sample.sort((a, b) => { return a - b; });
         const ix = Math.floor((sample.length * percentile) / 100);
-        console.log("Estimating " + percentile + "-%ile of " +
-            n + "-sample dataset (" + w + " x " + h + ") as value " + ix +
-            " of sorted " + sample.length + "-sample subset");
+        console.log('Estimating ' + percentile + '-%ile of ' +
+            n + '-sample dataset (' + w + ' x ' + h + ') as value ' + ix +
+            ' of sorted ' + sample.length + '-sample subset');
         const estimate = sample[ix];
-        console.log("Estimate is: " + estimate + " (where min sampled value = " +
-            sample[0] + " and max = " + sample[sample.length - 1] + ")");
+        console.log('Estimate is: ' + estimate + ' (where min sampled value = ' +
+            sample[0] + ' and max = ' + sample[sample.length - 1] + ')');
         return estimate;
     }
     interpolatingMapper(hexColours) {
@@ -1586,10 +1792,10 @@ let WaveformComponent = class WaveformComponent {
         });
     }
     iceMapper() {
-        let hexColours = [
+        const hexColours = [
             // Based on ColorBrewer ylGnBu
-            "ffffff", "ffff00", "f7fcf0", "e0f3db", "ccebc5", "a8ddb5",
-            "7bccc4", "4eb3d3", "2b8cbe", "0868ac", "084081", "042040"
+            'ffffff', 'ffff00', 'f7fcf0', 'e0f3db', 'ccebc5', 'a8ddb5',
+            '7bccc4', '4eb3d3', '2b8cbe', '0868ac', '084081', '042040'
         ];
         hexColours.reverse();
         return this.interpolatingMapper(hexColours);
@@ -1603,22 +1809,34 @@ let WaveformComponent = class WaveformComponent {
         let r = 0, g = 0, b = 0;
         switch (i % 6) {
             case 0:
-                r = v, g = t, b = p;
+                r = v;
+                g = t;
+                b = p;
                 break;
             case 1:
-                r = q, g = v, b = p;
+                r = q;
+                g = v;
+                b = p;
                 break;
             case 2:
-                r = p, g = v, b = t;
+                r = p;
+                g = v;
+                b = t;
                 break;
             case 3:
-                r = p, g = q, b = v;
+                r = p;
+                g = q;
+                b = v;
                 break;
             case 4:
-                r = t, g = p, b = v;
+                r = t;
+                g = p;
+                b = v;
                 break;
             case 5:
-                r = v, g = p, b = q;
+                r = v;
+                g = p;
+                b = q;
                 break;
         }
         return [r, g, b];
@@ -1635,24 +1853,25 @@ let WaveformComponent = class WaveformComponent {
     }
     sunsetMapper() {
         return (value => {
-            let r = (value - 0.24) * 2.38;
-            let g = (value - 0.64) * 2.777;
+            const r = (value - 0.24) * 2.38;
+            const g = (value - 0.64) * 2.777;
             let b = (3.6 * value);
-            if (value > 0.277)
+            if (value > 0.277) {
                 b = 2.0 - b;
+            }
             return [r, g, b];
         });
     }
     clearTimeline() {
         // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
         const timeContextChildren = this.timeline.timeContext._children;
-        for (let track of this.timeline.tracks) {
+        for (const track of this.timeline.tracks) {
             if (track.layers.length === 0) {
                 continue;
             }
             const trackLayers = Array.from(track.layers);
             while (trackLayers.length) {
-                let layer = trackLayers.pop();
+                const layer = trackLayers.pop();
                 if (this.layers.includes(layer)) {
                     track.remove(layer);
                     this.layers.splice(this.layers.indexOf(layer), 1);
@@ -1691,7 +1910,7 @@ let WaveformComponent = class WaveformComponent {
         const totalWaveHeight = height * 0.9;
         const waveHeight = totalWaveHeight / nchannels;
         for (let ch = 0; ch < nchannels; ++ch) {
-            console.log("about to construct a waveform layer for channel " + ch);
+            console.log('about to construct a waveform layer for channel ' + ch);
             const waveformLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.WaveformLayer(buffer, {
                 top: (height - totalWaveHeight) / 2 + waveHeight * ch,
                 height: waveHeight,
@@ -1708,14 +1927,15 @@ let WaveformComponent = class WaveformComponent {
         waveTrack.render();
         waveTrack.update();
         this.isLoading = false;
+        this.ref.markForCheck();
         this.animate();
     }
     renderSpectrogram(buffer) {
         const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
         const gridTrack = this.timeline.getTrackById(`grid-${this.trackIdPrefix}`);
         const spectrogramLayer = new __WEBPACK_IMPORTED_MODULE_6__spectrogram_Spectrogram__["a" /* WavesSpectrogramLayer */](buffer, {
-            top: height * 0.05,
-            height: height * 0.9,
+            top: 0,
+            height: height,
             stepSize: 512,
             blockSize: 1024,
             normalise: 'none',
@@ -1730,10 +1950,14 @@ let WaveformComponent = class WaveformComponent {
             this.featureExtractionSubscription.unsubscribe();
             this.hasShot = true;
         }
-        if (!extracted.hasOwnProperty('features') || !extracted.hasOwnProperty('outputDescriptor'))
+        if (!extracted.hasOwnProperty('features')
+            || !extracted.hasOwnProperty('outputDescriptor')) {
             return;
-        if (!extracted.features.hasOwnProperty('shape') || !extracted.features.hasOwnProperty('data'))
+        }
+        if (!extracted.features.hasOwnProperty('shape')
+            || !extracted.features.hasOwnProperty('data')) {
             return;
+        }
         const features = extracted.features;
         const outputDescriptor = extracted.outputDescriptor;
         // const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
@@ -1744,8 +1968,9 @@ let WaveformComponent = class WaveformComponent {
             case 'vector': {
                 const stepDuration = features.stepDuration;
                 const featureData = features.data;
-                if (featureData.length === 0)
+                if (featureData.length === 0) {
                     return;
+                }
                 const normalisationFactor = 1.0 /
                     featureData.reduce((currentMax, feature) => Math.max(currentMax, feature), -Infinity);
                 const plotData = [...featureData].map((feature, i) => {
@@ -1754,7 +1979,7 @@ let WaveformComponent = class WaveformComponent {
                         cy: feature * normalisationFactor
                     };
                 });
-                let lineLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.LineLayer(plotData, {
+                const lineLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.LineLayer(plotData, {
                     color: colour,
                     height: height
                 });
@@ -1763,8 +1988,9 @@ let WaveformComponent = class WaveformComponent {
             }
             case 'list': {
                 const featureData = features.data;
-                if (featureData.length === 0)
+                if (featureData.length === 0) {
                     return;
+                }
                 // TODO look at output descriptor instead of directly inspecting features
                 const hasDuration = outputDescriptor.configured.hasDuration;
                 const isMarker = !hasDuration
@@ -1772,18 +1998,16 @@ let WaveformComponent = class WaveformComponent {
                     && featureData[0].featureValues == null;
                 const isRegion = hasDuration
                     && featureData[0].timestamp != null;
-                console.log("Have list features: length " + featureData.length +
-                    ", isMarker " + isMarker + ", isRegion " + isRegion +
-                    ", hasDuration " + hasDuration);
+                console.log('Have list features: length ' + featureData.length +
+                    ', isMarker ' + isMarker + ', isRegion ' + isRegion +
+                    ', hasDuration ' + hasDuration);
                 // TODO refactor, this is incomprehensible
                 if (isMarker) {
-                    const plotData = featureData.map(feature => {
-                        return {
-                            time: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
-                            label: feature.label
-                        };
-                    });
-                    let featureLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.TickLayer(plotData, {
+                    const plotData = featureData.map(feature => ({
+                        time: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
+                        label: feature.label
+                    }));
+                    const featureLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.TickLayer(plotData, {
                         height: height,
                         color: colour,
                         labelPosition: 'bottom',
@@ -1792,7 +2016,7 @@ let WaveformComponent = class WaveformComponent {
                     this.addLayer(featureLayer, waveTrack, this.timeline.timeContext);
                 }
                 else if (isRegion) {
-                    console.log("Output is of region type");
+                    console.log('Output is of region type');
                     const binCount = outputDescriptor.configured.binCount || 0;
                     const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1;
                     const getSegmentArgs = () => {
@@ -1828,38 +2052,37 @@ let WaveformComponent = class WaveformComponent {
                             ];
                         }
                         else {
-                            return [featureData.map(feature => {
-                                    return {
-                                        x: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
-                                        width: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.duration),
-                                        color: colour,
-                                        opacity: 0.8
-                                    };
-                                }), { height: height }];
+                            return [featureData.map(feature => ({
+                                    x: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
+                                    width: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.duration),
+                                    color: colour,
+                                    opacity: 0.8
+                                })), { height: height }];
                         }
                     };
-                    let segmentLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.SegmentLayer(...getSegmentArgs());
+                    const segmentLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.SegmentLayer(...getSegmentArgs());
                     this.addLayer(segmentLayer, waveTrack, this.timeline.timeContext);
                 }
                 break;
             }
             case 'matrix': {
                 const stepDuration = features.stepDuration;
-                //!!! + start time
+                // !!! + start time
                 const matrixData = features.data;
-                if (matrixData.length === 0)
+                if (matrixData.length === 0) {
                     return;
-                console.log("matrix data length = " + matrixData.length);
-                console.log("height of first column = " + matrixData[0].length);
+                }
+                console.log('matrix data length = ' + matrixData.length);
+                console.log('height of first column = ' + matrixData[0].length);
                 const targetValue = this.estimatePercentile(matrixData, 95);
                 const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
-                console.log("setting gain to " + gain);
+                console.log('setting gain to ' + gain);
                 const matrixEntity = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.utils.PrefilledMatrixEntity(matrixData, 0, // startTime
                 stepDuration);
-                let matrixLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.MatrixLayer(matrixEntity, {
+                const matrixLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.MatrixLayer(matrixEntity, {
                     gain,
-                    height: height * 0.9,
-                    top: height * 0.05,
+                    top: 0,
+                    height: height,
                     normalise: 'none',
                     mapper: this.iceMapper()
                 });
@@ -1867,15 +2090,16 @@ let WaveformComponent = class WaveformComponent {
                 break;
             }
             default:
-                console.log("Cannot render an appropriate layer for feature shape '" +
-                    features.shape + "'");
+                console.log(`Cannot render an appropriate layer for feature shape '${features.shape}'`);
         }
         this.isLoading = false;
+        this.ref.markForCheck();
         this.timeline.tracks.update();
     }
     animate() {
-        if (!this.isSeeking)
+        if (!this.isSeeking) {
             return;
+        }
         this.ngZone.runOutsideAngular(() => {
             // listen for time passing...
             const updateSeekingCursor = () => {
@@ -1904,8 +2128,9 @@ let WaveformComponent = class WaveformComponent {
                         currentOffset + visibleDuration;
                     this.timeline.tracks.update();
                 }
-                if (this.isPlaying)
+                if (this.isPlaying) {
                     requestAnimationFrame(updateSeekingCursor);
+                }
             };
             updateSeekingCursor();
         });
@@ -1924,26 +2149,19 @@ let WaveformComponent = class WaveformComponent {
             track.$layout.appendChild(this.cursorLayer.$el);
         }
     }
-    static changeColour(layer, colour) {
-        const butcherShapes = (shape) => {
-            shape.install({ color: () => colour });
-            shape.params.color = colour;
-            shape.update(layer._renderingContext, layer.data);
-        };
-        layer._$itemCommonShapeMap.forEach(butcherShapes);
-        layer._$itemShapeMap.forEach(butcherShapes);
-        layer.render();
-        layer.update();
-    }
     ngOnDestroy() {
-        if (this.featureExtractionSubscription)
+        if (this.featureExtractionSubscription) {
             this.featureExtractionSubscription.unsubscribe();
-        if (this.playingStateSubscription)
+        }
+        if (this.playingStateSubscription) {
             this.playingStateSubscription.unsubscribe();
-        if (this.seekedSubscription)
+        }
+        if (this.seekedSubscription) {
             this.seekedSubscription.unsubscribe();
-        if (this.onAudioDataSubscription)
+        }
+        if (this.onAudioDataSubscription) {
             this.onAudioDataSubscription.unsubscribe();
+        }
     }
     seekStart() {
         this.zoomOnMouseDown = this.timeline.timeContext.zoom;
@@ -1968,48 +2186,48 @@ let WaveformComponent = class WaveformComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ViewChild */])('track'),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ElementRef */]) === "function" && _a || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_5" /* ViewChild */])('track'),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["K" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["K" /* ElementRef */]) === "function" && _a || Object)
 ], WaveformComponent.prototype, "trackDiv", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Object)
 ], WaveformComponent.prototype, "timeline", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", String)
 ], WaveformComponent.prototype, "trackIdPrefix", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], WaveformComponent.prototype, "isSubscribedToExtractionService", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], WaveformComponent.prototype, "isSubscribedToAudioService", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], WaveformComponent.prototype, "isOneShotExtractor", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], WaveformComponent.prototype, "isSeeking", null);
 WaveformComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
-        selector: 'app-waveform',
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
+        selector: 'ugly-waveform',
         template: __webpack_require__("pox9"),
         styles: [__webpack_require__("6o5O")]
     }),
-    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgZone */]) === "function" && _d || Object])
+    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* NgZone */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ChangeDetectorRef */]) === "function" && _e || Object])
 ], WaveformComponent);
 
-var _a, _b, _c, _d;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/waveform.component.js.map
+var _a, _b, _c, _d, _e;
+//# sourceMappingURL=waveform.component.js.map
 
 /***/ }),
 
@@ -2017,7 +2235,7 @@ var _a, _b, _c, _d;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_feature_extraction_feature_extraction_service__ = __webpack_require__("3lao");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FeatureExtractionMenuComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2036,7 +2254,7 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
         this.piperService = piperService;
         this.extractorsMap = new Map();
         this.extractors = [];
-        this.requestOutput = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]();
+        this.requestOutput = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* EventEmitter */]();
         this.isDisabled = true;
         this.populateExtractors = available => {
             const maxCharacterLimit = 50;
@@ -2065,7 +2283,8 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     }
     ngOnInit() {
         this.piperService.list().then(this.populateExtractors);
-        this.librariesUpdatedSubscription = this.piperService.librariesUpdated$.subscribe(this.populateExtractors);
+        this.librariesUpdatedSubscription =
+            this.piperService.librariesUpdated$.subscribe(this.populateExtractors);
     }
     extract(combinedKey) {
         const info = this.extractorsMap.get(combinedKey);
@@ -2083,17 +2302,17 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["w" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], FeatureExtractionMenuComponent.prototype, "disabled", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["W" /* Output */])(),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* EventEmitter */]) === "function" && _a || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* Output */])(),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* EventEmitter */]) === "function" && _a || Object)
 ], FeatureExtractionMenuComponent.prototype, "requestOutput", void 0);
 FeatureExtractionMenuComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* Component */])({
-        selector: 'app-feature-extraction-menu',
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
+        selector: 'ugly-feature-extraction-menu',
         template: __webpack_require__("W1+o"),
         styles: [__webpack_require__("1RzP")]
     }),
@@ -2101,7 +2320,7 @@ FeatureExtractionMenuComponent = __decorate([
 ], FeatureExtractionMenuComponent);
 
 var _a, _b;
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/feature-extraction-menu.component.js.map
+//# sourceMappingURL=feature-extraction-menu.component.js.map
 
 /***/ }),
 
@@ -2109,7 +2328,7 @@ var _a, _b;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("Rw+2");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__ = __webpack_require__("EEr4");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AudioPlayerService; });
@@ -2154,8 +2373,9 @@ let AudioPlayerService = class AudioPlayerService {
         return !this.audioElement.paused;
     }
     loadAudio(resource) {
-        if (this.currentObjectUrl)
+        if (this.currentObjectUrl) {
             this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
+        }
         const url = this.resourceManager.createUrlToResource(resource);
         this.currentObjectUrl = url;
         this.audioElement.pause();
@@ -2180,7 +2400,7 @@ let AudioPlayerService = class AudioPlayerService {
             });
         })
             .catch(err => {
-            const message = err && err.message ? err.message : "Read error";
+            const message = err && err.message ? err.message : 'Read error';
             this.audioLoaded.next({
                 message: message
             });
@@ -2230,14 +2450,14 @@ AudioPlayerService = __decorate([
     __metadata("design:paramtypes", [Object, Object, Function, Object])
 ], AudioPlayerService);
 
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/audio-player.service.js.map
+//# sourceMappingURL=audio-player.service.js.map
 
 /***/ }),
 
 /***/ "vB4/":
 /***/ (function(module, exports) {
 
-module.exports = "\n<template ngFor let-item [ngForOf]=\"analyses\">\n  <div [class.break]=\"item.isRoot\">\n      <ugly-analysis-item\n        [timeline]=\"item.hasSharedTimeline ? sharedTimeline : undefined\"\n        [title]=\"item.title\"\n        [description]=\"item.description\"\n        [isActive]=\"rootAudioUri === item.rootAudioUri\"\n        [isRoot]=\"item.isRoot\"\n        [id]=\"item.id\"></ugly-analysis-item>\n  </div>\n</template>\n"
+module.exports = "\n<ng-template ngFor let-item [ngForOf]=\"analyses\">\n  <div [class.break]=\"item.isRoot\">\n    <ugly-analysis-item\n      [timeline]=\"item.hasSharedTimeline ? sharedTimeline : undefined\"\n      [isActive]=\"rootAudioUri === item.rootAudioUri\"\n      [item]=\"item\"\n    ></ugly-analysis-item>\n  </div>\n</ng-template>\n"
 
 /***/ }),
 
@@ -2246,22 +2466,22 @@ module.exports = "\n<template ngFor let-item [ngForOf]=\"analyses\">\n  <div [cl
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__polyfills_ts__ = __webpack_require__("XS25");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__ = __webpack_require__("nzH4");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("Rw+2");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__("kZql");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app___ = __webpack_require__("7G6f");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_polyfills__ = __webpack_require__("XS25");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("3j3K");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_dynamic__ = __webpack_require__("O61y");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_app_module__ = __webpack_require__("Iksp");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__environments_environment__ = __webpack_require__("kZql");
 
 
 
 
 
-if (__WEBPACK_IMPORTED_MODULE_3__environments_environment__["a" /* environment */].production) {
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["a" /* enableProdMode */])();
+if (__WEBPACK_IMPORTED_MODULE_4__environments_environment__["a" /* environment */].production) {
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["a" /* enableProdMode */])();
 }
-__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_4__app___["a" /* AppModule */]);
-//# sourceMappingURL=/Users/lucas/code/ugly-duckling/src/main.js.map
+__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_3__app_app_module__["a" /* AppModule */]);
+//# sourceMappingURL=main.js.map
 
 /***/ })
 
-},[1]);
+},[0]);
