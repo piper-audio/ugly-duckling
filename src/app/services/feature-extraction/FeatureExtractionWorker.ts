@@ -75,7 +75,7 @@ class AggregateStreamingService implements StreamingService {
   }
 }
 
-class ReducingAggregateService extends AggregateStreamingService {
+class ThrottledReducingAggregateService extends AggregateStreamingService {
   constructor() {
     super();
   }
@@ -108,7 +108,7 @@ export default class FeatureExtractionWorker {
               private requireJs: RequireJs) {
     this.workerScope = workerScope;
     this.remoteLibraries = new Map<LibraryKey, LibraryUri>();
-    this.service = new ReducingAggregateService();
+    this.service = new ThrottledReducingAggregateService();
     this.setupImportLibraryListener();
     this.server = new WebWorkerStreamingServer(
       this.workerScope,
