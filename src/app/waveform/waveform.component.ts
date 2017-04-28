@@ -32,21 +32,24 @@ type Layer = any;
 type Track = any;
 type Colour = string;
 
-const colours = function* () {
-  const circularColours = [
-    '#0868ac', // "sapphire blue", our waveform / header colour
-    '#c33c54', // "brick red"
-    '#17bebb', // "tiffany blue"
-    '#001021', // "rich black"
-    '#fa8334', // "mango tango"
-    '#034748' // "deep jungle green"
-  ];
+
+
+function* createColourGenerator(colours) {
   let index = 0;
-  const nColours = circularColours.length;
+  const nColours = colours.length;
   while (true) {
-    yield circularColours[index = ++index % nColours];
+    yield colours[index = ++index % nColours];
   }
-}();
+}
+
+const defaultColourGenerator = createColourGenerator([
+  '#0868ac', // "sapphire blue", our waveform / header colour
+  '#c33c54', // "brick red"
+  '#17bebb', // "tiffany blue"
+  '#001021', // "rich black"
+  '#fa8334', // "mango tango"
+  '#034748' // "deep jungle green"
+]);
 
 @Component({
   selector: 'ugly-waveform',
@@ -65,11 +68,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.featureExtractionSubscription) {
         return;
       }
-      
+
       this.featureExtractionSubscription =
         this.piperService.featuresExtracted$.subscribe(
           features => {
-            this.renderFeatures(features, colours.next().value);
+            this.renderFeatures(features, defaultColourGenerator.next().value);
           });
     } else {
       if (this.featureExtractionSubscription) {
