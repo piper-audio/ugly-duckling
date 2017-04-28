@@ -626,23 +626,22 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         if (featureData.length === 0) {
           return;
         }
-        const normalisationFactor = 1.0 /
-          featureData.reduce(
-            (currentMax, feature) => Math.max(currentMax, feature),
-            -Infinity
-          );
-
         const plotData = [...featureData].map((feature, i) => {
           return {
             cx: i * stepDuration,
-            cy: feature * normalisationFactor,
-            value: feature
+            cy: feature
           };
         });
-
+        let min = featureData.reduce((m, f) => Math.min(m, f), Infinity);
+        let max = featureData.reduce((m, f) => Math.max(m, f), -Infinity);
+        if (min === Infinity) {
+          min = 0;
+          max = 1;
+        }
         const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
           color: colour,
-          height: height
+          height: height,
+          yDomain: [ min, max ]
         });
         this.addLayer(
           lineLayer,
@@ -652,7 +651,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayer, {
           opacity: 0.7,
           height: height,
-          color: '#c33c54'
+          color: '#c33c54',
+          yDomain: [ min, max ]
         });
         this.addLayer(
           this.highlightLayer,
