@@ -1,27 +1,28 @@
 import {Injectable, Inject} from '@angular/core';
 import {
-  ListResponse, ListRequest
-} from "piper";
+  ListResponse
+} from 'piper';
 import {
-  SimpleRequest, SimpleResponse
-} from "piper/HigherLevelUtilities";
-import {Subject} from "rxjs/Subject";
-import {Observable} from "rxjs";
-import {Http, Response} from "@angular/http";
-
-interface RequestMessage<RequestType> {
-  method: string;
-  params: RequestType;
-}
-
-interface ResponseMessage<ResponseType> {
-  method: string;
-  result: ResponseType;
-}
+  SimpleRequest,
+  SimpleResponse
+} from 'piper/HigherLevelUtilities';
+import {Subject} from 'rxjs/Subject';
+import {Observable} from 'rxjs/Observable';
+import {Http, Response} from '@angular/http';
+import {
+  countingIdProvider,
+  WebWorkerStreamingClient
+} from 'piper/client-stubs/WebWorkerStreamingClient';
+import {RequestId} from 'piper/protocols/WebWorkerProtocol';
 
 type RepoUri = string;
 export interface AvailableLibraries {
   [libraryKey: string]: RepoUri;
+}
+
+export interface Progress {
+  id: RequestId;
+  value: number; // between 0 and 100, for material-ui
 }
 
 @Injectable()
@@ -32,47 +33,52 @@ export class FeatureExtractionService {
   featuresExtracted$: Observable<SimpleResponse>;
   private librariesUpdated: Subject<ListResponse>;
   librariesUpdated$: Observable<ListResponse>;
+  private progressUpdated: Subject<Progress>;
+  progressUpdated$: Observable<Progress>;
+  private client: WebWorkerStreamingClient;
 
-  constructor(private http: Http, @Inject('PiperRepoUri') private repositoryUri: RepoUri) {
+  constructor(private http: Http,
+              @Inject('PiperRepoUri') private repositoryUri: RepoUri) {
     this.worker = new Worker('bootstrap-feature-extraction-worker.js');
     this.featuresExtracted = new Subject<SimpleResponse>();
     this.featuresExtracted$ = this.featuresExtracted.asObservable();
     this.librariesUpdated = new Subject<ListResponse>();
     this.librariesUpdated$ = this.librariesUpdated.asObservable();
+    this.progressUpdated = new Subject<Progress>();
+    this.progressUpdated$ = this.progressUpdated.asObservable();
     this.worker.addEventListener('message', (ev: MessageEvent) => {
       const isValidResponse = ev.data.method === 'import'
-        && ev.data.result.available !== undefined;
+        && ev.data.result && ev.data.result.available ;
       if (isValidResponse) {
+        (ev as Event).stopImmediatePropagation();
         this.librariesUpdated.next(ev.data.result);
       }
-    });
+    }, true);
+
+    this.client = new WebWorkerStreamingClient(
+      this.worker,
+      countingIdProvider(0)
+    );
   }
 
   list(): Promise<ListResponse> {
-    return this.request<ListRequest, ListResponse>(
-      {method: 'list', params: {}},
-      (ev: MessageEvent) => ev.data.result.available !== undefined
-    ).then(msg => msg.result);
+    return this.client.list({});
   }
 
-  process(request: SimpleRequest): Promise<SimpleResponse> {
-    return this.request<SimpleRequest, SimpleResponse>(
-      {method: 'process', params: request},
-      (ev: MessageEvent) => ev.data.method === 'process'
-    ).then(msg => {
-      this.featuresExtracted.next(msg.result);
-      return msg.result;
-    });
-  }
-
-  collect(request: SimpleRequest): Promise<SimpleResponse> {
-    return this.request<SimpleRequest, SimpleResponse>(
-      {method: 'collect', params: request},
-      (ev: MessageEvent) => ev.data.method === 'collect'
-    ).then(msg => {
-      this.featuresExtracted.next(msg.result);
-      return msg.result;
-    });
+  extract(analysisItemId: string, request: SimpleRequest): Promise<void> {
+    return this.client.collect(request)
+      .do(val => {
+        if (val.totalBlockCount > 0) {
+          this.progressUpdated.next({
+            id: analysisItemId,
+            value: (val.processedBlockCount / val.totalBlockCount) * 100
+          });
+        }
+      })
+      .toPromise()
+      .then((response) => {
+        this.featuresExtracted.next(response);
+      });
   }
 
   updateAvailableLibraries(): Observable<AvailableLibraries> {
@@ -93,19 +99,5 @@ export class FeatureExtractionService {
 
   load(libraryKey: string): void {
     this.worker.postMessage({method: 'import', params: libraryKey});
-  }
-
-  private request<Req, Res>(request: RequestMessage<Req>,
-                            predicate: (ev: MessageEvent) => boolean)
-  : Promise<ResponseMessage<Res>> {
-    return new Promise(res => {
-      const listener = (ev: MessageEvent) => {
-        this.worker.removeEventListener('message', listener);
-        if (predicate(ev))
-          res(ev.data);
-      };
-      this.worker.addEventListener('message', listener);
-      this.worker.postMessage(request);
-    }).catch(err => console.error(err));
   }
 }

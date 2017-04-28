@@ -1,22 +1,22 @@
-<div class="app-container">
-  <div class="app-header">
+<div class="ugly-container">
+  <div class="ugly-header">
     <md-toolbar color="primary">
       <md-icon svgIcon="duck"></md-icon>
 
-      <span class="app-toolbar-filler"></span>
+      <span class="ugly-toolbar-filler"></span>
 
-      <app-playback-control></app-playback-control>
+      <ugly-playback-control></ugly-playback-control>
       <ugly-recording-control
         (finishedRecording)="onFileOpened($event)"
       ></ugly-recording-control>
 
       <!-- This fills the remaining space of the current row -->
-      <span class="app-toolbar-filler"></span>
+      <span class="ugly-toolbar-filler"></span>
 
 
-      <app-audio-file-open
+      <ugly-audio-file-open
         (fileOpened)="onFileOpened($event)"
-      ></app-audio-file-open>
+      ></ugly-audio-file-open>
       <!-- menu opens when trigger button is clicked -->
       <button md-icon-button (click)="sidenav.toggle()">
         <md-icon>extension</md-icon>
@@ -24,28 +24,17 @@
     </md-toolbar>
   </div>
 
-  <div class="app-content">
+  <div class="ugly-content">
     <md-sidenav-container>
       <md-sidenav #sidenav align="start" mode="over">
-        <app-feature-extraction-menu
+        <ugly-feature-extraction-menu
           (requestOutput)="extractFeatures($event)"
           [disabled]="!canExtract">
-        </app-feature-extraction-menu>
+        </ugly-feature-extraction-menu>
       </md-sidenav>
       <ugly-notebook-feed
-        [analyses]="analyses"
+        [analyses]="analyses.toIterable()"
         [rootAudioUri]="rootAudioUri"></ugly-notebook-feed>
     </md-sidenav-container>
-  </div>
-
-  <div class="app-footer">
-    <md-toolbar color="primary">
-
-      <!-- menu opens when trigger button is clicked -->
-      <button md-icon-button (click)="sidenav.toggle()">
-        <md-icon>extension</md-icon>
-      </button>
-    </md-toolbar>
-
   </div>
 </div>

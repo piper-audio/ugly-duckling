@@ -1,10 +1,14 @@
 import {
-  Component, OnInit, ViewChild, ElementRef, Output,
-  EventEmitter, NgZone
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  Output,
+  EventEmitter
 } from '@angular/core';
 
 @Component({
-  selector: 'app-audio-file-open',
+  selector: 'ugly-audio-file-open',
   templateUrl: './audio-file-open.component.html',
   styleUrls: ['./audio-file-open.component.css']
 })

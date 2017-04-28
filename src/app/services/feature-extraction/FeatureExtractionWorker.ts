@@ -4,18 +4,24 @@
 
 import {PiperVampService, ListRequest, ListResponse} from 'piper';
 import {
-  PiperSimpleClient, SimpleRequest,
-  SimpleResponse
+  SimpleRequest
 } from 'piper/HigherLevelUtilities';
 import { VampExamplePlugins } from 'piper/ext/VampExamplePluginsModule';
-import {AvailableLibraries} from "./feature-extraction.service";
-
-// TODO TypeScript has a .d.ts file for webworkers, but for some reason it clashes with the typings for dom and causes compiler errors
-interface WorkerGlobalScope {
-  onmessage: (this: this, ev: MessageEvent) => any;
-  postMessage(data: any): void;
-  importScripts(uri: string): void;
-}
+import {
+  AvailableLibraries
+} from './feature-extraction.service';
+import {
+  DedicatedWorkerGlobalScope,
+  WebWorkerStreamingServer
+} from 'piper/servers/WebWorkerStreamingServer';
+import {
+  PiperStreamingService,
+  StreamingResponse,
+  StreamingService
+} from 'piper/StreamingService';
+import {Observable} from 'rxjs/Observable';
+import {EmscriptenModule} from 'piper/PiperVampService';
+import {streamingResponseReducer} from './FeatureReducers';
 
 interface MessageEvent {
   readonly data: any;
@@ -26,19 +32,91 @@ type LibraryKey = string;
 
 type RequireJs = (libs: string[], callback: (...libs: any[]) => void) => void;
 
-export default class FeatureExtractionWorker {
-  private workerScope: WorkerGlobalScope;
-  private clients: Map<LibraryKey, PiperSimpleClient>;
-  private remoteLibraries: Map<LibraryKey, LibraryUri>;
+class AggregateStreamingService implements StreamingService {
+  private services: Map<LibraryKey, PiperStreamingService>;
 
-  constructor(workerScope: WorkerGlobalScope, private requireJs: RequireJs) {
-    this.workerScope = workerScope;
-    this.clients = new Map<LibraryKey, PiperSimpleClient>();
-    this.remoteLibraries = new Map<LibraryKey, LibraryUri>();
-    this.clients.set(
+  constructor() {
+    this.services = new Map<LibraryKey, PiperStreamingService>();
+    this.services.set(
       'vamp-example-plugins',
-      new PiperSimpleClient(new PiperVampService(VampExamplePlugins()))
+      new PiperStreamingService(new PiperVampService(VampExamplePlugins()))
     );
+  }
+
+  addService(key: LibraryKey, service: PiperStreamingService): void {
+    this.services.set(key, service);
+  }
+
+  list(request: ListRequest): Promise<ListResponse> {
+    return Promise.all(
+      [...this.services.values()].map(client => client.list({}))
+    ).then(allAvailable => ({
+        available: allAvailable.reduce(
+          (all, current) => all.concat(current.available),
+          []
+        )
+      })
+    );
+  }
+
+  process(request: SimpleRequest): Observable<StreamingResponse> {
+    return this.dispatch('process', request);
+  }
+
+  collect(request: SimpleRequest): Observable<StreamingResponse> {
+    return this.dispatch('collect', request);
+  }
+
+  protected dispatch(method: 'process' | 'collect',
+                     request: SimpleRequest): Observable<StreamingResponse> {
+    const key = request.key.split(':')[0];
+    return this.services.has(key) ?
+      this.services.get(key)[method](request) : Observable.throw('Invalid key');
+  }
+}
+
+class ThrottledReducingAggregateService extends AggregateStreamingService {
+  constructor() {
+    super();
+  }
+
+  protected dispatch(method: 'process' | 'collect',
+                     request: SimpleRequest): Observable<StreamingResponse> {
+    let lastPercentagePoint = 0;
+    return super.dispatch(method, request)
+      .scan(streamingResponseReducer)
+      .filter(val => {
+        const percentage =
+          100 * (val.processedBlockCount / val.totalBlockCount) | 0;
+        const pointDifference = (percentage - lastPercentagePoint);
+        const shouldEmit = pointDifference === 1 || percentage === 100;
+        if (shouldEmit) {
+          lastPercentagePoint = percentage;
+        }
+        return shouldEmit;
+      });
+  }
+}
+
+export default class FeatureExtractionWorker {
+  private workerScope: DedicatedWorkerGlobalScope;
+  private remoteLibraries: Map<LibraryKey, LibraryUri>;
+  private server: WebWorkerStreamingServer;
+  private service: AggregateStreamingService;
+
+  constructor(workerScope: DedicatedWorkerGlobalScope,
+              private requireJs: RequireJs) {
+    this.workerScope = workerScope;
+    this.remoteLibraries = new Map<LibraryKey, LibraryUri>();
+    this.service = new ThrottledReducingAggregateService();
+    this.setupImportLibraryListener();
+    this.server = new WebWorkerStreamingServer(
+      this.workerScope,
+      this.service
+    );
+  }
+
+  private setupImportLibraryListener(): void {
 
     this.workerScope.onmessage = (ev: MessageEvent) => {
       const sendResponse = (result) => {
@@ -48,31 +126,18 @@ export default class FeatureExtractionWorker {
         });
       };
       switch (ev.data.method) {
-        case 'list':
-          this.list(ev.data.params)
-            .then(sendResponse)
-            .catch(err => console.error(err)); // TODO handle error
-          break;
-        case 'process':
-          this.process(ev.data.params)
-            .then(sendResponse)
-            .catch(err => console.error(err)); // TODO handle error
-          break;
-        case 'collect':
-          this.collect(ev.data.params)
-            .then(sendResponse)
-            .catch(err => console.error(err)); // TODO handle error
-          break;
         case 'import':
-          // this.workerScope.importScripts(ev.data.params);
           const key: LibraryKey = ev.data.params;
           if (this.remoteLibraries.has(key)) {
             this.requireJs([this.remoteLibraries.get(key)], (plugin) => {
-              this.clients.set(
-                key,
-                new PiperSimpleClient(new PiperVampService(plugin.createLibrary()))
-              ); // TODO won't always be an emscripten module
-              this.list({}).then(sendResponse);
+              // TODO a factory with more logic probably belongs in piper-js
+              const lib: any | EmscriptenModule = plugin.createLibrary();
+              const isEmscriptenModule = typeof lib.cwrap === 'function';
+              const service = new PiperStreamingService(
+                isEmscriptenModule ? new PiperVampService(lib) : lib // TODO
+              );
+              this.service.addService(key, service);
+              this.service.list({}).then(sendResponse);
             });
           } else {
             console.error('Non registered library key.'); // TODO handle error
@@ -80,36 +145,10 @@ export default class FeatureExtractionWorker {
           break;
         case 'addRemoteLibraries': // TODO rename
           const available: AvailableLibraries = ev.data.params;
-          Object.keys(available).forEach(key => {
-            this.remoteLibraries.set(key, available[key]);
+          Object.keys(available).forEach(libraryKey => {
+            this.remoteLibraries.set(libraryKey, available[libraryKey]);
           });
       }
     };
-  }
-
-  private list(request: ListRequest): Promise<ListResponse> {
-    // TODO actually pay attention to ListRequest
-    return Promise.all([...this.clients.values()].map(client => client.list({})))
-      .then(allAvailable => {
-        return {
-          available: allAvailable.reduce(
-            (all, current) => all.concat(current.available),
-            []
-          )
-        };
-      });
-  }
-
-  // TODO reduce dupe
-  private process(request: SimpleRequest): Promise<SimpleResponse> {
-    const key: LibraryKey = request.key.split(':')[0];
-    const client: PiperSimpleClient = this.clients.get(key);
-    return client ? client.process(request) : Promise.reject("Invalid plugin library key.");
-  }
-
-  private collect(request: SimpleRequest): Promise<SimpleResponse> {
-    const key: LibraryKey = request.key.split(':')[0];
-    const client: PiperSimpleClient = this.clients.get(key);
-    return client ? client.collect(request) : Promise.reject("Invalid plugin library key.");
   }
 }
