@@ -32,11 +32,28 @@ type Layer = any;
 type Track = any;
 type Colour = string;
 
+const colours = function* () {
+  const circularColours = [
+    '#0868ac', // "sapphire blue", our waveform / header colour
+    '#c33c54', // "brick red"
+    '#17bebb', // "tiffany blue"
+    '#001021', // "rich black"
+    '#fa8334', // "mango tango"
+    '#034748' // "deep jungle green"
+  ];
+  let index = 0;
+  const nColours = circularColours.length;
+  while (true) {
+    yield circularColours[index = ++index % nColours];
+  }
+}();
+
 @Component({
   selector: 'ugly-waveform',
   templateUrl: './waveform.component.html',
   styleUrls: ['./waveform.component.css']
 })
+
 export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('track') trackDiv: ElementRef;
@@ -48,22 +65,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.featureExtractionSubscription) {
         return;
       }
-
-      const colours = function* () {
-        const circularColours = [
-          'black',
-          'red',
-          'green',
-          'purple',
-          'orange'
-        ];
-        let index = 0;
-        const nColours = circularColours.length;
-        while (true) {
-          yield circularColours[index = ++index % nColours];
-        }
-      }();
-
+      
       this.featureExtractionSubscription =
         this.piperService.featuresExtracted$.subscribe(
           features => {
@@ -251,7 +253,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       });
       this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
       this.cursorLayer = new wavesUI.helpers.CursorLayer({
-        height: height
+        height: height,
+        color: '#c33c54'
       });
       this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
     }
@@ -557,14 +560,15 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
         top: (height - totalWaveHeight) / 2 + waveHeight * ch,
         height: waveHeight,
-        color: 'darkblue',
+        color: '#0868ac',
         channel: ch
       });
       this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
     }
 
     this.cursorLayer = new wavesUI.helpers.CursorLayer({
-      height: height
+      height: height,
+      color: '#c33c54'
     });
     this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
     this.timeline.state = new wavesUI.states.CenteredZoomState(this.timeline);
@@ -646,9 +650,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           this.timeline.timeContext
         );
         this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayer, {
-          color: colour,
           opacity: 0.7,
-          height: height
+          height: height,
+          color: '#c33c54'
         });
         this.addLayer(
           this.highlightLayer,

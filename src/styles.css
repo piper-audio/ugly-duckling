@@ -48,3 +48,11 @@ body {
 html {
   height: 100%;
 }
+
+/* Small change to this colour to fit better with colours we use in
+   visualisations */
+
+.mat-toolbar, .mat-toolbar.mat-primary {
+  background: #0868ac;
+}
+
