@@ -1,6 +1,6 @@
 <button md-icon-button (click)="emitPlayPause()">
   <md-icon>
-    <template [ngIf]="isPlaying()">pause</template>
-    <template [ngIf]="!isPlaying()">play_arrow</template>
+    <ng-template [ngIf]="isPlaying()">pause</ng-template>
+    <ng-template [ngIf]="!isPlaying()">play_arrow</ng-template>
   </md-icon>
 </button>

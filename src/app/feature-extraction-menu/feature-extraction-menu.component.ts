@@ -1,10 +1,16 @@
 import {
-  Component, OnInit, Output, EventEmitter, Input,
+  Component,
+  OnInit,
+  Output,
+  EventEmitter,
+  Input,
   OnDestroy
 } from '@angular/core';
-import {FeatureExtractionService} from "../services/feature-extraction/feature-extraction.service";
-import {ListResponse} from "piper";
-import {Subscription} from "rxjs";
+import {
+  FeatureExtractionService
+} from '../services/feature-extraction/feature-extraction.service';
+import {ListResponse} from 'piper';
+import {Subscription} from 'rxjs/Subscription';
 
 export interface ExtractorOutputInfo {
   extractorKey: string;
@@ -14,7 +20,7 @@ export interface ExtractorOutputInfo {
 }
 
 @Component({
-  selector: 'app-feature-extraction-menu',
+  selector: 'ugly-feature-extraction-menu',
   templateUrl: './feature-extraction-menu.component.html',
   styleUrls: ['./feature-extraction-menu.component.css']
 })
@@ -66,7 +72,8 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.piperService.list().then(this.populateExtractors);
-    this.librariesUpdatedSubscription = this.piperService.librariesUpdated$.subscribe(this.populateExtractors);
+    this.librariesUpdatedSubscription =
+      this.piperService.librariesUpdated$.subscribe(this.populateExtractors);
   }
 
   extract(combinedKey: string): void {

@@ -1,31 +1,39 @@
 import {
-  Component, OnInit, ViewChild, ElementRef, Input, AfterViewInit, NgZone,
-  OnDestroy
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  Input,
+  AfterViewInit,
+  NgZone,
+  OnDestroy,
+  ChangeDetectorRef
 } from '@angular/core';
 import {
   AudioPlayerService, AudioResource,
   AudioResourceError
-} from "../services/audio-player/audio-player.service";
+} from '../services/audio-player/audio-player.service';
 import wavesUI from 'waves-ui';
 import {
   FeatureExtractionService
-} from "../services/feature-extraction/feature-extraction.service";
-import {Subscription} from "rxjs";
+} from '../services/feature-extraction/feature-extraction.service';
+import {Subscription} from 'rxjs/Subscription';
 import {
   FeatureCollection,
-  FixedSpacedFeatures, SimpleResponse
-} from "piper/HigherLevelUtilities";
-import {toSeconds} from "piper";
-import {FeatureList, Feature} from "piper/Feature";
+  FixedSpacedFeatures,
+  SimpleResponse
+} from 'piper/HigherLevelUtilities';
+import {toSeconds} from 'piper';
+import {FeatureList, Feature} from 'piper/Feature';
 import * as Hammer from 'hammerjs';
-import {WavesSpectrogramLayer} from "../spectrogram/Spectrogram";
+import {WavesSpectrogramLayer} from '../spectrogram/Spectrogram';
 
 type Layer = any;
 type Track = any;
 type Colour = string;
 
 @Component({
-  selector: 'app-waveform',
+  selector: 'ugly-waveform',
   templateUrl: './waveform.component.html',
   styleUrls: ['./waveform.component.css']
 })
@@ -109,20 +117,22 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.seekedSubscription) {
         return;
       }
-      if(this.playingStateSubscription) {
+      if (this.playingStateSubscription) {
         return;
       }
 
       this.seekedSubscription = this.audioService.seeked$.subscribe(() => {
-        if (!this.isPlaying)
+        if (!this.isPlaying) {
           this.animate();
+        }
       });
       this.playingStateSubscription =
         this.audioService.playingStateChange$.subscribe(
           isPlaying => {
             this.isPlaying = isPlaying;
-            if (this.isPlaying)
+            if (this.isPlaying) {
               this.animate();
+            }
           });
     } else {
       if (this.isPlaying) {
@@ -158,6 +168,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private _isOneShotExtractor: boolean;
   private _isSeeking: boolean;
   private cursorLayer: any;
+  private highlightLayer: any;
   private layers: Layer[];
   private featureExtractionSubscription: Subscription;
   private playingStateSubscription: Subscription;
@@ -169,15 +180,30 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private hasShot: boolean;
   private isLoading: boolean;
 
+  private static changeColour(layer: Layer, colour: string): void {
+    const butcherShapes = (shape) => {
+      shape.install({color: () => colour});
+      shape.params.color = colour;
+      shape.update(layer._renderingContext, layer.data);
+    };
+
+    layer._$itemCommonShapeMap.forEach(butcherShapes);
+    layer._$itemShapeMap.forEach(butcherShapes);
+    layer.render();
+    layer.update();
+  }
+
   constructor(private audioService: AudioPlayerService,
               private piperService: FeatureExtractionService,
-              public ngZone: NgZone) {
+              private ngZone: NgZone,
+              private ref: ChangeDetectorRef) {
     this.isSubscribedToAudioService = true;
     this.isSeeking = true;
     this.layers = [];
     this.audioBuffer = undefined;
     this.timeline = undefined;
     this.cursorLayer = undefined;
+    this.highlightLayer = undefined;
     this.isPlaying = false;
     this.isLoading = true;
   }
@@ -186,7 +212,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.trackIdPrefix = this.trackIdPrefix || "default";
+    this.trackIdPrefix = this.trackIdPrefix || 'default';
     if (this.timeline) {
       this.renderTimeline(null, true, true);
     } else {
@@ -198,7 +224,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
                  useExistingDuration: boolean = false,
                  isInitialRender: boolean = false): Timeline {
     const track: HTMLElement = this.trackDiv.nativeElement;
-    track.innerHTML = "";
+    track.innerHTML = '';
     const height: number = track.getBoundingClientRect().height;
     const width: number = track.getBoundingClientRect().width;
     const pixelsPerSecond = width / duration;
@@ -235,7 +261,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         y: number;
       }
 
-      let zoomGestureJustEnded: boolean = false;
+      let zoomGestureJustEnded = false;
 
       const pixelToExponent: Function = wavesUI.utils.scales.linear()
         .domain([0, 100]) // 100px => factor 2
@@ -270,10 +296,13 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       let isZooming;
 
       const scroll = (ev) => {
-        if (ev.center.x - startX === 0) return;
+        if (ev.center.x - startX === 0) {
+          return;
+        }
+
         if (zoomGestureJustEnded) {
           zoomGestureJustEnded = false;
-          console.log("Skip this event: likely a single touch dangling from pinch");
+          console.log('Skip this event: likely a single touch dangling from pinch');
           return;
         }
         componentTimeline.timeContext.offset = offsetAtPanStart +
@@ -282,7 +311,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       };
 
       const zoom = (ev) => {
-        if (ev.touches.length < 2) return;
+        if (ev.touches.length < 2) {
+          return;
+        }
+
         ev.preventDefault();
         const minZoom = componentTimeline.state.minZoom;
         const maxZoom = componentTimeline.state.maxZoom;
@@ -322,7 +354,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const element: HTMLElement = this.trackDiv.nativeElement;
       element.addEventListener('touchstart', (e) => {
-        if (e.touches.length < 2) return;
+        if (e.touches.length < 2) {
+          return;
+        }
+
         isZooming = true;
         initialZoom = componentTimeline.timeContext.zoom;
 
@@ -359,8 +394,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const n = w * h;
     const m = (n > 50000 ? 50000 : n); // should base that on the %ile
     let m_per = Math.floor(m / w);
-    if (m_per < 1) m_per = 1;
-    let sample = [];
+    if (m_per < 1) {
+      m_per = 1;
+    }
+
+    const sample = [];
     for (let x = 0; x < w; ++x) {
       for (let i = 0; i < m_per; ++i) {
         const y = Math.floor(Math.random() * h);
@@ -371,18 +409,18 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     if (sample.length === 0) {
-      console.log("WARNING: No samples gathered, even though we hoped for " +
-                  (m_per * w) + " of them");
+      console.log('WARNING: No samples gathered, even though we hoped for ' +
+                  (m_per * w) + ' of them');
       return 0.0;
     }
-    sample.sort((a,b) => { return a - b; });
+    sample.sort((a, b) => { return a - b; });
     const ix = Math.floor((sample.length * percentile) / 100);
-    console.log("Estimating " + percentile + "-%ile of " +
-                n + "-sample dataset (" + w + " x " + h + ") as value " + ix +
-                " of sorted " + sample.length + "-sample subset");
+    console.log('Estimating ' + percentile + '-%ile of ' +
+                n + '-sample dataset (' + w + ' x ' + h + ') as value ' + ix +
+                ' of sorted ' + sample.length + '-sample subset');
     const estimate = sample[ix];
-    console.log("Estimate is: " + estimate + " (where min sampled value = " +
-                sample[0] + " and max = " + sample[sample.length-1] + ")");
+    console.log('Estimate is: ' + estimate + ' (where min sampled value = ' +
+                sample[0] + ' and max = ' + sample[sample.length - 1] + ')');
     return estimate;
   }
 
@@ -406,7 +444,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       const prop0 = base + 1.0 - m;
       const prop1 = m - base;
       const c0 = colours[base];
-      const c1 = colours[base+1];
+      const c1 = colours[base + 1];
       return [ c0[0] * prop0 + c1[0] * prop1,
                c0[1] * prop0 + c1[1] * prop1,
                c0[2] * prop0 + c1[2] * prop1 ];
@@ -414,10 +452,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   iceMapper() {
-    let hexColours = [
+    const hexColours = [
       // Based on ColorBrewer ylGnBu
-      "ffffff", "ffff00", "f7fcf0", "e0f3db", "ccebc5", "a8ddb5",
-      "7bccc4", "4eb3d3", "2b8cbe", "0868ac", "084081", "042040"
+      'ffffff', 'ffff00', 'f7fcf0', 'e0f3db', 'ccebc5', 'a8ddb5',
+      '7bccc4', '4eb3d3', '2b8cbe', '0868ac', '084081', '042040'
     ];
     hexColours.reverse();
     return this.interpolatingMapper(hexColours);
@@ -431,12 +469,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const t = v * (1 - (1 - f) * s);
     let r = 0, g = 0, b = 0;
     switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
+        case 0: r = v; g = t; b = p; break;
+        case 1: r = q; g = v; b = p; break;
+        case 2: r = p; g = v; b = t; break;
+        case 3: r = p; g = q; b = v; break;
+        case 4: r = t; g = p; b = v; break;
+        case 5: r = v; g = p; b = q; break;
     }
     return [ r, g, b ];
   }
@@ -454,10 +492,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   sunsetMapper() {
     return (value => {
-      let r = (value - 0.24) * 2.38;
-      let g = (value - 0.64) * 2.777;
+      const r = (value - 0.24) * 2.38;
+      const g = (value - 0.64) * 2.777;
       let b = (3.6 * value);
-      if (value > 0.277) b = 2.0 - b;
+      if (value > 0.277) {
+        b = 2.0 - b;
+      }
       return [ r, g, b ];
     });
   }
@@ -465,11 +505,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   clearTimeline(): void {
     // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
     const timeContextChildren = this.timeline.timeContext._children;
-    for (let track of this.timeline.tracks) {
+    for (const track of this.timeline.tracks) {
       if (track.layers.length === 0) { continue; }
       const trackLayers = Array.from(track.layers);
       while (trackLayers.length) {
-        let layer: Layer = trackLayers.pop();
+        const layer: Layer = trackLayers.pop();
         if (this.layers.includes(layer)) {
           track.remove(layer);
           this.layers.splice(this.layers.indexOf(layer), 1);
@@ -497,7 +537,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       this.timeline.pixelsPerSecond = width / buffer.duration;
       waveTrack.height = height;
     } else {
-      this.renderTimeline(buffer.duration)
+      this.renderTimeline(buffer.duration);
     }
     this.timeline.timeContext.offset = 0.5 * this.timeline.timeContext.visibleDuration;
 
@@ -513,12 +553,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const waveHeight = totalWaveHeight / nchannels;
 
     for (let ch = 0; ch < nchannels; ++ch) {
-      console.log("about to construct a waveform layer for channel " + ch);
+      console.log('about to construct a waveform layer for channel ' + ch);
       const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
-	top: (height - totalWaveHeight)/2 + waveHeight * ch,
-	height: waveHeight,
-	color: 'darkblue',
-	channel: ch
+        top: (height - totalWaveHeight) / 2 + waveHeight * ch,
+        height: waveHeight,
+        color: 'darkblue',
+        channel: ch
       });
       this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
     }
@@ -532,6 +572,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     waveTrack.update();
 
     this.isLoading = false;
+    this.ref.markForCheck();
     this.animate();
   }
 
@@ -559,8 +600,14 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       this.hasShot = true;
     }
 
-    if (!extracted.hasOwnProperty('features') || !extracted.hasOwnProperty('outputDescriptor')) return;
-    if (!extracted.features.hasOwnProperty('shape') || !extracted.features.hasOwnProperty('data')) return;
+    if (!extracted.hasOwnProperty('features')
+      || !extracted.hasOwnProperty('outputDescriptor')) {
+      return;
+    }
+    if (!extracted.features.hasOwnProperty('shape')
+      || !extracted.features.hasOwnProperty('data')) {
+      return;
+    }
     const features: FeatureCollection = (extracted.features as FeatureCollection);
     const outputDescriptor = extracted.outputDescriptor;
     // const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
@@ -572,7 +619,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       case 'vector': {
         const stepDuration = (features as FixedSpacedFeatures).stepDuration;
         const featureData = (features.data as Float32Array);
-        if (featureData.length === 0) return;
+        if (featureData.length === 0) {
+          return;
+        }
         const normalisationFactor = 1.0 /
           featureData.reduce(
             (currentMax, feature) => Math.max(currentMax, feature),
@@ -582,11 +631,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const plotData = [...featureData].map((feature, i) => {
           return {
             cx: i * stepDuration,
-            cy: feature * normalisationFactor
+            cy: feature * normalisationFactor,
+            value: feature
           };
         });
 
-        let lineLayer = new wavesUI.helpers.LineLayer(plotData, {
+        const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
           color: colour,
           height: height
         });
@@ -595,11 +645,23 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           waveTrack,
           this.timeline.timeContext
         );
+        this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayer, {
+          color: colour,
+          opacity: 0.7,
+          height: height
+        });
+        this.addLayer(
+          this.highlightLayer,
+          waveTrack,
+          this.timeline.timeContext
+        );
         break;
       }
       case 'list': {
         const featureData = (features.data as FeatureList);
-        if (featureData.length === 0) return;
+        if (featureData.length === 0) {
+          return;
+        }
         // TODO look at output descriptor instead of directly inspecting features
         const hasDuration = outputDescriptor.configured.hasDuration;
         const isMarker = !hasDuration
@@ -607,18 +669,16 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           && featureData[0].featureValues == null;
         const isRegion = hasDuration
           && featureData[0].timestamp != null;
-        console.log("Have list features: length " + featureData.length +
-                    ", isMarker " + isMarker + ", isRegion " + isRegion +
-                    ", hasDuration " + hasDuration);
+        console.log('Have list features: length ' + featureData.length +
+                    ', isMarker ' + isMarker + ', isRegion ' + isRegion +
+                    ', hasDuration ' + hasDuration);
         // TODO refactor, this is incomprehensible
         if (isMarker) {
-          const plotData = featureData.map(feature => {
-            return {
-              time: toSeconds(feature.timestamp),
-              label: feature.label
-            }
-          });
-          let featureLayer = new wavesUI.helpers.TickLayer(plotData, {
+          const plotData = featureData.map(feature => ({
+            time: toSeconds(feature.timestamp),
+            label: feature.label
+          }));
+          const featureLayer = new wavesUI.helpers.TickLayer(plotData, {
             height: height,
             color: colour,
             labelPosition: 'bottom',
@@ -630,7 +690,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
             this.timeline.timeContext
           );
         } else if (isRegion) {
-          console.log("Output is of region type");
+          console.log('Output is of region type');
           const binCount = outputDescriptor.configured.binCount || 0;
           const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1 ;
           const getSegmentArgs = () => {
@@ -674,23 +734,21 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
                   };
                   // TODO avoid copying Float32Array to an array - map is problematic here
                   return bars.concat([...feature.featureValues]
-                    .map(val => Object.assign({}, staticProperties, {y: val})))
+                    .map(val => Object.assign({}, staticProperties, {y: val})));
                 }, []),
                 {yDomain: [min, max + barHeight], height: height} as any
               ];
             } else {
-              return [featureData.map(feature => {
-                return {
-                  x: toSeconds(feature.timestamp),
-                  width: toSeconds(feature.duration),
-                  color: colour,
-                  opacity: 0.8
-                }
-              }), {height: height}];
+              return [featureData.map(feature => ({
+                x: toSeconds(feature.timestamp),
+                width: toSeconds(feature.duration),
+                color: colour,
+                opacity: 0.8
+              })), {height: height}];
             }
           };
 
-          let segmentLayer = new wavesUI.helpers.SegmentLayer(
+          const segmentLayer = new wavesUI.helpers.SegmentLayer(
             ...getSegmentArgs()
           );
           this.addLayer(
@@ -703,19 +761,23 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       case 'matrix': {
         const stepDuration = (features as FixedSpacedFeatures).stepDuration;
-        //!!! + start time
+        // !!! + start time
         const matrixData = (features.data as Float32Array[]);
-        if (matrixData.length === 0) return;
-        console.log("matrix data length = " + matrixData.length);
-        console.log("height of first column = " + matrixData[0].length);
+
+        if (matrixData.length === 0) {
+          return;
+        }
+
+        console.log('matrix data length = ' + matrixData.length);
+        console.log('height of first column = ' + matrixData[0].length);
         const targetValue = this.estimatePercentile(matrixData, 95);
         const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
-        console.log("setting gain to " + gain);
+        console.log('setting gain to ' + gain);
         const matrixEntity =
           new wavesUI.utils.PrefilledMatrixEntity(matrixData,
                                                   0, // startTime
                                                   stepDuration);
-        let matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
+        const matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
           gain,
           top: 0,
           height: height,
@@ -730,16 +792,20 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       }
       default:
-        console.log("Cannot render an appropriate layer for feature shape '" +
-                    features.shape + "'");
+        console.log(
+          `Cannot render an appropriate layer for feature shape '${features.shape}'`
+        );
     }
 
     this.isLoading = false;
+    this.ref.markForCheck();
     this.timeline.tracks.update();
   }
 
   private animate(): void {
-    if (!this.isSeeking) return;
+    if (!this.isSeeking) {
+      return;
+    }
 
     this.ngZone.runOutsideAngular(() => {
       // listen for time passing...
@@ -747,6 +813,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const currentTime = this.audioService.getCurrentTime();
         this.cursorLayer.currentPosition = currentTime;
         this.cursorLayer.update();
+
+        if (typeof(this.highlightLayer) !== 'undefined') {
+          this.highlightLayer.currentPosition = currentTime;
+          this.highlightLayer.update();
+        }
 
         const currentOffset = this.timeline.timeContext.offset;
         const offsetTimestamp = currentOffset
@@ -775,8 +846,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           this.timeline.tracks.update();
         }
 
-        if (this.isPlaying)
+        if (this.isPlaying) {
           requestAnimationFrame(updateSeekingCursor);
+        }
       };
       updateSeekingCursor();
     });
@@ -797,28 +869,19 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private static changeColour(layer: Layer, colour: string): void {
-    const butcherShapes = (shape) => {
-      shape.install({color: () => colour});
-      shape.params.color = colour;
-      shape.update(layer._renderingContext, layer.data);
-    };
-
-    layer._$itemCommonShapeMap.forEach(butcherShapes);
-    layer._$itemShapeMap.forEach(butcherShapes);
-    layer.render();
-    layer.update();
-  }
-
   ngOnDestroy(): void {
-    if (this.featureExtractionSubscription)
+    if (this.featureExtractionSubscription) {
       this.featureExtractionSubscription.unsubscribe();
-    if (this.playingStateSubscription)
+    }
+    if (this.playingStateSubscription) {
       this.playingStateSubscription.unsubscribe();
-    if (this.seekedSubscription)
+    }
+    if (this.seekedSubscription) {
       this.seekedSubscription.unsubscribe();
-    if (this.onAudioDataSubscription)
+    }
+    if (this.onAudioDataSubscription) {
       this.onAudioDataSubscription.unsubscribe();
+    }
   }
 
   seekStart(): void {
@@ -841,7 +904,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       const timeContext: any = this.timeline.timeContext;
       if (this.isSeeking) {
         this.audioService.seekTo(
-          timeContext.timeToPixel.invert(x)- timeContext.offset
+          timeContext.timeToPixel.invert(x) - timeContext.offset
         );
       }
     }

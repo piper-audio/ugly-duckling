@@ -1,8 +1,12 @@
 /**
  * Created by lucast on 21/03/2017.
  */
-import {Component, Input} from "@angular/core";
-import Waves from 'waves-ui';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
 
 export interface AnalysisItem {
   rootAudioUri: string;
@@ -12,18 +16,27 @@ export interface AnalysisItem {
   title?: string;
   description?: string;
   id?: string;
+  progress?: number;
 }
 
 @Component({
   selector: 'ugly-analysis-item',
   templateUrl: './analysis-item.component.html',
-  styleUrls: ['./analysis-item.component.css']
+  styleUrls: ['./analysis-item.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnalysisItemComponent {
+export class AnalysisItemComponent implements OnInit {
+
   @Input() timeline: Timeline;
-  @Input() title: string;
-  @Input() description: string;
   @Input() isActive: boolean;
-  @Input() isRoot: boolean;
-  @Input() id: string;
+  @Input() item: AnalysisItem;
+  private hasProgressOnInit = false;
+
+  ngOnInit(): void {
+    this.hasProgressOnInit = this.item.progress != null;
+  }
+
+  isLoading(): boolean {
+    return this.hasProgressOnInit && this.item.progress < 100;
+  }
 }

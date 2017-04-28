@@ -1,6 +1,6 @@
 import {Injectable, Inject} from '@angular/core';
-import {Subject} from "rxjs/Subject";
-import {Observable} from "rxjs";
+import {Subject} from 'rxjs/Subject';
+import {Observable} from 'rxjs/Observable';
 
 export interface UrlResourceLifetimeManager {
   createUrlToResource(resource: File | Blob): string;
@@ -63,8 +63,9 @@ export class AudioPlayerService {
 
 
   loadAudio(resource: File | Blob): string {
-    if (this.currentObjectUrl)
+    if (this.currentObjectUrl) {
       this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
+    }
     const url: string = this.resourceManager.createUrlToResource(resource);
     this.currentObjectUrl = url;
     this.audioElement.pause();
@@ -92,7 +93,7 @@ export class AudioPlayerService {
         });
       })
       .catch(err => {
-        const message = err && err.message ? err.message : "Read error";
+        const message = err && err.message ? err.message : 'Read error';
         this.audioLoaded.next({
           message: message
         });

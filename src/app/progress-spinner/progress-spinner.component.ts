@@ -3,14 +3,16 @@
  */
 
 
-import {Component, Input} from "@angular/core";
+import {Component, Input} from '@angular/core';
 @Component({
   selector: 'ugly-progress-spinner',
   template: `
     <div class="container" [hidden]="!isVisible">
       <md-spinner
         class="spinner"
-        color="primary"
+        [attr.color]="'primary'"
+        [mode]="isDeterminate ? 'determinate' : 'indeterminate'"
+        [value]="currentProcess"
       ></md-spinner>
     </div>
   `,
@@ -22,7 +24,7 @@ import {Component, Input} from "@angular/core";
       top: calc(50% - 20px);
       left: calc(50% - 20px);
     }
-    
+
     .spinner {
       width: 100%;
       height: 100%;
@@ -30,5 +32,18 @@ import {Component, Input} from "@angular/core";
   `]
 })
 export class ProgressSpinnerComponent {
-  @Input() isVisible: boolean = true;
+  private currentProcess = 0;
+
+  @Input() isVisible = true;
+  @Input() isDeterminate = false;
+  @Input()
+  set progress(value: number) {
+    if (value < 0) {
+      this.currentProcess = 0;
+    } else if (value > 100) {
+      this.currentProcess = 100;
+    } else {
+      this.currentProcess = value;
+    }
+  }
 }
