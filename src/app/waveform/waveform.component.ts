@@ -651,10 +651,22 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           waveTrack,
           this.timeline.timeContext
         );
+        const scaleLayer = new wavesUI.helpers.ScaleLayer({
+          tickColor: colour,
+          textColor: colour,
+          height: height,
+          yDomain: [ min, max ]
+        });
+        this.addLayer(
+          scaleLayer,
+          waveTrack,
+          this.timeline.timeContext
+        );
         this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayer, {
           opacity: 0.7,
           height: height,
           color: '#c33c54',
+          labelOffset: 38,
           yDomain: [ min, max ]
         });
         this.addLayer(
