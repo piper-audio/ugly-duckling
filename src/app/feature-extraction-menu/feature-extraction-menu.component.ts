@@ -11,6 +11,7 @@ import {
 } from '../services/feature-extraction/feature-extraction.service';
 import {ListResponse} from 'piper';
 import {Subscription} from 'rxjs/Subscription';
+import {MdSelect} from '@angular/material';
 
 export interface ExtractorOutputInfo {
   extractorKey: string;
@@ -68,6 +69,14 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
       });
       this.extractors = [...this.extractorsMap.values()];
     };
+  }
+
+  private getFirstSelectedItemOrEmpty(select: MdSelect): string {
+    const selected = select.selected;
+    if (selected) {
+      return selected instanceof Array ? selected[0].value : selected.value;
+    }
+    return '';
   }
 
   ngOnInit() {
