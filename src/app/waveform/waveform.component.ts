@@ -649,7 +649,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           this.timeline.timeContext
         );
         const scaleLayer = new wavesUI.helpers.ScaleLayer({
-          color: colour,
+          tickColor: colour,
+          textColor: colour,
           height: height,
           yDomain: [ min, max ]
         });
@@ -662,6 +663,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           opacity: 0.7,
           height: height,
           color: '#c33c54',
+          labelOffset: 38,
           yDomain: [ min, max ]
         });
         this.addLayer(

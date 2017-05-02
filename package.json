@@ -27,7 +27,7 @@
     "piper": "github:piper-audio/piper-js",
     "requirejs": "^2.3.3",
     "rxjs": "^5.1.0",
-    "waves-ui": "github:cannam/waves-ui#a4a7cf772ded40ffc95c880c94e5eb6a634b096b",
+    "waves-ui": "github:cannam/waves-ui#b7675bcb81fc79a8b24eff2e1e3606a754df88aa",
     "zone.js": "0.8.7"
   },
   "devDependencies": {
