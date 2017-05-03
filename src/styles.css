@@ -1,5 +1,4 @@
 /* You can add global styles to this file, and also import other style files */
-@import '~@angular/material/prebuilt-themes/indigo-pink.css';
 
 @font-face {
   font-family: 'Material Icons';
@@ -47,12 +46,5 @@ body {
 
 html {
   height: 100%;
-}
-
-/* Small change to this colour to fit better with colours we use in
-   visualisations */
-
-.mat-toolbar, .mat-toolbar.mat-primary {
-  background: #0868ac;
 }
 
