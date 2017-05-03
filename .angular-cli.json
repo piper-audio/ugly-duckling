@@ -20,7 +20,8 @@
       "testTsconfig": "tsconfig.spec.json",
       "prefix": "ugly",
       "styles": [
-        "styles.css"
+        "styles.css",
+        "ugly-aesthetics.scss"
       ],
       "scripts": [
         "../node_modules/requirejs/require.js"
