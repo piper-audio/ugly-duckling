@@ -701,7 +701,7 @@ UglyMaterialModule = __decorate([
 /***/ "W1+o":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <md-select #extractorSelect\n    placeholder=\"Extractors\">\n    <md-option\n      *ngFor=\"let extractor of extractors\"\n      [value]=\"extractor.combinedKey\"\n    >\n      {{extractor.name}}\n    </md-option>\n  </md-select>\n  <p>\n    <button md-raised-button\n            color=\"primary\"\n            (click)=\"extract(extractorSelect.selected.value)\"\n            [disabled]=\"disabled\">Extract</button>\n  </p>\n  <p>\n    <button md-raised-button\n            (click)=\"load()\">Load Remote Plugins</button>\n  </p>\n</div>\n"
+module.exports = "<div class=\"container\">\n  <md-select #extractorSelect\n    placeholder=\"Extractors\">\n    <md-option\n      *ngFor=\"let extractor of extractors\"\n      [value]=\"extractor.combinedKey\"\n    >\n      {{extractor.name}}\n    </md-option>\n  </md-select>\n  <p>\n    <button md-raised-button\n            color=\"primary\"\n            (click)=\"extract(getFirstSelectedItemOrEmpty(extractorSelect))\"\n            [disabled]=\"disabled\">Extract</button>\n  </p>\n  <p>\n    <button md-raised-button\n            (click)=\"load()\">Load Remote Plugins</button>\n  </p>\n</div>\n"
 
 /***/ }),
 
@@ -980,7 +980,7 @@ exports = module.exports = __webpack_require__("FZ+f")(false);
 
 
 // module
-exports.push([module.i, "md-card{padding-left:0;padding-right:0;width:100%}md-card-actions{width:calc(100% - 16px);padding-left:16px}md-card-header{margin-bottom:8px}", ""]);
+exports.push([module.i, "md-card{padding-left:0;padding-right:0;width:100%;padding-bottom:0}md-card-actions{width:calc(100% - 16px);padding-left:16px}md-card-header{margin-bottom:8px}", ""]);
 
 // exports
 
@@ -1450,6 +1450,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+function* createColourGenerator(colours) {
+    let index = 0;
+    const nColours = colours.length;
+    while (true) {
+        yield colours[index = ++index % nColours];
+    }
+}
+const defaultColourGenerator = createColourGenerator([
+    '#0868ac',
+    '#c33c54',
+    '#17bebb',
+    '#001021',
+    '#fa8334',
+    '#034748' // "deep jungle green"
+]);
 let WaveformComponent = class WaveformComponent {
     constructor(audioService, piperService, ngZone, ref) {
         this.audioService = audioService;
@@ -1471,23 +1486,9 @@ let WaveformComponent = class WaveformComponent {
             if (this.featureExtractionSubscription) {
                 return;
             }
-            const colours = function* () {
-                const circularColours = [
-                    'black',
-                    'red',
-                    'green',
-                    'purple',
-                    'orange'
-                ];
-                let index = 0;
-                const nColours = circularColours.length;
-                while (true) {
-                    yield circularColours[index = ++index % nColours];
-                }
-            }();
             this.featureExtractionSubscription =
                 this.piperService.featuresExtracted$.subscribe(features => {
-                    this.renderFeatures(features, colours.next().value);
+                    this.renderFeatures(features, defaultColourGenerator.next().value);
                 });
         }
         else {
@@ -1622,7 +1623,8 @@ let WaveformComponent = class WaveformComponent {
             });
             this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
             this.cursorLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.CursorLayer({
-                height: height
+                height: height,
+                color: '#c33c54'
             });
             this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
         }
@@ -1915,13 +1917,14 @@ let WaveformComponent = class WaveformComponent {
             const waveformLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.WaveformLayer(buffer, {
                 top: (height - totalWaveHeight) / 2 + waveHeight * ch,
                 height: waveHeight,
-                color: 'darkblue',
+                color: '#0868ac',
                 channel: ch
             });
             this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
         }
         this.cursorLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.CursorLayer({
-            height: height
+            height: height,
+            color: '#c33c54'
         });
         this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
         this.timeline.state = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.states.CenteredZoomState(this.timeline);
@@ -1972,24 +1975,37 @@ let WaveformComponent = class WaveformComponent {
                 if (featureData.length === 0) {
                     return;
                 }
-                const normalisationFactor = 1.0 /
-                    featureData.reduce((currentMax, feature) => Math.max(currentMax, feature), -Infinity);
                 const plotData = [...featureData].map((feature, i) => {
                     return {
                         cx: i * stepDuration,
-                        cy: feature * normalisationFactor,
-                        value: feature
+                        cy: feature
                     };
                 });
+                let min = featureData.reduce((m, f) => Math.min(m, f), Infinity);
+                let max = featureData.reduce((m, f) => Math.max(m, f), -Infinity);
+                if (min === Infinity) {
+                    min = 0;
+                    max = 1;
+                }
                 const lineLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.LineLayer(plotData, {
                     color: colour,
-                    height: height
+                    height: height,
+                    yDomain: [min, max]
                 });
                 this.addLayer(lineLayer, waveTrack, this.timeline.timeContext);
+                const scaleLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.ScaleLayer({
+                    tickColor: colour,
+                    textColor: colour,
+                    height: height,
+                    yDomain: [min, max]
+                });
+                this.addLayer(scaleLayer, waveTrack, this.timeline.timeContext);
                 this.highlightLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.HighlightLayer(lineLayer, {
-                    color: colour,
                     opacity: 0.7,
-                    height: height
+                    height: height,
+                    color: '#c33c54',
+                    labelOffset: 38,
+                    yDomain: [min, max]
                 });
                 this.addLayer(this.highlightLayer, waveTrack, this.timeline.timeContext);
                 break;
@@ -2292,6 +2308,13 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     }
     get disabled() {
         return this.isDisabled;
+    }
+    getFirstSelectedItemOrEmpty(select) {
+        const selected = select.selected;
+        if (selected) {
+            return selected instanceof Array ? selected[0].value : selected.value;
+        }
+        return '';
     }
     ngOnInit() {
         this.piperService.list().then(this.populateExtractors);
