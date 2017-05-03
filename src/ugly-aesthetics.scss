@@ -6,10 +6,29 @@
 // Be sure that you only ever include this mixin once!
 @include mat-core();
 
+// Generated with http://mcg.mbitson.com - seeded with base colour of #0868ac
+// The contrast colours are taken from $mat-indigo
+$md-ugly-blue: map-merge($mat-indigo, (
+  50 : #e1edf5,
+  100 : #b5d2e6,
+  200 : #84b4d6,
+  300 : #5295c5,
+  400 : #2d7fb8,
+  500 : #0868ac,
+  600 : #0760a5,
+  700 : #06559b,
+  800 : #044b92,
+  900 : #023a82,
+  A100 : #afccff,
+  A200 : #7cabff,
+  A400 : #498bff,
+  A700 : #307bff,
+));
+
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue.
-$candy-app-primary: mat-palette($mat-indigo);
+$candy-app-primary: mat-palette($md-ugly-blue);
 $candy-app-accent:  mat-palette($mat-pink, A200, A100, A400);
 
 // The warn palette is optional (defaults to red).
