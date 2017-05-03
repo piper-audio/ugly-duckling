@@ -11,7 +11,7 @@
   <p>
     <button md-raised-button
             color="primary"
-            (click)="extract(extractorSelect.selected.value)"
+            (click)="extract(getFirstSelectedItemOrEmpty(extractorSelect))"
             [disabled]="disabled">Extract</button>
   </p>
   <p>
