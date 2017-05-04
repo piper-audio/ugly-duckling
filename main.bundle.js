@@ -349,12 +349,15 @@ var _a, _b;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__analysis_item_analysis_item_component__ = __webpack_require__("jat4");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__progress_bar_progress_bar__ = __webpack_require__("7itA");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__ugly_material_module__ = __webpack_require__("SYN/");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_Observable__ = __webpack_require__("rCTf");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_18_rxjs_Observable__);
 /* unused harmony export createAudioContext */
 /* unused harmony export createAudioElement */
 /* unused harmony export createAudioInputProvider */
 /* unused harmony export createMediaRecorderFactory */
 /* unused harmony export createUrlResourceManager */
 /* unused harmony export createResourceReader */
+/* unused harmony export createWindowDimensionObservable */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -362,6 +365,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -428,6 +432,12 @@ function createResourceReader() {
         });
     };
 }
+function createWindowDimensionObservable() {
+    return __WEBPACK_IMPORTED_MODULE_18_rxjs_Observable__["Observable"].fromEvent(window, 'resize', () => ({
+        height: window.innerHeight,
+        width: window.innerWidth
+    })).share();
+}
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -460,7 +470,8 @@ AppModule = __decorate([
             { provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory },
             { provide: 'PiperRepoUri', useValue: 'assets/remote-extractors.json' },
             { provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager },
-            { provide: 'ResourceReader', useFactory: createResourceReader }
+            { provide: 'ResourceReader', useFactory: createResourceReader },
+            { provide: 'DimensionObservable', useFactory: createWindowDimensionObservable }
         ],
         bootstrap: [__WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */]]
     })
@@ -601,6 +612,8 @@ webpackEmptyContext.id = "MOVZ";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui__ = __webpack_require__("myhA");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_waves_ui__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__("rCTf");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return NotebookFeedComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -611,24 +624,59 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 /**
  * Created by lucast on 21/03/2017.
  */
 
 
+
 let NotebookFeedComponent = class NotebookFeedComponent {
-    constructor() {
-        this.sharedTimeline = new __WEBPACK_IMPORTED_MODULE_1_waves_ui___default.a.core.Timeline();
+    constructor(ref, onResize) {
+        this.ref = ref;
+        this.onResize = onResize;
+        this.timelines = new Map();
+        this.onResize.subscribe(dim => {
+            this.lastWidth = this.width;
+            this.width = dim.width;
+        });
+        // the use of requestAnimationFrame here is to leave the dom updates
+        // to a time convenient for the browser, and avoid a cascade / waterfall
+        // of DOM changes for rapid resize events in the event handler above.
+        // ..I'm not convinced this is particularly beneficial here // TODO
+        const triggerChangeDetectionOnResize = () => {
+            requestAnimationFrame(triggerChangeDetectionOnResize);
+            if (this.width !== this.lastWidth) {
+                ref.markForCheck(); // only trigger change detection if width changed
+            }
+        };
+        requestAnimationFrame(triggerChangeDetectionOnResize);
     }
     set rootAudioUri(uri) {
         this._rootAudioUri = uri;
-        // TODO is this safe? will the fact references are held elsewhere
-        // keep the previous instance alive? Or will it get garbage collected in
-        // screw previous layers up?
-        this.sharedTimeline = new __WEBPACK_IMPORTED_MODULE_1_waves_ui___default.a.core.Timeline();
     }
     get rootAudioUri() {
         return this._rootAudioUri;
+    }
+    getOrCreateTimeline(item) {
+        if (!item.hasSharedTimeline) {
+            return;
+        }
+        if (this.timelines.has(item.rootAudioUri)) {
+            return this.timelines.get(item.rootAudioUri);
+        }
+        else {
+            const timeline = new __WEBPACK_IMPORTED_MODULE_1_waves_ui___default.a.core.Timeline();
+            this.timelines.set(item.rootAudioUri, timeline);
+            return timeline;
+        }
+    }
+    ngOnDestroy() {
+        if (this.resizeSubscription) {
+            this.resizeSubscription.unsubscribe();
+        }
     }
 };
 __decorate([
@@ -647,9 +695,11 @@ NotebookFeedComponent = __decorate([
         styles: [__webpack_require__("lZe/")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_6" /* ChangeDetectionStrategy */].OnPush
     }),
-    __metadata("design:paramtypes", [])
+    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('DimensionObservable')),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ChangeDetectorRef */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__["Observable"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__["Observable"]) === "function" && _b || Object])
 ], NotebookFeedComponent);
 
+var _a, _b;
 //# sourceMappingURL=notebook-feed.component.js.map
 
 /***/ }),
@@ -993,7 +1043,7 @@ module.exports = module.exports.toString();
 /***/ "cqUy":
 /***/ (function(module, exports) {
 
-module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{item.title}}</md-card-title>\n    <md-card-subtitle>{{item.description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <ng-template [ngIf]=\"isLoading()\">\n      <ugly-progress-bar\n        [isDeterminate]=\"true\"\n        [progress]=\"item.progress\"\n      ></ugly-progress-bar>\n    </ng-template>\n    <ng-template [ngIf]=\"!isLoading()\">\n      <ugly-waveform\n        [timeline]=\"timeline\"\n        [trackIdPrefix]=\" item.id || item.title\"\n        [isSubscribedToAudioService]=\"isActive && item.isRoot\"\n        [isSubscribedToExtractionService]=\"isActive && !item.isRoot\"\n        [isOneShotExtractor]=\"true\"\n        [isSeeking]=\"isActive\"\n      ></ugly-waveform>\n    </ng-template>\n  </md-card-content>\n</md-card>\n"
+module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{item.title}}</md-card-title>\n    <md-card-subtitle>{{item.description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <ng-template [ngIf]=\"isLoading()\">\n      <ugly-progress-bar\n        [isDeterminate]=\"true\"\n        [progress]=\"item.progress\"\n      ></ugly-progress-bar>\n    </ng-template>\n    <ng-template [ngIf]=\"!isLoading()\">\n      <ugly-waveform\n        [timeline]=\"timeline\"\n        [trackIdPrefix]=\" item.id || item.title\"\n        [isSubscribedToAudioService]=\"isActive && item.isRoot\"\n        [isSubscribedToExtractionService]=\"isActive && !item.isRoot\"\n        [isOneShotExtractor]=\"true\"\n        [isSeeking]=\"isActive\"\n        [width]=\"contentWidth\"\n      ></ugly-waveform>\n    </ng-template>\n  </md-card-content>\n</md-card>\n"
 
 /***/ }),
 
@@ -1141,6 +1191,10 @@ __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Object)
 ], AnalysisItemComponent.prototype, "item", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
+    __metadata("design:type", Number)
+], AnalysisItemComponent.prototype, "contentWidth", void 0);
 AnalysisItemComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_1" /* Component */])({
         selector: 'ugly-analysis-item',
@@ -1235,7 +1289,7 @@ exports = module.exports = __webpack_require__("FZ+f")(false);
 
 
 // module
-exports.push([module.i, ".break{margin-bottom:32px}", ""]);
+exports.push([module.i, ".break{margin-bottom:32px}.feed{width:100%}", ""]);
 
 // exports
 
@@ -1480,6 +1534,14 @@ let WaveformComponent = class WaveformComponent {
         this.highlightLayer = undefined;
         this.isPlaying = false;
         this.isLoading = true;
+    }
+    set width(width) {
+        if (this.timeline) {
+            requestAnimationFrame(() => {
+                this.timeline.timeContext.visibleWidth = width;
+                this.timeline.tracks.update();
+            });
+        }
     }
     set isSubscribedToExtractionService(isSubscribed) {
         if (isSubscribed) {
@@ -2219,6 +2281,11 @@ __decorate([
 ], WaveformComponent.prototype, "trackDiv", void 0);
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
+    __metadata("design:type", Number),
+    __metadata("design:paramtypes", [Number])
+], WaveformComponent.prototype, "width", null);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* Input */])(),
     __metadata("design:type", Object)
 ], WaveformComponent.prototype, "timeline", void 0);
 __decorate([
@@ -2492,7 +2559,7 @@ AudioPlayerService = __decorate([
 /***/ "vB4/":
 /***/ (function(module, exports) {
 
-module.exports = "\n<ng-template ngFor let-item [ngForOf]=\"analyses\">\n  <div [class.break]=\"item.isRoot\">\n    <ugly-analysis-item\n      [timeline]=\"item.hasSharedTimeline ? sharedTimeline : undefined\"\n      [isActive]=\"rootAudioUri === item.rootAudioUri\"\n      [item]=\"item\"\n    ></ugly-analysis-item>\n  </div>\n</ng-template>\n"
+module.exports = "<div class=\"feed\">\n  <ng-template ngFor let-item [ngForOf]=\"analyses\">\n    <div [class.break]=\"item.isRoot\">\n      <ugly-analysis-item\n        [timeline]=\"getOrCreateTimeline(item)\"\n        [isActive]=\"rootAudioUri === item.rootAudioUri\"\n        [item]=\"item\"\n        [contentWidth]=\"width\"\n      ></ugly-analysis-item>\n    </div>\n  </ng-template>\n</div>\n"
 
 /***/ }),
 
