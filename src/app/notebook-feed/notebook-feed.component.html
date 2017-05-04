@@ -1,9 +1,11 @@
-<ng-template ngFor let-item [ngForOf]="analyses">
-  <div [class.break]="item.isRoot">
-    <ugly-analysis-item
-      [timeline]="getOrCreateTimeline(item)"
-      [isActive]="rootAudioUri === item.rootAudioUri"
-      [item]="item"
-    ></ugly-analysis-item>
-  </div>
-</ng-template>
+<div class="feed">
+  <ng-template ngFor let-item [ngForOf]="analyses">
+    <div [class.break]="item.isRoot">
+      <ugly-analysis-item
+        [timeline]="getOrCreateTimeline(item)"
+        [isActive]="rootAudioUri === item.rootAudioUri"
+        [item]="item"
+      ></ugly-analysis-item>
+    </div>
+  </ng-template>
+</div>
