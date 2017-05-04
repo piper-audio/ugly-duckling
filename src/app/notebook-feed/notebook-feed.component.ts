@@ -16,23 +16,32 @@ import {AnalysisItem} from '../analysis-item/analysis-item.component';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookFeedComponent {
-  sharedTimeline: Timeline;
   @Input() analyses: AnalysisItem[];
   @Input() set rootAudioUri(uri: string) {
     this._rootAudioUri = uri;
-
-    // TODO is this safe? will the fact references are held elsewhere
-    // keep the previous instance alive? Or will it get garbage collected in
-    // screw previous layers up?
-    this.sharedTimeline = new Waves.core.Timeline();
   }
 
   get rootAudioUri(): string {
     return this._rootAudioUri;
   }
   private _rootAudioUri: string;
+  private timelines: Map<string, Timeline>;
 
   constructor() {
-    this.sharedTimeline = new Waves.core.Timeline();
+    this.timelines = new Map();
+  }
+
+  getOrCreateTimeline(item: AnalysisItem): Timeline | void {
+    if (!item.hasSharedTimeline) {
+      return;
+    }
+
+    if (this.timelines.has(item.rootAudioUri)) {
+      return this.timelines.get(item.rootAudioUri);
+    } else {
+      const timeline = new Waves.core.Timeline();
+      this.timelines.set(item.rootAudioUri, timeline);
+      return timeline;
+    }
   }
 }
