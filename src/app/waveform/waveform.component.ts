@@ -60,7 +60,14 @@ const defaultColourGenerator = createColourGenerator([
 export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('track') trackDiv: ElementRef;
-
+  @Input() set width(width: number) {
+    if (this.timeline) {
+      requestAnimationFrame(() => {
+        this.timeline.timeContext.visibleWidth = width;
+        this.timeline.tracks.update();
+      });
+    }
+  }
   @Input() timeline: Timeline;
   @Input() trackIdPrefix: string;
   @Input() set isSubscribedToExtractionService(isSubscribed: boolean) {

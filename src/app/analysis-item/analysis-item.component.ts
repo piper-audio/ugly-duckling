@@ -30,6 +30,7 @@ export class AnalysisItemComponent implements OnInit {
   @Input() timeline: Timeline;
   @Input() isActive: boolean;
   @Input() item: AnalysisItem;
+  @Input() contentWidth: number;
   private hasProgressOnInit = false;
 
   ngOnInit(): void {
