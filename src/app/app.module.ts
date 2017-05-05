@@ -28,6 +28,7 @@ import {NotebookFeedComponent} from './notebook-feed/notebook-feed.component';
 import {AnalysisItemComponent} from './analysis-item/analysis-item.component';
 import {ProgressBarComponent} from './progress-bar/progress-bar';
 import {UglyMaterialModule} from './ugly-material.module';
+import {Observable} from 'rxjs/Observable';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -92,6 +93,16 @@ export function createResourceReader(): ResourceReader {
   };
 }
 
+export interface Dimension {
+  width: number;
+  height: number;
+}
+export function createWindowDimensionObservable(): Observable<Dimension> {
+  return Observable.fromEvent(window, 'resize', () => ({
+    height: window.innerHeight,
+    width: window.innerWidth
+  })).share();
+}
 @NgModule({
   declarations: [
     AppComponent,
@@ -121,7 +132,8 @@ export function createResourceReader(): ResourceReader {
     {provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory},
     {provide: 'PiperRepoUri', useValue: 'assets/remote-extractors.json'},
     {provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager},
-    {provide: 'ResourceReader', useFactory: createResourceReader}
+    {provide: 'ResourceReader', useFactory: createResourceReader},
+    {provide: 'DimensionObservable', useFactory: createWindowDimensionObservable}
   ],
   bootstrap: [AppComponent]
 })
