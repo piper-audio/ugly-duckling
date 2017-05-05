@@ -9,7 +9,7 @@ import {
   Input,
   OnDestroy
 } from '@angular/core';
-import Waves from 'waves-ui';
+import Waves from 'waves-ui-piper';
 import {AnalysisItem} from '../analysis-item/analysis-item.component';
 import {Observable} from 'rxjs/Observable';
 import {Dimension} from '../app.module';
