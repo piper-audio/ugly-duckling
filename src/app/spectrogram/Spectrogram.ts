@@ -4,7 +4,7 @@
 import {RealFft, KissRealFft} from 'piper/fft/RealFft';
 import {hann} from 'piper/FftUtilities';
 import {Framing} from 'piper';
-import Waves from 'waves-ui';
+import Waves from 'waves-ui-piper';
 
 class SpectrogramEntity extends Waves.utils.MatrixEntity {
 
