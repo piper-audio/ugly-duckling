@@ -648,6 +648,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           min = 0;
           max = 1;
         }
+	console.log("adding line layer: min = " + min + ", max = " + max);
+	if (min !== min || max !== max) {
+	  console.log("WARNING: min or max is NaN");
+	  min = 0;
+	  max = 1;
+	}
         const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
           color: colour,
           height: height,
