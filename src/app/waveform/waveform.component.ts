@@ -13,7 +13,7 @@ import {
   AudioPlayerService, AudioResource,
   AudioResourceError
 } from '../services/audio-player/audio-player.service';
-import wavesUI from 'waves-ui';
+import wavesUI from 'waves-ui-piper';
 import {
   FeatureExtractionService
 } from '../services/feature-extraction/feature-extraction.service';
