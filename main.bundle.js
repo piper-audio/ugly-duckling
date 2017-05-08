@@ -489,15 +489,15 @@ AppModule = __decorate([
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_piper_fft_RealFft___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_piper_fft_RealFft__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_piper_FftUtilities__ = __webpack_require__("vgcF");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_piper_FftUtilities___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_piper_FftUtilities__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui__ = __webpack_require__("myhA");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_waves_ui__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__ = __webpack_require__("vP4N");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__);
 /**
  * Created by lucast on 16/03/2017.
  */
 
 
 
-class SpectrogramEntity extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.utils.MatrixEntity {
+class SpectrogramEntity extends __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.utils.MatrixEntity {
     constructor(samples, options, sampleRate) {
         super();
         this.samples = samples;
@@ -544,7 +544,7 @@ class SpectrogramEntity extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a
         return col;
     }
 }
-class WavesSpectrogramLayer extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.core.Layer {
+class WavesSpectrogramLayer extends __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.core.Layer {
     constructor(bufferIn, options) {
         const defaults = {
             normalise: 'hybrid',
@@ -582,7 +582,7 @@ class WavesSpectrogramLayer extends __WEBPACK_IMPORTED_MODULE_2_waves_ui___defau
             }
         });
         super('entity', new SpectrogramEntity(getSamples(bufferIn, mergedOptions.channel), mergedOptions, bufferIn.sampleRate), mergedOptions);
-        this.configureShape(__WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.shapes.Matrix, {}, mergedOptions);
+        this.configureShape(__WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.shapes.Matrix, {}, mergedOptions);
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = WavesSpectrogramLayer;
@@ -610,8 +610,8 @@ webpackEmptyContext.id = "MOVZ";
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui__ = __webpack_require__("myhA");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_waves_ui__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui_piper__ = __webpack_require__("vP4N");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_waves_ui_piper__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__("rCTf");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return NotebookFeedComponent; });
@@ -668,7 +668,7 @@ let NotebookFeedComponent = class NotebookFeedComponent {
             return this.timelines.get(item.rootAudioUri);
         }
         else {
-            const timeline = new __WEBPACK_IMPORTED_MODULE_1_waves_ui___default.a.core.Timeline();
+            const timeline = new __WEBPACK_IMPORTED_MODULE_1_waves_ui_piper___default.a.core.Timeline();
             this.timelines.set(item.rootAudioUri, timeline);
             return timeline;
         }
@@ -1378,61 +1378,52 @@ let AudioRecorderService = class AudioRecorderService {
         this.recordingStateChange$ = this.recordingStateChange.asObservable();
         this.newRecording = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__["Subject"]();
         this.newRecording$ = this.newRecording.asObservable();
-        this.isRecordingAble = false;
         this.isRecording = false;
         this.chunks = [];
-        this.hasRecordingCapabilities();
     }
-    hasRecordingCapabilities() {
-        this.requestProvider().then(stream => {
-            try {
-                this.recorder = new this.recorderImpl(stream);
-                this.recorder.ondataavailable = e => this.chunks.push(e.data);
-                this.recorder.onstop = () => {
-                    const blob = new Blob(this.chunks, { 'type': this.recorder.mimeType });
-                    this.chunks.length = 0;
-                    this.ngZone.run(() => {
-                        this.newRecording.next(blob);
-                    });
-                };
-                this.isRecordingAble = true;
-                this.recordingStateChange.next('enabled');
-            }
-            catch (e) {
-                this.isRecordingAble = false;
-                this.recordingStateChange.next('disabled'); // don't really need to do this
-                console.warn(e); // TODO emit an error message for display?
-            }
-        }, rejectMessage => {
-            this.isRecordingAble = false;
-            this.recordingStateChange.next('disabled'); // again, probably not needed
-            console.warn(rejectMessage); // TODO something better
+    getRecorderInstance() {
+        return this.requestProvider().then(stream => {
+            const recorder = new this.recorderImpl(stream);
+            recorder.ondataavailable = e => this.chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(this.chunks, { 'type': recorder.mimeType });
+                this.chunks.length = 0;
+                this.ngZone.run(() => {
+                    this.newRecording.next(blob);
+                });
+            };
+            return recorder;
         });
     }
     toggleRecording() {
-        if (!this.isRecordingAble) {
-            return;
-        }
         if (this.isRecording) {
             this.endRecording();
         }
         else {
-            this.startRecording();
+            this.getRecorderInstance()
+                .then(recorder => this.startRecording(recorder))
+                .catch(e => {
+                this.recordingStateChange.next('disabled'); // don't really need to do this
+                console.warn(e); // TODO emit an error message for display?
+            });
         }
     }
-    startRecording() {
-        if (this.recorder) {
-            this.isRecording = true;
-            this.recorder.start();
-            this.recordingStateChange.next('recording');
-        }
+    startRecording(recorder) {
+        this.currentRecorder = recorder;
+        this.isRecording = true;
+        recorder.start();
+        this.recordingStateChange.next('recording');
     }
     endRecording() {
-        if (this.recorder) {
+        if (this.currentRecorder) {
             this.isRecording = false;
-            this.recorder.stop();
+            this.currentRecorder.stop();
+            for (const track of this.currentRecorder.stream.getAudioTracks()) {
+                track.stop();
+            }
             this.chunks.length = 0; // empty the array
             this.recordingStateChange.next('enabled');
+            this.currentRecorder = null;
         }
     }
 };
@@ -1479,8 +1470,8 @@ module.exports = module.exports.toString();
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__ = __webpack_require__("vATj");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui__ = __webpack_require__("myhA");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_waves_ui__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__ = __webpack_require__("vP4N");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__ = __webpack_require__("3lao");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper__ = __webpack_require__("eGCF");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_piper__);
@@ -1666,7 +1657,7 @@ let WaveformComponent = class WaveformComponent {
         const height = track.getBoundingClientRect().height;
         const width = track.getBoundingClientRect().width;
         const pixelsPerSecond = width / duration;
-        const hasExistingTimeline = this.timeline instanceof __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.core.Timeline;
+        const hasExistingTimeline = this.timeline instanceof __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.core.Timeline;
         if (hasExistingTimeline) {
             if (!useExistingDuration) {
                 this.timeline.pixelsPerSecond = pixelsPerSecond;
@@ -1674,17 +1665,17 @@ let WaveformComponent = class WaveformComponent {
             }
         }
         else {
-            this.timeline = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.core.Timeline(pixelsPerSecond, width);
+            this.timeline = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.core.Timeline(pixelsPerSecond, width);
         }
         const waveTrack = this.timeline.createTrack(track, height, `wave-${this.trackIdPrefix}`);
         if (isInitialRender && hasExistingTimeline) {
             // time axis
-            const timeAxis = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.TimeAxisLayer({
+            const timeAxis = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.TimeAxisLayer({
                 height: height,
                 color: '#b0b0b0'
             });
             this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
-            this.cursorLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.CursorLayer({
+            this.cursorLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.CursorLayer({
                 height: height,
                 color: '#c33c54'
             });
@@ -1692,7 +1683,7 @@ let WaveformComponent = class WaveformComponent {
         }
         if ('ontouchstart' in window) {
             let zoomGestureJustEnded = false;
-            const pixelToExponent = __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.utils.scales.linear()
+            const pixelToExponent = __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.utils.scales.linear()
                 .domain([0, 100]) // 100px => factor 2
                 .range([0, 1]);
             const calculateDistance = (p1, p2) => {
@@ -1966,7 +1957,7 @@ let WaveformComponent = class WaveformComponent {
         }
         this.timeline.timeContext.offset = 0.5 * this.timeline.timeContext.visibleDuration;
         // time axis
-        const timeAxis = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.TimeAxisLayer({
+        const timeAxis = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.TimeAxisLayer({
             height: height,
             color: '#b0b0b0'
         });
@@ -1976,7 +1967,7 @@ let WaveformComponent = class WaveformComponent {
         const waveHeight = totalWaveHeight / nchannels;
         for (let ch = 0; ch < nchannels; ++ch) {
             console.log('about to construct a waveform layer for channel ' + ch);
-            const waveformLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.WaveformLayer(buffer, {
+            const waveformLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.WaveformLayer(buffer, {
                 top: (height - totalWaveHeight) / 2 + waveHeight * ch,
                 height: waveHeight,
                 color: '#0868ac',
@@ -1984,12 +1975,12 @@ let WaveformComponent = class WaveformComponent {
             });
             this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
         }
-        this.cursorLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.CursorLayer({
+        this.cursorLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.CursorLayer({
             height: height,
             color: '#c33c54'
         });
         this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
-        this.timeline.state = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.states.CenteredZoomState(this.timeline);
+        this.timeline.state = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.states.CenteredZoomState(this.timeline);
         waveTrack.render();
         waveTrack.update();
         this.isLoading = false;
@@ -2049,20 +2040,26 @@ let WaveformComponent = class WaveformComponent {
                     min = 0;
                     max = 1;
                 }
-                const lineLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.LineLayer(plotData, {
+                console.log("adding line layer: min = " + min + ", max = " + max);
+                if (min !== min || max !== max) {
+                    console.log("WARNING: min or max is NaN");
+                    min = 0;
+                    max = 1;
+                }
+                const lineLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.LineLayer(plotData, {
                     color: colour,
                     height: height,
                     yDomain: [min, max]
                 });
                 this.addLayer(lineLayer, waveTrack, this.timeline.timeContext);
-                const scaleLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.ScaleLayer({
+                const scaleLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.ScaleLayer({
                     tickColor: colour,
                     textColor: colour,
                     height: height,
                     yDomain: [min, max]
                 });
                 this.addLayer(scaleLayer, waveTrack, this.timeline.timeContext);
-                this.highlightLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.HighlightLayer(lineLayer, {
+                this.highlightLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.HighlightLayer(lineLayer, {
                     opacity: 0.7,
                     height: height,
                     color: '#c33c54',
@@ -2093,7 +2090,7 @@ let WaveformComponent = class WaveformComponent {
                         time: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
                         label: feature.label
                     }));
-                    const featureLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.TickLayer(plotData, {
+                    const featureLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.TickLayer(plotData, {
                         height: height,
                         color: colour,
                         labelPosition: 'bottom',
@@ -2146,7 +2143,7 @@ let WaveformComponent = class WaveformComponent {
                                 })), { height: height }];
                         }
                     };
-                    const segmentLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.SegmentLayer(...getSegmentArgs());
+                    const segmentLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.SegmentLayer(...getSegmentArgs());
                     this.addLayer(segmentLayer, waveTrack, this.timeline.timeContext);
                 }
                 break;
@@ -2163,9 +2160,9 @@ let WaveformComponent = class WaveformComponent {
                 const targetValue = this.estimatePercentile(matrixData, 95);
                 const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
                 console.log('setting gain to ' + gain);
-                const matrixEntity = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.utils.PrefilledMatrixEntity(matrixData, 0, // startTime
+                const matrixEntity = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.utils.PrefilledMatrixEntity(matrixData, 0, // startTime
                 stepDuration);
-                const matrixLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.helpers.MatrixLayer(matrixEntity, {
+                const matrixLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.MatrixLayer(matrixEntity, {
                     gain,
                     top: 0,
                     height: height,
@@ -2229,7 +2226,7 @@ let WaveformComponent = class WaveformComponent {
         timeContext.zoom = 1.0;
         if (!layer.timeContext) {
             layer.setTimeContext(isAxis ?
-                timeContext : new __WEBPACK_IMPORTED_MODULE_2_waves_ui___default.a.core.LayerTimeContext(timeContext));
+                timeContext : new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.core.LayerTimeContext(timeContext));
         }
         track.add(layer);
         this.layers.push(layer);
