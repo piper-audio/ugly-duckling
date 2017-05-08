@@ -9,7 +9,7 @@ import {Subject} from 'rxjs/Subject';
 // seems the TypeScript definitions are not up to date,
 // introduce own types for now
 
-export type AudioInputProvider = () => PromiseLike<MediaStream>;
+export type AudioInputProvider = () => Promise<MediaStream>;
 
 export interface MediaRecorderOptions {
   mimeType?: string;
@@ -102,12 +102,11 @@ export class ThrowingMediaRecorder implements MediaRecorder {
 export class AudioRecorderService {
   private requestProvider: AudioInputProvider;
   private recorderImpl: MediaRecorderConstructor;
-  private recorder: MediaRecorder;
+  private currentRecorder: MediaRecorder;
   private recordingStateChange: Subject<RecorderServiceStatus>;
   recordingStateChange$: Observable<RecorderServiceStatus>;
   private newRecording: Subject<Blob>;
   newRecording$: Observable<Blob>;
-  private isRecordingAble: boolean;
   private isRecording: boolean;
   private chunks: Blob[];
 
@@ -122,67 +121,57 @@ export class AudioRecorderService {
     this.recordingStateChange$ = this.recordingStateChange.asObservable();
     this.newRecording = new Subject<Blob>();
     this.newRecording$ = this.newRecording.asObservable();
-    this.isRecordingAble = false;
     this.isRecording = false;
     this.chunks = [];
-    this.hasRecordingCapabilities();
   }
 
-  private hasRecordingCapabilities(): void {
-    this.requestProvider().then(stream => {
-      try {
-        this.recorder = new this.recorderImpl(stream);
-
-        this.recorder.ondataavailable = e => this.chunks.push(e.data);
-        this.recorder.onstop = () => {
-          const blob = new Blob(this.chunks, { 'type': this.recorder.mimeType });
-          this.chunks.length = 0;
-          this.ngZone.run(() => {
-            this.newRecording.next(
-              blob
-            );
-          });
-        };
-        this.isRecordingAble = true;
-        this.recordingStateChange.next('enabled');
-      } catch (e) {
-        this.isRecordingAble = false;
-        this.recordingStateChange.next('disabled'); // don't really need to do this
-        console.warn(e); // TODO emit an error message for display?
-      }
-    }, rejectMessage => {
-      this.isRecordingAble = false;
-      this.recordingStateChange.next('disabled'); // again, probably not needed
-      console.warn(rejectMessage); // TODO something better
+  private getRecorderInstance(): Promise<MediaRecorder> {
+    return this.requestProvider().then(stream => {
+      const recorder = new this.recorderImpl(stream);
+      recorder.ondataavailable = e => this.chunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(this.chunks, {'type': recorder.mimeType});
+        this.chunks.length = 0;
+        this.ngZone.run(() => {
+          this.newRecording.next(
+            blob
+          );
+        });
+      };
+      return recorder;
     });
   }
 
   toggleRecording(): void {
-    if (!this.isRecordingAble) {
-      return;
-    }
-
     if (this.isRecording) {
       this.endRecording();
     } else {
-      this.startRecording();
+      this.getRecorderInstance()
+        .then(recorder => this.startRecording(recorder))
+        .catch(e => {
+          this.recordingStateChange.next('disabled'); // don't really need to do this
+          console.warn(e); // TODO emit an error message for display?
+        });
     }
   }
 
-  private startRecording(): void {
-    if (this.recorder) {
-      this.isRecording = true;
-      this.recorder.start();
-      this.recordingStateChange.next('recording');
-    }
+  private startRecording(recorder: MediaRecorder): void {
+    this.currentRecorder = recorder;
+    this.isRecording = true;
+    recorder.start();
+    this.recordingStateChange.next('recording');
   }
 
   private endRecording(): void {
-    if (this.recorder) {
+    if (this.currentRecorder) {
       this.isRecording = false;
-      this.recorder.stop();
+      this.currentRecorder.stop();
+      for (const track of this.currentRecorder.stream.getAudioTracks()) {
+        track.stop();
+      }
       this.chunks.length = 0; // empty the array
       this.recordingStateChange.next('enabled');
+      this.currentRecorder = null;
     }
   }
 }
