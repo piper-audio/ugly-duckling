@@ -142,7 +142,7 @@ module.exports = "<input #open type=\"file\" accept=\"audio/*\" (change)=\"decod
 /***/ "5xMp":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event)\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event)\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"sidenav.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <div class=\"ugly-content\">\n    <md-sidenav-container>\n      <md-sidenav #sidenav align=\"start\" mode=\"over\">\n        <ugly-feature-extraction-menu\n          (requestOutput)=\"extractFeatures($event)\"\n          [disabled]=\"!canExtract\">\n        </ugly-feature-extraction-menu>\n      </md-sidenav>\n      <ugly-notebook-feed\n        [analyses]=\"analyses.toIterable()\"\n        [rootAudioUri]=\"rootAudioUri\"></ugly-notebook-feed>\n    </md-sidenav-container>\n  </div>\n</div>\n"
+module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"piper\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event)\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event)\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"sidenav.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <div class=\"ugly-content\">\n    <md-sidenav-container>\n      <md-sidenav #sidenav align=\"start\" mode=\"over\">\n        <ugly-feature-extraction-menu\n          (requestOutput)=\"extractFeatures($event)\"\n          [disabled]=\"!canExtract\">\n        </ugly-feature-extraction-menu>\n      </md-sidenav>\n      <ugly-notebook-feed\n        [analyses]=\"analyses.toIterable()\"\n        [rootAudioUri]=\"rootAudioUri\"></ugly-notebook-feed>\n    </md-sidenav-container>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -922,7 +922,7 @@ let AppComponent = class AppComponent {
         this.canExtract = false;
         this.nRecordings = 0;
         this.countingId = 0;
-        iconRegistry.addSvgIcon('duck', sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg'));
+        iconRegistry.addSvgIcon('piper', sanitizer.bypassSecurityTrustResourceUrl('assets/piper.svg'));
         this.onAudioDataSubscription = this.audioService.audioLoaded$.subscribe(resource => {
             const wasError = resource.message != null;
             if (wasError) {
@@ -1403,7 +1403,7 @@ let AudioRecorderService = class AudioRecorderService {
             this.getRecorderInstance()
                 .then(recorder => this.startRecording(recorder))
                 .catch(e => {
-                this.recordingStateChange.next('disabled'); // don't really need to do this
+                this.recordingStateChange.next('disabled');
                 console.warn(e); // TODO emit an error message for display?
             });
         }
@@ -2040,9 +2040,9 @@ let WaveformComponent = class WaveformComponent {
                     min = 0;
                     max = 1;
                 }
-                console.log("adding line layer: min = " + min + ", max = " + max);
+                console.log('adding line layer: min = ' + min + ', max = ' + max);
                 if (min !== min || max !== max) {
-                    console.log("WARNING: min or max is NaN");
+                    console.log('WARNING: min or max is NaN');
                     min = 0;
                     max = 1;
                 }
