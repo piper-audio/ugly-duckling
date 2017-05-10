@@ -20,8 +20,11 @@ import {
 import {Subscription} from 'rxjs/Subscription';
 import {
   FeatureCollection,
-  FixedSpacedFeatures,
-  SimpleResponse
+  SimpleResponse,
+  VectorFeatures,
+  MatrixFeatures,
+  TrackFeature,
+  TrackFeatures
 } from 'piper/HigherLevelUtilities';
 import {toSeconds} from 'piper';
 import {FeatureList, Feature} from 'piper/Feature';
@@ -630,9 +633,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // TODO refactor all of this
     switch (features.shape) {
-      case 'vector': {
-        const stepDuration = (features as FixedSpacedFeatures).stepDuration;
-        const featureData = (features.data as Float32Array);
+    case 'vector': {
+	const collected = features.collected as VectorFeatures;
+        const stepDuration = collected.stepDuration;
+        const featureData = collected.data;
         if (featureData.length === 0) {
           return;
         }
@@ -690,7 +694,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       }
       case 'list': {
-        const featureData = (features.data as FeatureList);
+	const featureData = features.collected as FeatureList;
         if (featureData.length === 0) {
           return;
         }
@@ -792,9 +796,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       }
       case 'matrix': {
-        const stepDuration = (features as FixedSpacedFeatures).stepDuration;
+	const collected = features.collected as MatrixFeatures;
+        const stepDuration = collected.stepDuration;
         // !!! + start time
-        const matrixData = (features.data as Float32Array[]);
+        const matrixData = collected.data;
 
         if (matrixData.length === 0) {
           return;
