@@ -610,6 +610,69 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.timeline.tracks.update();
   }
 
+  private addLineLayer(stepDuration: number,
+		       featureData: Float32Array,
+		       colour: Colour) {
+
+    if (featureData.length === 0) {
+      return;
+    }
+    const plotData = [...featureData].map((feature, i) => {
+      return {
+        cx: i * stepDuration,
+        cy: feature
+      };
+    });
+    let min = featureData.reduce((m, f) => Math.min(m, f), Infinity);
+    let max = featureData.reduce((m, f) => Math.max(m, f), -Infinity);
+    if (min === Infinity) {
+      min = 0;
+      max = 1;
+    }
+    console.log("adding line layer: min = " + min + ", max = " + max);
+    if (min !== min || max !== max) {
+      console.log("WARNING: min or max is NaN");
+      min = 0;
+      max = 1;
+    }
+
+    const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
+    const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
+    const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
+      color: colour,
+      height: height,
+      yDomain: [ min, max ]
+    });
+    this.addLayer(
+      lineLayer,
+      waveTrack,
+      this.timeline.timeContext
+    );
+    const scaleLayer = new wavesUI.helpers.ScaleLayer({
+      tickColor: colour,
+      textColor: colour,
+      height: height,
+      yDomain: [ min, max ]
+    });
+    this.addLayer(
+      scaleLayer,
+      waveTrack,
+      this.timeline.timeContext
+    );
+    this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayer, {
+      opacity: 0.7,
+      height: height,
+      color: '#c33c54',
+      labelOffset: 38,
+      yDomain: [ min, max ]
+    });
+    this.addLayer(
+      this.highlightLayer,
+      waveTrack,
+      this.timeline.timeContext
+    );
+  }
+  
   // TODO refactor - this doesn't belong here
   private renderFeatures(extracted: SimpleResponse, colour: Colour): void {
     if (this.isOneShotExtractor && !this.hasShot) {
@@ -627,72 +690,20 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     const features: FeatureCollection = (extracted.features as FeatureCollection);
     const outputDescriptor = extracted.outputDescriptor;
-    // const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
     const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
 
     // TODO refactor all of this
     switch (features.shape) {
-    case 'vector': {
-	const collected = features.collected as VectorFeatures;
-        const stepDuration = collected.stepDuration;
-        const featureData = collected.data;
-        if (featureData.length === 0) {
-          return;
-        }
-        const plotData = [...featureData].map((feature, i) => {
-          return {
-            cx: i * stepDuration,
-            cy: feature
-          };
-        });
-        let min = featureData.reduce((m, f) => Math.min(m, f), Infinity);
-        let max = featureData.reduce((m, f) => Math.max(m, f), -Infinity);
-        if (min === Infinity) {
-          min = 0;
-          max = 1;
-        }
-	console.log("adding line layer: min = " + min + ", max = " + max);
-	if (min !== min || max !== max) {
-	  console.log("WARNING: min or max is NaN");
-	  min = 0;
-	  max = 1;
-	}
-        const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
-          color: colour,
-          height: height,
-          yDomain: [ min, max ]
-        });
-        this.addLayer(
-          lineLayer,
-          waveTrack,
-          this.timeline.timeContext
-        );
-        const scaleLayer = new wavesUI.helpers.ScaleLayer({
-          tickColor: colour,
-          textColor: colour,
-          height: height,
-          yDomain: [ min, max ]
-        });
-        this.addLayer(
-          scaleLayer,
-          waveTrack,
-          this.timeline.timeContext
-        );
-        this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayer, {
-          opacity: 0.7,
-          height: height,
-          color: '#c33c54',
-          labelOffset: 38,
-          yDomain: [ min, max ]
-        });
-        this.addLayer(
-          this.highlightLayer,
-          waveTrack,
-          this.timeline.timeContext
-        );
-        break;
+
+      case 'vector': {
+        const collected = features.collected as VectorFeatures;
+	const stepDuration = collected.stepDuration;
+	const featureData = collected.data;
+	this.addLineLayer(stepDuration, featureData, colour);
+	break;
       }
+      
       case 'list': {
 	const featureData = features.collected as FeatureList;
         if (featureData.length === 0) {
