@@ -21,10 +21,9 @@ import {Subscription} from 'rxjs/Subscription';
 import {
   FeatureCollection,
   SimpleResponse,
-  VectorFeatures,
-  MatrixFeatures,
-  TrackFeature,
-  TrackFeatures
+  VectorFeature,
+  MatrixFeature,
+  TracksFeature
 } from 'piper/HigherLevelUtilities';
 import {toSeconds} from 'piper';
 import {FeatureList, Feature} from 'piper/Feature';
@@ -697,7 +696,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     switch (features.shape) {
 
       case 'vector': {
-        const collected = features.collected as VectorFeatures;
+        const collected = features.collected as VectorFeature;
+	const startTime = collected.startTime; //!!! + make use of
 	const stepDuration = collected.stepDuration;
 	const featureData = collected.data;
 	this.addLineLayer(stepDuration, featureData, colour);
@@ -807,9 +807,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       }
       case 'matrix': {
-	const collected = features.collected as MatrixFeatures;
+	const collected = features.collected as MatrixFeature;
+        const startTime = collected.startTime; //!!! + make use of
         const stepDuration = collected.stepDuration;
-        // !!! + start time
         const matrixData = collected.data;
 
         if (matrixData.length === 0) {

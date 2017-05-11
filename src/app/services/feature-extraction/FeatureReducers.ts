@@ -5,7 +5,7 @@ import {StreamingResponse} from 'piper/StreamingService';
 import {Feature, FeatureList} from 'piper/Feature';
 import {SampleType} from 'piper';
 import {
-  VectorFeatures, MatrixFeatures, TrackFeature, TrackFeatures
+  VectorFeature, MatrixFeature, TracksFeature
 } from "piper/HigherLevelUtilities";
 
 export const arrayReducer = <T>(acc: T[], val: T[]): T[] => {
@@ -45,8 +45,8 @@ export const streamingResponseReducer = (acc: StreamingResponse,
     switch (acc.features.shape) {
 
     case "vector":
-      incoming = val.features.collected as VectorFeatures;
-      collected = acc.features.collected as VectorFeatures;
+      incoming = val.features.collected as VectorFeature;
+      collected = acc.features.collected as VectorFeature;
       if (isOneSamplePerStep) {
 	// for one sample per step vectors we know there will be
 	// totalBlockCount number of samples - so pre-allocate the
@@ -72,8 +72,8 @@ export const streamingResponseReducer = (acc: StreamingResponse,
       break;
 
     case "matrix":
-      incoming = val.features.collected as MatrixFeatures;
-      collected = acc.features.collected as MatrixFeatures;
+      incoming = val.features.collected as MatrixFeature;
+      collected = acc.features.collected as MatrixFeature;
       collected.data = arrayReducer<Float32Array>(
 	collected.data,
 	incoming.data
@@ -90,9 +90,9 @@ export const streamingResponseReducer = (acc: StreamingResponse,
       break;
       
     case "tracks":
-      incoming = val.features.collected as TrackFeatures;
-      collected = acc.features.collected as TrackFeatures;
-      acc.features.collected = arrayReducer<TrackFeature>(
+      incoming = val.features.collected as TracksFeature;
+      collected = acc.features.collected as TracksFeature;
+      acc.features.collected = arrayReducer<VectorFeature>(
 	collected, incoming
       );
       break;
