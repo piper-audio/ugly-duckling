@@ -680,11 +680,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (!extracted.hasOwnProperty('features')
-      || !extracted.hasOwnProperty('outputDescriptor')) {
+        || !extracted.hasOwnProperty('outputDescriptor')) {
       return;
     }
     if (!extracted.features.hasOwnProperty('shape')
-      || !extracted.features.hasOwnProperty('data')) {
+        || !extracted.features.hasOwnProperty('collected')) {
       return;
     }
     const features: FeatureCollection = (extracted.features as FeatureCollection);
