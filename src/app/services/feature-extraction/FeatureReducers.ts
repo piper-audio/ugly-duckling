@@ -1,10 +1,11 @@
 /**
  * Created by lucast on 26/04/2017.
  */
-import {StreamingResponse} from "piper/StreamingService";
+import {StreamingResponse} from 'piper/StreamingService';
 
 export const arrayReducer = <T>(acc: T[], val: T[]): T[] => {
-  for (let i = 0, len = val.length; i < len; ++i) {
+  const len = val.length;
+  for (let i = 0; i < len; ++i) {
     acc.push(val[i]);
   }
   return acc;

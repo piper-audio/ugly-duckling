@@ -14,7 +14,7 @@ import {
   WebWorkerStreamingClient
 } from 'piper/client-stubs/WebWorkerStreamingClient';
 import {RequestId} from 'piper/protocols/WebWorkerProtocol';
-import {collect, StreamingConfiguration} from "piper/StreamingService";
+import {collect, StreamingConfiguration} from 'piper/StreamingService';
 
 type RepoUri = string;
 export interface AvailableLibraries {

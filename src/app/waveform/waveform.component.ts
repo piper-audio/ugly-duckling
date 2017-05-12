@@ -615,7 +615,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Winnow out empty features
     features = features.filter(feature => (feature.data.length > 0));
-    
+
     // First establish a [min,max] range across all of the features
     let [min, max] = features.reduce((acc, feature) => {
       return feature.data.reduce((acc, val) => {
@@ -624,7 +624,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }, acc);
     }, [Infinity, -Infinity]);
 
-    console.log("addLineLayers: " + features.length + " non-empty features, overall min = " + min + ", max = " + max);
+    console.log('addLineLayers: ' + features.length + ' non-empty features, overall min = ' + min + ', max = ' + max);
 
     if (min === Infinity) {
       min = 0;
@@ -632,7 +632,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (min !== min || max !== max) {
-      console.log("WARNING: min or max is NaN");
+      console.log('WARNING: min or max is NaN');
       min = 0;
       max = 1;
     }
@@ -649,7 +649,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       // line, rather than relative to absolute time 0. This is
       // because we'll be setting the layer timeline start property
       // later on and these will be positioned relative to that
-      
+
       const plotData = [...feature.data].map((val, i) => {
         const t = i * feature.stepDuration;
         duration = t + feature.stepDuration;
@@ -658,7 +658,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           cy: val
         };
       });
-      
+
       const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
         color: colour,
         height: height,
@@ -674,12 +674,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       // them to determine which line to draw values from
       lineLayer.start = feature.startTime;
       lineLayer.duration = duration;
-      
+
       return lineLayer;
     });
 
     // And a single scale layer at left
-    //!!! todo: unit in scale layer
+    // !!! todo: unit in scale layer
     const scaleLayer = new wavesUI.helpers.ScaleLayer({
       tickColor: colour,
       textColor: colour,
@@ -729,7 +729,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
     const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
 
-    let unit = "";
+    let unit = '';
     if (outputDescriptor.configured.hasOwnProperty('unit')) {
       unit = outputDescriptor.configured.unit;
     }
@@ -748,7 +748,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         this.addLineLayers(collected, unit, colour);
         break;
       }
-      
+
       case 'list': {
         const featureData = features.collected as FeatureList;
         if (featureData.length === 0) {
@@ -853,7 +853,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       case 'matrix': {
         const collected = features.collected as MatrixFeature;
-        const startTime = collected.startTime; //!!! + make use of
+        const startTime = collected.startTime; // !!! + make use of
         const stepDuration = collected.stepDuration;
         const matrixData = collected.data;
 
