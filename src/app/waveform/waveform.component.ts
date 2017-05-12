@@ -642,9 +642,18 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     // Now add a line layer for each vector feature
     const lineLayers = features.map(feature => {
 
+      let duration = 0;
+
+      // Give the plot items positions relative to the start of the
+      // line, rather than relative to absolute time 0. This is
+      // because we'll be setting the layer timeline start property
+      // later on and these will be positioned relative to that
+      
       const plotData = [...feature.data].map((val, i) => {
+        const t = i * feature.stepDuration;
+        duration = t + feature.stepDuration;
         return {
-          cx: feature.startTime + i * feature.stepDuration,
+          cx: t,
           cy: val
         };
       });
@@ -660,9 +669,15 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         this.timeline.timeContext
       );
 
+      // Set start and duration so that the highlight layer can use
+      // them to determine which line to draw values from
+      lineLayer.start = feature.startTime;
+      lineLayer.duration = duration;
+      
       return lineLayer;
     });
-    
+
+    // And a single scale layer at left
     const scaleLayer = new wavesUI.helpers.ScaleLayer({
       tickColor: colour,
       textColor: colour,
@@ -675,7 +690,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       this.timeline.timeContext
     );
 
-    /*
+    // And a single highlight layer which uses all of the line layers
+    // as its source material
     this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayers, {
       opacity: 0.7,
       height: height,
@@ -688,7 +704,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       waveTrack,
       this.timeline.timeContext
     );
-*/
   }
 
   // TODO refactor - this doesn't belong here
