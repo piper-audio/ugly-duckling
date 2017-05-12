@@ -389,7 +389,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           isZooming = false;
           zoomGestureJustEnded = true;
         }
-       });
+      });
       element.addEventListener('touchmove', zoom);
     }
     // this.timeline.createTrack(track, height/2, `wave-${this.trackIdPrefix}`);
@@ -425,17 +425,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (sample.length === 0) {
       console.log('WARNING: No samples gathered, even though we hoped for ' +
-                  (m_per * w) + ' of them');
+        (m_per * w) + ' of them');
       return 0.0;
     }
     sample.sort((a, b) => { return a - b; });
     const ix = Math.floor((sample.length * percentile) / 100);
     console.log('Estimating ' + percentile + '-%ile of ' +
-                n + '-sample dataset (' + w + ' x ' + h + ') as value ' + ix +
-                ' of sorted ' + sample.length + '-sample subset');
+      n + '-sample dataset (' + w + ' x ' + h + ') as value ' + ix +
+      ' of sorted ' + sample.length + '-sample subset');
     const estimate = sample[ix];
     console.log('Estimate is: ' + estimate + ' (where min sampled value = ' +
-                sample[0] + ' and max = ' + sample[sample.length - 1] + ')');
+      sample[0] + ' and max = ' + sample[sample.length - 1] + ')');
     return estimate;
   }
 
@@ -443,8 +443,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const colours = hexColours.map(n => {
       const i = parseInt(n, 16);
       return [ ((i >> 16) & 255) / 255.0,
-               ((i >> 8) & 255) / 255.0,
-               ((i) & 255) / 255.0 ];
+        ((i >> 8) & 255) / 255.0,
+        ((i) & 255) / 255.0 ];
     });
     const last = colours.length - 1;
     return (value => {
@@ -461,8 +461,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       const c0 = colours[base];
       const c1 = colours[base + 1];
       return [ c0[0] * prop0 + c1[0] * prop1,
-               c0[1] * prop0 + c1[1] * prop1,
-               c0[2] * prop0 + c1[2] * prop1 ];
+        c0[1] * prop0 + c1[1] * prop1,
+        c0[2] * prop0 + c1[2] * prop1 ];
     });
   }
 
@@ -484,12 +484,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const t = v * (1 - (1 - f) * s);
     let r = 0, g = 0, b = 0;
     switch (i % 6) {
-        case 0: r = v; g = t; b = p; break;
-        case 1: r = q; g = v; b = p; break;
-        case 2: r = p; g = v; b = t; break;
-        case 3: r = p; g = q; b = v; break;
-        case 4: r = t; g = p; b = v; break;
-        case 5: r = v; g = p; b = q; break;
+      case 0: r = v; g = t; b = p; break;
+      case 1: r = q; g = v; b = p; break;
+      case 2: r = p; g = v; b = t; break;
+      case 3: r = p; g = q; b = v; break;
+      case 4: r = t; g = p; b = v; break;
+      case 5: r = v; g = p; b = q; break;
     }
     return [ r, g, b ];
   }
@@ -610,8 +610,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private addLineLayer(stepDuration: number,
-		       featureData: Float32Array,
-		       colour: Colour) {
+                       featureData: Float32Array,
+                       colour: Colour) {
 
     if (featureData.length === 0) {
       return;
@@ -671,7 +671,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       this.timeline.timeContext
     );
   }
-  
+
   // TODO refactor - this doesn't belong here
   private renderFeatures(extracted: SimpleResponse, colour: Colour): void {
     if (this.isOneShotExtractor && !this.hasShot) {
@@ -680,11 +680,11 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (!extracted.hasOwnProperty('features')
-        || !extracted.hasOwnProperty('outputDescriptor')) {
+      || !extracted.hasOwnProperty('outputDescriptor')) {
       return;
     }
     if (!extracted.features.hasOwnProperty('shape')
-        || !extracted.features.hasOwnProperty('collected')) {
+      || !extracted.features.hasOwnProperty('collected')) {
       return;
     }
     const features: FeatureCollection = (extracted.features as FeatureCollection);
@@ -697,15 +697,15 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
       case 'vector': {
         const collected = features.collected as VectorFeature;
-	const startTime = collected.startTime; //!!! + make use of
-	const stepDuration = collected.stepDuration;
-	const featureData = collected.data;
-	this.addLineLayer(stepDuration, featureData, colour);
-	break;
+        const startTime = collected.startTime; //!!! + make use of
+        const stepDuration = collected.stepDuration;
+        const featureData = collected.data;
+        this.addLineLayer(stepDuration, featureData, colour);
+        break;
       }
-      
+
       case 'list': {
-	const featureData = features.collected as FeatureList;
+        const featureData = features.collected as FeatureList;
         if (featureData.length === 0) {
           return;
         }
@@ -717,8 +717,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const isRegion = hasDuration
           && featureData[0].timestamp != null;
         console.log('Have list features: length ' + featureData.length +
-                    ', isMarker ' + isMarker + ', isRegion ' + isRegion +
-                    ', hasDuration ' + hasDuration);
+          ', isMarker ' + isMarker + ', isRegion ' + isRegion +
+          ', hasDuration ' + hasDuration);
         // TODO refactor, this is incomprehensible
         if (isMarker) {
           const plotData = featureData.map(feature => ({
@@ -807,7 +807,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       }
       case 'matrix': {
-	const collected = features.collected as MatrixFeature;
+        const collected = features.collected as MatrixFeature;
         const startTime = collected.startTime; //!!! + make use of
         const stepDuration = collected.stepDuration;
         const matrixData = collected.data;
@@ -823,8 +823,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log('setting gain to ' + gain);
         const matrixEntity =
           new wavesUI.utils.PrefilledMatrixEntity(matrixData,
-                                                  0, // startTime
-                                                  stepDuration);
+            0, // startTime
+            stepDuration);
         const matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
           gain,
           top: 0,
@@ -880,17 +880,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         if (mustPageForward) {
           const hasSkippedMultiplePages = offsetTimestamp - visibleDuration > visibleDuration;
 
-            this.timeline.timeContext.offset = hasSkippedMultiplePages ?
-                -currentTime +  0.5 * visibleDuration :
-                currentOffset - visibleDuration;
+          this.timeline.timeContext.offset = hasSkippedMultiplePages ?
+            -currentTime +  0.5 * visibleDuration :
+            currentOffset - visibleDuration;
           this.timeline.tracks.update();
         }
 
         if (mustPageBackward) {
           const hasSkippedMultiplePages = currentTime + visibleDuration < -currentOffset;
-            this.timeline.timeContext.offset = hasSkippedMultiplePages ?
-                -currentTime + 0.5 * visibleDuration :
-                currentOffset + visibleDuration;
+          this.timeline.timeContext.offset = hasSkippedMultiplePages ?
+            -currentTime + 0.5 * visibleDuration :
+            currentOffset + visibleDuration;
           this.timeline.tracks.update();
         }
 

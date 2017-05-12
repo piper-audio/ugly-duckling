@@ -14,6 +14,7 @@ import {
   WebWorkerStreamingClient
 } from 'piper/client-stubs/WebWorkerStreamingClient';
 import {RequestId} from 'piper/protocols/WebWorkerProtocol';
+import {collect, StreamingConfiguration} from "piper/StreamingService";
 
 type RepoUri = string;
 export interface AvailableLibraries {
@@ -66,19 +67,24 @@ export class FeatureExtractionService {
   }
 
   extract(analysisItemId: string, request: SimpleRequest): Promise<void> {
-    return this.client.collect(request)
-      .do(val => {
-        if (val.totalBlockCount > 0) {
-          this.progressUpdated.next({
-            id: analysisItemId,
-            value: (val.processedBlockCount / val.totalBlockCount) * 100
-          });
-        }
-      })
-      .toPromise()
-      .then((response) => {
-        this.featuresExtracted.next(response);
+    let config: StreamingConfiguration;
+    return collect(this.client.process(request), val => {
+      if (val.configuration) {
+        config = val.configuration;
+      }
+      const progress = val.progress;
+      if (progress.totalBlockCount > 0) {
+        this.progressUpdated.next({
+          id: analysisItemId,
+          value: (progress.processedBlockCount / progress.totalBlockCount) * 100
+        });
+      }
+    }).then(features => {
+      this.featuresExtracted.next({
+        features: features,
+        outputDescriptor: config.outputDescriptor
       });
+    });
   }
 
   updateAvailableLibraries(): Observable<AvailableLibraries> {
