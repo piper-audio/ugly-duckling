@@ -609,26 +609,27 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.timeline.tracks.update();
   }
 
-  private addLineLayer(stepDuration: number,
-                       featureData: Float32Array,
-                       colour: Colour) {
+  private addLineLayers(features: VectorFeature[],
+                        colour: Colour) {
 
-    if (featureData.length === 0) {
-      return;
-    }
-    const plotData = [...featureData].map((feature, i) => {
-      return {
-        cx: i * stepDuration,
-        cy: feature
-      };
-    });
-    let min = featureData.reduce((m, f) => Math.min(m, f), Infinity);
-    let max = featureData.reduce((m, f) => Math.max(m, f), -Infinity);
+    // Winnow out empty features
+    features = features.filter(feature => (feature.data.length > 0));
+    
+    // First establish a [min,max] range across all of the features
+    let [min, max] = features.reduce((acc, feature) => {
+      return feature.data.reduce((acc, val) => {
+        const [min, max] = acc;
+        return [Math.min (min, val), Math.max (max, val)];
+      }, acc);
+    }, [Infinity, -Infinity]);
+
+    console.log("addLineLayers: " + features.length + " non-empty features, overall min = " + min + ", max = " + max);
+
     if (min === Infinity) {
       min = 0;
       max = 1;
     }
-    console.log("adding line layer: min = " + min + ", max = " + max);
+
     if (min !== min || max !== max) {
       console.log("WARNING: min or max is NaN");
       min = 0;
@@ -637,16 +638,31 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
     const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
-    const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
-      color: colour,
-      height: height,
-      yDomain: [ min, max ]
+
+    // Now add a line layer for each vector feature
+    const lineLayers = features.map(feature => {
+
+      const plotData = [...feature.data].map((val, i) => {
+        return {
+          cx: feature.startTime + i * feature.stepDuration,
+          cy: val
+        };
+      });
+      
+      const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
+        color: colour,
+        height: height,
+        yDomain: [ min, max ]
+      });
+      this.addLayer(
+        lineLayer,
+        waveTrack,
+        this.timeline.timeContext
+      );
+
+      return lineLayer;
     });
-    this.addLayer(
-      lineLayer,
-      waveTrack,
-      this.timeline.timeContext
-    );
+    
     const scaleLayer = new wavesUI.helpers.ScaleLayer({
       tickColor: colour,
       textColor: colour,
@@ -658,7 +674,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       waveTrack,
       this.timeline.timeContext
     );
-    this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayer, {
+
+    /*
+    this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayers, {
       opacity: 0.7,
       height: height,
       color: '#c33c54',
@@ -670,6 +688,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       waveTrack,
       this.timeline.timeContext
     );
+*/
   }
 
   // TODO refactor - this doesn't belong here
@@ -697,13 +716,16 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
       case 'vector': {
         const collected = features.collected as VectorFeature;
-        const startTime = collected.startTime; //!!! + make use of
-        const stepDuration = collected.stepDuration;
-        const featureData = collected.data;
-        this.addLineLayer(stepDuration, featureData, colour);
+        this.addLineLayers([collected], colour);
         break;
       }
 
+      case 'tracks': {
+        const collected = features.collected as TracksFeature;
+        this.addLineLayers(collected, colour);
+        break;
+      }
+      
       case 'list': {
         const featureData = features.collected as FeatureList;
         if (featureData.length === 0) {
