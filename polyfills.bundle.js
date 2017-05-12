@@ -884,9 +884,6 @@ class AggregateStreamingService {
     process(request) {
         return this.dispatch('process', request);
     }
-    collect(request) {
-        return this.dispatch('collect', request);
-    }
     dispatch(method, request) {
         const key = request.key.split(':')[0];
         return this.services.has(key) ?
@@ -899,15 +896,23 @@ class ThrottledReducingAggregateService extends AggregateStreamingService {
     }
     dispatch(method, request) {
         let lastPercentagePoint = 0;
+        let shouldClear = false;
         return super.dispatch(method, request)
-            .scan(__WEBPACK_IMPORTED_MODULE_5__FeatureReducers__["a" /* streamingResponseReducer */])
+            .scan((acc, value) => {
+            if (shouldClear) {
+                acc.features = [];
+            }
+            return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__FeatureReducers__["a" /* streamingResponseReducer */])(acc, value);
+        })
             .filter(val => {
-            const percentage = 100 * (val.processedBlockCount / val.totalBlockCount) | 0;
+            const progress = val.progress;
+            const percentage = 100 * (progress.processedBlockCount / progress.totalBlockCount) | 0;
             const pointDifference = (percentage - lastPercentagePoint);
             const shouldEmit = pointDifference === 1 || percentage === 100;
             if (shouldEmit) {
                 lastPercentagePoint = percentage;
             }
+            shouldClear = shouldEmit;
             return shouldEmit;
         });
     }
@@ -1999,8 +2004,10 @@ var DelayWhenSubscriber = (function (_super) {
     };
     DelayWhenSubscriber.prototype.tryDelay = function (delayNotifier, value) {
         var notifierSubscription = subscribeToResult_1.subscribeToResult(this, delayNotifier, value);
-        this.add(notifierSubscription);
-        this.delayNotifierSubscriptions.push(notifierSubscription);
+        if (notifierSubscription && !notifierSubscription.closed) {
+            this.add(notifierSubscription);
+            this.delayNotifierSubscriptions.push(notifierSubscription);
+        }
         this.values.push(value);
     };
     DelayWhenSubscriber.prototype.tryComplete = function () {
@@ -5012,6 +5019,67 @@ var isArray_1 = __webpack_require__("Xajo");
 var OuterSubscriber_1 = __webpack_require__("wAkD");
 var subscribeToResult_1 = __webpack_require__("CURp");
 /* tslint:enable:max-line-length */
+/**
+ * When any of the provided Observable emits an complete or error notification, it immediately subscribes to the next one
+ * that was passed.
+ *
+ * <span class="informal">Execute series of Observables no matter what, even if it means swallowing errors.</span>
+ *
+ * <img src="./img/onErrorResumeNext.png" width="100%">
+ *
+ * `onErrorResumeNext` is an operator that accepts a series of Observables, provided either directly as
+ * arguments or as an array. If no single Observable is provided, returned Observable will simply behave the same
+ * as the source.
+ *
+ * `onErrorResumeNext` returns an Observable that starts by subscribing and re-emitting values from the source Observable.
+ * When its stream of values ends - no matter if Observable completed or emitted an error - `onErrorResumeNext`
+ * will subscribe to the first Observable that was passed as an argument to the method. It will start re-emitting
+ * its values as well and - again - when that stream ends, `onErrorResumeNext` will proceed to subscribing yet another
+ * Observable in provided series, no matter if previous Observable completed or ended with an error. This will
+ * be happening until there is no more Observables left in the series, at which point returned Observable will
+ * complete - even if the last subscribed stream ended with an error.
+ *
+ * `onErrorResumeNext` can be therefore though of as version of {@link concat} operator, which is more permissive
+ * when it comes to the errors emitted by its input Observables. While `concat` subscribes to the next Observable
+ * in series only if previous one successfully completed, `onErrorResumeNext` subscribes even if it ended with
+ * an error.
+ *
+ * Note that you do not get any access to errors emitted by the Observables. In particular do not
+ * expect these errors to appear in error callback passed to {@link subscribe}. If you want to take
+ * specific actions based on what error was emitted by an Observable, you should try out {@link catch} instead.
+ *
+ *
+ * @example <caption>Subscribe to the next Observable after map fails</caption>
+ * Rx.Observable.of(1, 2, 3, 0)
+ *   .map(x => {
+ *       if (x === 0) { throw Error(); }
+         return 10 / x;
+ *   })
+ *   .onErrorResumeNext(Rx.Observable.of(1, 2, 3))
+ *   .subscribe(
+ *     val => console.log(val),
+ *     err => console.log(err),          // Will never be called.
+ *     () => console.log('that\'s it!')
+ *   );
+ *
+ * // Logs:
+ * // 10
+ * // 5
+ * // 3.3333333333333335
+ * // 1
+ * // 2
+ * // 3
+ * // "that's it!"
+ *
+ * @see {@link concat}
+ * @see {@link catch}
+ *
+ * @param {...ObservableInput} observables Observables passed either directly or as an array.
+ * @return {Observable} An Observable that emits values from source Observable, but - if it errors - subscribes
+ * to the next passed Observable and so on, until it completes or runs out of Observables.
+ * @method onErrorResumeNext
+ * @owner Observable
+ */
 function onErrorResumeNext() {
     var nextSources = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -7789,8 +7857,10 @@ __webpack_require__("6hPP");
 __webpack_require__("zJQZ");
 __webpack_require__("UFi/");
 __webpack_require__("WQmy");
+__webpack_require__("s616");
 __webpack_require__("JQ6u");
 __webpack_require__("9qUs");
+__webpack_require__("WnEV");
 __webpack_require__("8szd");
 __webpack_require__("VaQ6");
 __webpack_require__("/lY3");
@@ -8332,11 +8402,48 @@ var __extends = (this && this.__extends) || function (d, b) {
 var Subscriber_1 = __webpack_require__("mmVS");
 var Notification_1 = __webpack_require__("8GmM");
 /**
- * @see {@link Notification}
  *
- * @param scheduler
- * @param delay
- * @return {Observable<R>|WebSocketSubject<T>|Observable<T>}
+ * Re-emits all notifications from source Observable with specified scheduler.
+ *
+ * <span class="informal">Ensure a specific scheduler is used, from outside of an Observable.</span>
+ *
+ * `observeOn` is an operator that accepts a scheduler as a first parameter, which will be used to reschedule
+ * notifications emitted by the source Observable. It might be useful, if you do not have control over
+ * internal scheduler of a given Observable, but want to control when its values are emitted nevertheless.
+ *
+ * Returned Observable emits the same notifications (nexted values, complete and error events) as the source Observable,
+ * but rescheduled with provided scheduler. Note that this doesn't mean that source Observables internal
+ * scheduler will be replaced in any way. Original scheduler still will be used, but when the source Observable emits
+ * notification, it will be immediately scheduled again - this time with scheduler passed to `observeOn`.
+ * An anti-pattern would be calling `observeOn` on Observable that emits lots of values synchronously, to split
+ * that emissions into asynchronous chunks. For this to happen, scheduler would have to be passed into the source
+ * Observable directly (usually into the operator that creates it). `observeOn` simply delays notifications a
+ * little bit more, to ensure that they are emitted at expected moments.
+ *
+ * As a matter of fact, `observeOn` accepts second parameter, which specifies in milliseconds with what delay notifications
+ * will be emitted. The main difference between {@link delay} operator and `observeOn` is that `observeOn`
+ * will delay all notifications - including error notifications - while `delay` will pass through error
+ * from source Observable immediately when it is emitted. In general it is highly recommended to use `delay` operator
+ * for any kind of delaying of values in the stream, while using `observeOn` to specify which scheduler should be used
+ * for notification emissions in general.
+ *
+ * @example <caption>Ensure values in subscribe are called just before browser repaint.</caption>
+ * const intervals = Rx.Observable.interval(10); // Intervals are scheduled
+ *                                               // with async scheduler by default...
+ *
+ * intervals
+ * .observeOn(Rx.Scheduler.animationFrame)       // ...but we will observe on animationFrame
+ * .subscribe(val => {                           // scheduler to ensure smooth animation.
+ *   someDiv.style.height = val + 'px';
+ * });
+ *
+ * @see {@link delay}
+ *
+ * @param {IScheduler} scheduler Scheduler that will be used to reschedule notifications from source Observable.
+ * @param {number} [delay] Number of milliseconds that states with what delay every notification should be rescheduled.
+ * @return {Observable<T>} Observable that emits the same notifications as the source Observable,
+ * but with provided scheduler.
+ *
  * @method observeOn
  * @owner Observable
  */
@@ -8596,6 +8703,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var Subscriber_1 = __webpack_require__("mmVS");
 var async_1 = __webpack_require__("CGGv");
+var throttle_1 = __webpack_require__("u/VN");
 /**
  * Emits a value from the source Observable, then ignores subsequent source
  * values for `duration` milliseconds, then repeats this process.
@@ -8635,18 +8743,21 @@ var async_1 = __webpack_require__("CGGv");
  * @method throttleTime
  * @owner Observable
  */
-function throttleTime(duration, scheduler) {
+function throttleTime(duration, scheduler, config) {
     if (scheduler === void 0) { scheduler = async_1.async; }
-    return this.lift(new ThrottleTimeOperator(duration, scheduler));
+    if (config === void 0) { config = throttle_1.defaultThrottleConfig; }
+    return this.lift(new ThrottleTimeOperator(duration, scheduler, config.leading, config.trailing));
 }
 exports.throttleTime = throttleTime;
 var ThrottleTimeOperator = (function () {
-    function ThrottleTimeOperator(duration, scheduler) {
+    function ThrottleTimeOperator(duration, scheduler, leading, trailing) {
         this.duration = duration;
         this.scheduler = scheduler;
+        this.leading = leading;
+        this.trailing = trailing;
     }
     ThrottleTimeOperator.prototype.call = function (subscriber, source) {
-        return source.subscribe(new ThrottleTimeSubscriber(subscriber, this.duration, this.scheduler));
+        return source.subscribe(new ThrottleTimeSubscriber(subscriber, this.duration, this.scheduler, this.leading, this.trailing));
     };
     return ThrottleTimeOperator;
 }());
@@ -8657,20 +8768,37 @@ var ThrottleTimeOperator = (function () {
  */
 var ThrottleTimeSubscriber = (function (_super) {
     __extends(ThrottleTimeSubscriber, _super);
-    function ThrottleTimeSubscriber(destination, duration, scheduler) {
+    function ThrottleTimeSubscriber(destination, duration, scheduler, leading, trailing) {
         _super.call(this, destination);
         this.duration = duration;
         this.scheduler = scheduler;
+        this.leading = leading;
+        this.trailing = trailing;
+        this._hasTrailingValue = false;
+        this._trailingValue = null;
     }
     ThrottleTimeSubscriber.prototype._next = function (value) {
-        if (!this.throttled) {
+        if (this.throttled) {
+            if (this.trailing) {
+                this._trailingValue = value;
+                this._hasTrailingValue = true;
+            }
+        }
+        else {
             this.add(this.throttled = this.scheduler.schedule(dispatchNext, this.duration, { subscriber: this }));
-            this.destination.next(value);
+            if (this.leading) {
+                this.destination.next(value);
+            }
         }
     };
     ThrottleTimeSubscriber.prototype.clearThrottle = function () {
         var throttled = this.throttled;
         if (throttled) {
+            if (this.trailing && this._hasTrailingValue) {
+                this.destination.next(this._trailingValue);
+                this._trailingValue = null;
+                this._hasTrailingValue = false;
+            }
             throttled.unsubscribe();
             this.remove(throttled);
             this.throttled = null;
@@ -8729,6 +8857,35 @@ var let_1 = __webpack_require__("sb+e");
 Observable_1.Observable.prototype.let = let_1.letProto;
 Observable_1.Observable.prototype.letBind = let_1.letProto;
 //# sourceMappingURL=let.js.map
+
+/***/ }),
+
+/***/ "Kjxw":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var multicast_1 = __webpack_require__("emOw");
+var ReplaySubject_1 = __webpack_require__("MQMf");
+/**
+ * @method shareReplay
+ * @owner Observable
+ */
+function shareReplay(bufferSize, windowTime, scheduler) {
+    var subject;
+    var connectable = multicast_1.multicast.call(this, function shareReplaySubjectFactory() {
+        if (this._isComplete) {
+            return subject;
+        }
+        else {
+            return (subject = new ReplaySubject_1.ReplaySubject(bufferSize, windowTime, scheduler));
+        }
+    });
+    return connectable.refCount();
+}
+exports.shareReplay = shareReplay;
+;
+//# sourceMappingURL=shareReplay.js.map
 
 /***/ }),
 
@@ -11130,6 +11287,106 @@ var DoSubscriber = (function (_super) {
 
 /***/ }),
 
+/***/ "Rgi1":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var Subscriber_1 = __webpack_require__("mmVS");
+var ArgumentOutOfRangeError_1 = __webpack_require__("8Z8y");
+/**
+ * Skip the last `count` values emitted by the source Observable.
+ *
+ * <img src="./img/skipLast.png" width="100%">
+ *
+ * `skipLast` returns an Observable that accumulates a queue with a length
+ * enough to store the first `count` values. As more values are received,
+ * values are taken from the front of the queue and produced on the result
+ * sequence. This causes values to be delayed.
+ *
+ * @example <caption>Skip the last 2 values of an Observable with many values</caption>
+ * var many = Rx.Observable.range(1, 5);
+ * var skipLastTwo = many.skipLast(2);
+ * skipLastTwo.subscribe(x => console.log(x));
+ *
+ * // Results in:
+ * // 1 2 3
+ *
+ * @see {@link skip}
+ * @see {@link skipUntil}
+ * @see {@link skipWhile}
+ * @see {@link take}
+ *
+ * @throws {ArgumentOutOfRangeError} When using `skipLast(i)`, it throws
+ * ArgumentOutOrRangeError if `i < 0`.
+ *
+ * @param {number} count Number of elements to skip from the end of the source Observable.
+ * @returns {Observable<T>} An Observable that skips the last count values
+ * emitted by the source Observable.
+ * @method skipLast
+ * @owner Observable
+ */
+function skipLast(count) {
+    return this.lift(new SkipLastOperator(count));
+}
+exports.skipLast = skipLast;
+var SkipLastOperator = (function () {
+    function SkipLastOperator(_skipCount) {
+        this._skipCount = _skipCount;
+        if (this._skipCount < 0) {
+            throw new ArgumentOutOfRangeError_1.ArgumentOutOfRangeError;
+        }
+    }
+    SkipLastOperator.prototype.call = function (subscriber, source) {
+        if (this._skipCount === 0) {
+            // If we don't want to skip any values then just subscribe
+            // to Subscriber without any further logic.
+            return source.subscribe(new Subscriber_1.Subscriber(subscriber));
+        }
+        else {
+            return source.subscribe(new SkipLastSubscriber(subscriber, this._skipCount));
+        }
+    };
+    return SkipLastOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var SkipLastSubscriber = (function (_super) {
+    __extends(SkipLastSubscriber, _super);
+    function SkipLastSubscriber(destination, _skipCount) {
+        _super.call(this, destination);
+        this._skipCount = _skipCount;
+        this._count = 0;
+        this._ring = new Array(_skipCount);
+    }
+    SkipLastSubscriber.prototype._next = function (value) {
+        var skipCount = this._skipCount;
+        var count = this._count++;
+        if (count < skipCount) {
+            this._ring[count] = value;
+        }
+        else {
+            var currentIndex = count % skipCount;
+            var ring = this._ring;
+            var oldValue = ring[currentIndex];
+            ring[currentIndex] = value;
+            this.destination.next(oldValue);
+        }
+    };
+    return SkipLastSubscriber;
+}(Subscriber_1.Subscriber));
+//# sourceMappingURL=skipLast.js.map
+
+/***/ }),
+
 /***/ "Rxv9":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12092,36 +12349,120 @@ function deduceShape(descriptor) {
         return "vector";
     return "matrix";
 }
-function reshape(outputs, id, inputSampleRate, stepSize, descriptor, adjustTimestamps = true) {
+function reshapeVector(features, stepDuration, descriptor) {
+    // Determine whether a purported vector output (fixed spacing, one
+    // bin per feature) should actually be returned as multiple
+    // tracks, because it has gaps between features or feature timings
+    // that overlap
+    const tracks = [];
+    let currentTrack = [];
+    let currentStartTime = 0;
+    let n = -1;
+    const outputArr = features instanceof Array ? features : [...features];
+    for (let i = 0; i < outputArr.length; ++i) {
+        const f = outputArr[i];
+        n = n + 1;
+        if (descriptor.sampleType == FeatureExtractor_1.SampleType.FixedSampleRate &&
+            typeof (f.timestamp) !== 'undefined') {
+            const m = Math.round(Timestamp_1.toSeconds(f.timestamp) / stepDuration);
+            if (m !== n) {
+                if (currentTrack.length > 0) {
+                    tracks.push({
+                        startTime: currentStartTime,
+                        stepDuration,
+                        data: new Float32Array(currentTrack)
+                    });
+                    currentTrack = [];
+                    n = m;
+                }
+                currentStartTime = m * stepDuration;
+            }
+        }
+        currentTrack.push(f.featureValues[0]);
+    }
+    if (tracks.length > 0) {
+        if (currentTrack.length > 0) {
+            tracks.push({
+                startTime: currentStartTime,
+                stepDuration,
+                data: new Float32Array(currentTrack)
+            });
+        }
+        return {
+            shape: "tracks",
+            collected: tracks
+        };
+    }
+    else {
+        return {
+            shape: "vector",
+            collected: {
+                startTime: currentStartTime,
+                stepDuration,
+                data: new Float32Array(currentTrack)
+            }
+        };
+    }
+}
+function reshapeMatrix(features, stepDuration, descriptor) {
+    const outputArr = features instanceof Array ? features : [...features];
+    if (outputArr.length === 0) {
+        return {
+            shape: "matrix",
+            collected: {
+                startTime: 0,
+                stepDuration,
+                data: []
+            }
+        };
+    }
+    else {
+        const firstFeature = outputArr[0];
+        let startTime = 0;
+        if (descriptor.sampleType == FeatureExtractor_1.SampleType.FixedSampleRate &&
+            typeof (firstFeature.timestamp) !== 'undefined') {
+            const m = Math.round(Timestamp_1.toSeconds(firstFeature.timestamp) /
+                stepDuration);
+            startTime = m * stepDuration;
+        }
+        return {
+            shape: "matrix",
+            collected: {
+                startTime,
+                stepDuration,
+                data: outputArr.map(feature => new Float32Array(feature.featureValues))
+            }
+        };
+    }
+}
+function reshapeList(features, adjuster) {
+    return {
+        shape: "list",
+        collected: [...features].map(feature => {
+            if (adjuster) {
+                adjuster.adjust(feature);
+            }
+            return feature;
+        })
+    };
+}
+function reshape(features, inputSampleRate, stepSize, descriptor, adjustTimestamps = true) {
     const shape = deduceShape(descriptor);
     const stepDuration = getFeatureStepDuration(inputSampleRate, stepSize, descriptor);
     const adjuster = FeatureTimeAdjuster_1.createFeatureTimeAdjuster(descriptor, stepDuration);
-    // TODO switch suggests that matrix and list could be types, dynamically dispatch to a .data() method or similar
-    // TODO adjust timestamps for vector and matrix?
     switch (shape) {
         case "vector":
-            return {
-                shape: shape,
-                stepDuration: stepDuration,
-                data: new Float32Array([...outputs].map(output => output[id].featureValues[0]))
-            };
+            // NB this could return either "vector" or "tracks" shape,
+            // depending on the feature data
+            return reshapeVector(features, stepDuration, descriptor);
         case "matrix":
-            return {
-                shape: shape,
-                stepDuration: stepDuration,
-                data: [...outputs].map(output => new Float32Array(output[id].featureValues))
-            };
+            return reshapeMatrix(features, stepDuration, descriptor);
         case "list":
-            return {
-                shape: shape,
-                data: [...outputs].map(output => {
-                    const feature = output[id];
-                    if (adjustTimestamps)
-                        adjuster.adjust(feature);
-                    return feature;
-                })
-            };
+            return reshapeList(features, adjustTimestamps ? adjuster : null);
         default:
+            // Assumption here that deduceShape can't return "tracks",
+            // because it can't tell the difference between vector and
+            // tracks without looking at potentially all the data
             throw new Error("A valid shape could not be deduced.");
     }
 }
@@ -12149,7 +12490,12 @@ function collect(createAudioStreamCallback, streamFormat, createFeatureExtractor
         throw Error("Invalid output identifier.");
     const descriptor = outputs.outputs.get(outputId);
     const lazyOutputs = processConfiguredExtractor(stream.frames, stream.format.sampleRate, config.framing.stepSize, extractor, [outputId]);
-    return reshape(lazyOutputs, outputId, stream.format.sampleRate, config.framing.stepSize, descriptor);
+    const lazyFeatures = (function* () {
+        for (const output of lazyOutputs) {
+            yield output[outputId];
+        }
+    })();
+    return reshape(lazyFeatures, stream.format.sampleRate, config.framing.stepSize, descriptor);
 }
 exports.collect = collect;
 function* process(createAudioStreamCallback, streamFormat, createFeatureExtractorCallback, extractorKey, outputId, params, args = {}) {
@@ -12269,16 +12615,11 @@ class PiperSimpleClient {
                 return forceList ? {
                     features: {
                         shape: "list",
-                        data: features
+                        collected: features
                     },
                     outputDescriptor: res.outputDescriptor
                 } : {
-                    features: reshape(/* TODO avoid reshaping for list */ features.map(feature => {
-                        return {
-                            [res.configuredOutputId]: feature
-                        };
-                    }), // map FeatureList to {outputId: Feature}[]
-                    res.configuredOutputId, res.inputSampleRate, res.configuredStepSize, res.outputDescriptor.configured, false),
+                    features: reshape(features, res.inputSampleRate, res.configuredStepSize, res.outputDescriptor.configured, false),
                     outputDescriptor: res.outputDescriptor
                 };
             });
@@ -12645,23 +12986,23 @@ var SwitchMapSubscriber = (function (_super) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {
-if (typeof window == 'object' && window.window === window) {
-    exports.root = window;
-}
-else if (typeof self == 'object' && self.self === self) {
-    exports.root = self;
-}
-else if (typeof global == 'object' && global.global === global) {
-    exports.root = global;
-}
-else {
-    // Workaround Closure Compiler restriction: The body of a goog.module cannot use throw.
-    // This is needed when used with angular/tsickle which inserts a goog.module statement.
-    // Wrap in IIFE
-    (function () {
+// CommonJS / Node have global context exposed as "global" variable.
+// We don't want to include the whole node.d.ts this this compilation unit so we'll just fake
+// the global "global" var for now.
+var __window = typeof window !== 'undefined' && window;
+var __self = typeof self !== 'undefined' && typeof WorkerGlobalScope !== 'undefined' &&
+    self instanceof WorkerGlobalScope && self;
+var __global = typeof global !== 'undefined' && global;
+var _root = __window || __global || __self;
+exports.root = _root;
+// Workaround Closure Compiler restriction: The body of a goog.module cannot use throw.
+// This is needed when used with angular/tsickle which inserts a goog.module statement.
+// Wrap in IIFE
+(function () {
+    if (!_root) {
         throw new Error('RxJS could not find any global context (window, self, global)');
-    })();
-}
+    }
+})();
 //# sourceMappingURL=root.js.map
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__("DuR2")))
 
@@ -13044,6 +13385,18 @@ var Observable_1 = __webpack_require__("rCTf");
 var bufferWhen_1 = __webpack_require__("1hN3");
 Observable_1.Observable.prototype.bufferWhen = bufferWhen_1.bufferWhen;
 //# sourceMappingURL=bufferWhen.js.map
+
+/***/ }),
+
+/***/ "WnEV":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var Observable_1 = __webpack_require__("rCTf");
+var skipLast_1 = __webpack_require__("Rgi1");
+Observable_1.Observable.prototype.skipLast = skipLast_1.skipLast;
+//# sourceMappingURL=skipLast.js.map
 
 /***/ }),
 
@@ -13752,7 +14105,7 @@ function raceStatic() {
         observables[_i - 0] = arguments[_i];
     }
     // if the only argument is an array, it was most likely called with
-    // `pair([obs1, obs2, ...])`
+    // `race([obs1, obs2, ...])`
     if (observables.length === 1) {
         if (isArray_1.isArray(observables[0])) {
             observables = observables[0];
@@ -15966,6 +16319,25 @@ function streamFeatures(request, service, config) {
         segmentAndExtractAsync(request, service, config, (features) => observer.next(features), () => observer.complete()).catch(err => observer.error(err));
     });
 }
+function collect(featureStream, onNext) {
+    return featureStream
+        .reduce((acc, val) => {
+        if (onNext) {
+            onNext(val);
+        }
+        for (let i = 0, len = val.features.length; i < len; ++i) {
+            acc.features.push(val.features[i]);
+        }
+        if (val.configuration) {
+            acc.config = val.configuration;
+        }
+        return acc;
+    }, { features: [], config: null })
+        .map(val => {
+        return HigherLevelUtilities_1.reshape(val.features, val.config.inputSampleRate, val.config.framing.stepSize, val.config.outputDescriptor.configured, false);
+    }).toPromise();
+}
+exports.collect = collect;
 class PiperStreamingService {
     constructor(service) {
         this.client = new PiperClient_1.PiperClient(service); // TODO should this be injected?
@@ -15974,20 +16346,9 @@ class PiperStreamingService {
         return this.client.list(request);
     }
     process(request) {
-        return this.createResponseObservable(request, (output) => ({
-            shape: "list",
-            data: output
-        }));
+        return this.createResponseObservable(request);
     }
-    // TODO reduce dupe with above process
-    collect(request) {
-        return this.createResponseObservable(request, (output, config) => {
-            return HigherLevelUtilities_1.reshape(
-            // map FeatureList to {outputId: Feature}[]
-            output.map(feature => ({ [config.configuredOutputId]: feature })), config.configuredOutputId, config.inputSampleRate, config.configuredStepSize, config.outputDescriptor.configured, false);
-        });
-    }
-    createResponseObservable(request, mapToFeatureCollection) {
+    createResponseObservable(request) {
         return rxjs_1.Observable.fromPromise(HigherLevelUtilities_1.loadAndConfigure(request, this.client)).flatMap((config) => {
             return streamFeatures(request, this.client, config)
                 .map((features, i) => {
@@ -15998,11 +16359,18 @@ class PiperStreamingService {
                         processedBlockCount: i + 1,
                         totalBlockCount: Math.ceil(nSamples / config.configuredStepSize) + 1 /* Plus one for finish block */
                     } : { processedBlockCount: i + 1 };
-                const partialResponse = {
-                    features: mapToFeatureCollection(output, config),
-                    outputDescriptor: config.outputDescriptor
-                };
-                return Object.assign({}, progress, partialResponse);
+                return i === 0 ? {
+                    features: output,
+                    progress: progress,
+                    configuration: {
+                        outputDescriptor: config.outputDescriptor,
+                        framing: {
+                            stepSize: config.configuredStepSize,
+                            blockSize: config.configuredBlockSize
+                        },
+                        inputSampleRate: config.inputSampleRate
+                    }
+                } : { features: output, progress: progress };
             });
         });
     }
@@ -16565,7 +16933,7 @@ var PromiseObservable = (function (_super) {
      * @see {@link bindCallback}
      * @see {@link from}
      *
-     * @param {Promise<T>} promise The promise to be converted.
+     * @param {PromiseLike<T>} promise The promise to be converted.
      * @param {Scheduler} [scheduler] An optional IScheduler to use for scheduling
      * the delivery of the resolved value (or the rejection).
      * @return {Observable<T>} An Observable which wraps the Promise.
@@ -17981,11 +18349,11 @@ Observable_1.Observable.webSocket = webSocket_1.webSocket;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_piper__ = __webpack_require__("eGCF");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_piper__);
-
 const arrayReducer = (acc, val) => {
-    acc.push.apply(acc, val);
+    const len = val.length;
+    for (let i = 0; i < len; ++i) {
+        acc.push(val[i]);
+    }
     return acc;
 };
 /* unused harmony export arrayReducer */
@@ -17999,34 +18367,12 @@ const inPlaceTypedArrayReducer = (acc, val, i) => {
     acc.set(val, i);
     return acc;
 };
-const streamingResponseReducer = (acc, val, i) => {
-    acc.processedBlockCount = val.processedBlockCount;
-    if (acc.features.data instanceof Array &&
-        val.features.data instanceof Array) {
-        acc.features.data = arrayReducer(acc.features.data, val.features.data);
+const streamingResponseReducer = (acc, val) => {
+    acc.progress = val.progress;
+    if (val.configuration) {
+        acc.configuration = val.configuration;
     }
-    else if (acc.features.data instanceof Float32Array &&
-        val.features.data instanceof Float32Array) {
-        const isOneSamplePerStep = acc.outputDescriptor.configured.sampleType ===
-            __WEBPACK_IMPORTED_MODULE_0_piper__["SampleType"].OneSamplePerStep;
-        if (isOneSamplePerStep) {
-            // for one sample per step vectors we know there will be totalBlockCount
-            // number of samples - so pre-allocate the Float32Array when we know
-            // the totalBlockCount (after receiving the first feature)
-            if (i === 1) {
-                const newBlock = new Float32Array(acc.totalBlockCount);
-                newBlock[0] = acc.features.data[0];
-                acc.features.data = newBlock;
-            }
-            acc.features.data = inPlaceTypedArrayReducer(acc.features.data, val.features.data, i);
-        }
-        else {
-            acc.features.data = typedArrayReducer(acc.features.data, val.features.data);
-        }
-    }
-    else {
-        throw new Error('Invalid feature output. Aborting');
-    }
+    arrayReducer(acc.features, val.features);
     return acc;
 };
 /* harmony export (immutable) */ __webpack_exports__["a"] = streamingResponseReducer;
@@ -18299,15 +18645,17 @@ var SafeSubscriber = (function (_super) {
         }
     };
     SafeSubscriber.prototype.complete = function () {
+        var _this = this;
         if (!this.isStopped) {
             var _parentSubscriber = this._parentSubscriber;
             if (this._complete) {
+                var wrappedComplete = function () { return _this._complete.call(_this._context); };
                 if (!_parentSubscriber.syncErrorThrowable) {
-                    this.__tryOrUnsub(this._complete);
+                    this.__tryOrUnsub(wrappedComplete);
                     this.unsubscribe();
                 }
                 else {
-                    this.__tryOrSetError(_parentSubscriber, this._complete);
+                    this.__tryOrSetError(_parentSubscriber, wrappedComplete);
                     this.unsubscribe();
                 }
             }
@@ -18732,7 +19080,6 @@ class WebWorkerStreamingServer {
                     .catch(err => this.sendError(request, err));
                 break;
             case "process":
-            case "collect":
                 this.createObservable(request);
                 break;
             default:
@@ -18740,10 +19087,7 @@ class WebWorkerStreamingServer {
         }
     }
     createObservable(request) {
-        const stream$ = request.method === "process" ?
-            this.service.process(request.params) :
-            this.service.collect(request.params);
-        stream$
+        this.service.process(request.params)
             .subscribe((response) => this.sendResponse(request, response), (err) => this.sendError(request, err), () => this.sendComplete(request));
     }
     sendError(info, message) {
@@ -19655,6 +19999,18 @@ exports._throw = ErrorObservable_1.ErrorObservable.create;
 
 /***/ }),
 
+/***/ "s616":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var Observable_1 = __webpack_require__("rCTf");
+var shareReplay_1 = __webpack_require__("Kjxw");
+Observable_1.Observable.prototype.shareReplay = shareReplay_1.shareReplay;
+//# sourceMappingURL=shareReplay.js.map
+
+/***/ }),
+
 /***/ "sIYO":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19679,6 +20035,7 @@ var ConnectableObservable = (function (_super) {
         this.source = source;
         this.subjectFactory = subjectFactory;
         this._refCount = 0;
+        this._isComplete = false;
     }
     ConnectableObservable.prototype._subscribe = function (subscriber) {
         return this.getSubject().subscribe(subscriber);
@@ -19693,6 +20050,7 @@ var ConnectableObservable = (function (_super) {
     ConnectableObservable.prototype.connect = function () {
         var connection = this._connection;
         if (!connection) {
+            this._isComplete = false;
             connection = this._connection = new Subscription_1.Subscription();
             connection.add(this.source
                 .subscribe(new ConnectableSubscriber(this.getSubject(), this)));
@@ -19712,15 +20070,17 @@ var ConnectableObservable = (function (_super) {
     return ConnectableObservable;
 }(Observable_1.Observable));
 exports.ConnectableObservable = ConnectableObservable;
+var connectableProto = ConnectableObservable.prototype;
 exports.connectableObservableDescriptor = {
     operator: { value: null },
     _refCount: { value: 0, writable: true },
     _subject: { value: null, writable: true },
     _connection: { value: null, writable: true },
-    _subscribe: { value: ConnectableObservable.prototype._subscribe },
-    getSubject: { value: ConnectableObservable.prototype.getSubject },
-    connect: { value: ConnectableObservable.prototype.connect },
-    refCount: { value: ConnectableObservable.prototype.refCount }
+    _subscribe: { value: connectableProto._subscribe },
+    _isComplete: { value: connectableProto._isComplete, writable: true },
+    getSubject: { value: connectableProto.getSubject },
+    connect: { value: connectableProto.connect },
+    refCount: { value: connectableProto.refCount }
 };
 var ConnectableSubscriber = (function (_super) {
     __extends(ConnectableSubscriber, _super);
@@ -19733,6 +20093,7 @@ var ConnectableSubscriber = (function (_super) {
         _super.prototype._error.call(this, err);
     };
     ConnectableSubscriber.prototype._complete = function () {
+        this.connectable._isComplete = true;
         this._unsubscribe();
         _super.prototype._complete.call(this);
     };
@@ -20674,6 +21035,10 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var OuterSubscriber_1 = __webpack_require__("wAkD");
 var subscribeToResult_1 = __webpack_require__("CURp");
+exports.defaultThrottleConfig = {
+    leading: true,
+    trailing: false
+};
 /**
  * Emits a value from the source Observable, then ignores subsequent source
  * values for a duration determined by another Observable, then repeats this
@@ -20707,68 +21072,98 @@ var subscribeToResult_1 = __webpack_require__("CURp");
  * @param {function(value: T): SubscribableOrPromise} durationSelector A function
  * that receives a value from the source Observable, for computing the silencing
  * duration for each source value, returned as an Observable or a Promise.
+ * @param {Object} config a configuration object to define `leading` and `trailing` behavior. Defaults
+ * to `{ leading: true, trailing: false }`.
  * @return {Observable<T>} An Observable that performs the throttle operation to
  * limit the rate of emissions from the source.
  * @method throttle
  * @owner Observable
  */
-function throttle(durationSelector) {
-    return this.lift(new ThrottleOperator(durationSelector));
+function throttle(durationSelector, config) {
+    if (config === void 0) { config = exports.defaultThrottleConfig; }
+    return this.lift(new ThrottleOperator(durationSelector, config.leading, config.trailing));
 }
 exports.throttle = throttle;
 var ThrottleOperator = (function () {
-    function ThrottleOperator(durationSelector) {
+    function ThrottleOperator(durationSelector, leading, trailing) {
         this.durationSelector = durationSelector;
+        this.leading = leading;
+        this.trailing = trailing;
     }
     ThrottleOperator.prototype.call = function (subscriber, source) {
-        return source.subscribe(new ThrottleSubscriber(subscriber, this.durationSelector));
+        return source.subscribe(new ThrottleSubscriber(subscriber, this.durationSelector, this.leading, this.trailing));
     };
     return ThrottleOperator;
 }());
 /**
- * We need this JSDoc comment for affecting ESDoc.
+ * We need this JSDoc comment for affecting ESDoc
  * @ignore
  * @extends {Ignored}
  */
 var ThrottleSubscriber = (function (_super) {
     __extends(ThrottleSubscriber, _super);
-    function ThrottleSubscriber(destination, durationSelector) {
+    function ThrottleSubscriber(destination, durationSelector, _leading, _trailing) {
         _super.call(this, destination);
         this.destination = destination;
         this.durationSelector = durationSelector;
+        this._leading = _leading;
+        this._trailing = _trailing;
+        this._hasTrailingValue = false;
     }
     ThrottleSubscriber.prototype._next = function (value) {
-        if (!this.throttled) {
-            this.tryDurationSelector(value);
+        if (this.throttled) {
+            if (this._trailing) {
+                this._hasTrailingValue = true;
+                this._trailingValue = value;
+            }
+        }
+        else {
+            var duration = this.tryDurationSelector(value);
+            if (duration) {
+                this.add(this.throttled = subscribeToResult_1.subscribeToResult(this, duration));
+            }
+            if (this._leading) {
+                this.destination.next(value);
+                if (this._trailing) {
+                    this._hasTrailingValue = true;
+                    this._trailingValue = value;
+                }
+            }
         }
     };
     ThrottleSubscriber.prototype.tryDurationSelector = function (value) {
-        var duration = null;
         try {
-            duration = this.durationSelector(value);
+            return this.durationSelector(value);
         }
         catch (err) {
             this.destination.error(err);
-            return;
+            return null;
         }
-        this.emitAndThrottle(value, duration);
-    };
-    ThrottleSubscriber.prototype.emitAndThrottle = function (value, duration) {
-        this.add(this.throttled = subscribeToResult_1.subscribeToResult(this, duration));
-        this.destination.next(value);
     };
     ThrottleSubscriber.prototype._unsubscribe = function () {
-        var throttled = this.throttled;
+        var _a = this, throttled = _a.throttled, _trailingValue = _a._trailingValue, _hasTrailingValue = _a._hasTrailingValue, _trailing = _a._trailing;
+        this._trailingValue = null;
+        this._hasTrailingValue = false;
         if (throttled) {
             this.remove(throttled);
             this.throttled = null;
             throttled.unsubscribe();
         }
     };
+    ThrottleSubscriber.prototype._sendTrailing = function () {
+        var _a = this, destination = _a.destination, throttled = _a.throttled, _trailing = _a._trailing, _trailingValue = _a._trailingValue, _hasTrailingValue = _a._hasTrailingValue;
+        if (throttled && _trailing && _hasTrailingValue) {
+            destination.next(_trailingValue);
+            this._trailingValue = null;
+            this._hasTrailingValue = false;
+        }
+    };
     ThrottleSubscriber.prototype.notifyNext = function (outerValue, innerValue, outerIndex, innerIndex, innerSub) {
+        this._sendTrailing();
         this._unsubscribe();
     };
     ThrottleSubscriber.prototype.notifyComplete = function () {
+        this._sendTrailing();
         this._unsubscribe();
     };
     return ThrottleSubscriber;

@@ -45,6 +45,8 @@ module.exports = module.exports.toString();
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__("Fzro");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__ = __webpack_require__("4AhG");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_piper_StreamingService__ = __webpack_require__("e4w8");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_piper_StreamingService___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_piper_StreamingService__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FeatureExtractionService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -58,6 +60,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+
 
 
 
@@ -88,18 +91,23 @@ let FeatureExtractionService = class FeatureExtractionService {
         return this.client.list({});
     }
     extract(analysisItemId, request) {
-        return this.client.collect(request)
-            .do(val => {
-            if (val.totalBlockCount > 0) {
+        let config;
+        return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5_piper_StreamingService__["collect"])(this.client.process(request), val => {
+            if (val.configuration) {
+                config = val.configuration;
+            }
+            const progress = val.progress;
+            if (progress.totalBlockCount > 0) {
                 this.progressUpdated.next({
                     id: analysisItemId,
-                    value: (val.processedBlockCount / val.totalBlockCount) * 100
+                    value: (progress.processedBlockCount / progress.totalBlockCount) * 100
                 });
             }
-        })
-            .toPromise()
-            .then((response) => {
-            this.featuresExtracted.next(response);
+        }).then(features => {
+            this.featuresExtracted.next({
+                features: features,
+                outputDescriptor: config.outputDescriptor
+            });
         });
     }
     updateAvailableLibraries() {
@@ -142,7 +150,7 @@ module.exports = "<input #open type=\"file\" accept=\"audio/*\" (change)=\"decod
 /***/ "5xMp":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"piper\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event)\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event)\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"sidenav.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <div class=\"ugly-content\">\n    <md-sidenav-container>\n      <md-sidenav #sidenav align=\"start\" mode=\"over\">\n        <ugly-feature-extraction-menu\n          (requestOutput)=\"extractFeatures($event)\"\n          [disabled]=\"!canExtract\">\n        </ugly-feature-extraction-menu>\n      </md-sidenav>\n      <ugly-notebook-feed\n        [analyses]=\"analyses.toIterable()\"\n        [rootAudioUri]=\"rootAudioUri\"></ugly-notebook-feed>\n    </md-sidenav-container>\n  </div>\n</div>\n"
+module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event)\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event)\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"sidenav.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <div class=\"ugly-content\">\n    <md-sidenav-container>\n      <md-sidenav #sidenav align=\"start\" mode=\"over\">\n        <ugly-feature-extraction-menu\n          (requestOutput)=\"extractFeatures($event)\"\n          [disabled]=\"!canExtract\">\n        </ugly-feature-extraction-menu>\n      </md-sidenav>\n      <ugly-notebook-feed\n        [analyses]=\"analyses.toIterable()\"\n        [rootAudioUri]=\"rootAudioUri\"></ugly-notebook-feed>\n    </md-sidenav-container>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -922,7 +930,7 @@ let AppComponent = class AppComponent {
         this.canExtract = false;
         this.nRecordings = 0;
         this.countingId = 0;
-        iconRegistry.addSvgIcon('piper', sanitizer.bypassSecurityTrustResourceUrl('assets/piper.svg'));
+        iconRegistry.addSvgIcon('duck', sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg'));
         this.onAudioDataSubscription = this.audioService.audioLoaded$.subscribe(resource => {
             const wasError = resource.message != null;
             if (wasError) {
@@ -1403,7 +1411,7 @@ let AudioRecorderService = class AudioRecorderService {
             this.getRecorderInstance()
                 .then(recorder => this.startRecording(recorder))
                 .catch(e => {
-                this.recordingStateChange.next('disabled');
+                this.recordingStateChange.next('disabled'); // don't really need to do this
                 console.warn(e); // TODO emit an error message for display?
             });
         }
@@ -2001,6 +2009,76 @@ let WaveformComponent = class WaveformComponent {
         this.addLayer(spectrogramLayer, gridTrack, this.timeline.timeContext);
         this.timeline.tracks.update();
     }
+    addLineLayers(features, unit, colour) {
+        // Winnow out empty features
+        features = features.filter(feature => (feature.data.length > 0));
+        // First establish a [min,max] range across all of the features
+        let [min, max] = features.reduce((acc, feature) => {
+            return feature.data.reduce((acc, val) => {
+                const [min, max] = acc;
+                return [Math.min(min, val), Math.max(max, val)];
+            }, acc);
+        }, [Infinity, -Infinity]);
+        console.log('addLineLayers: ' + features.length + ' non-empty features, overall min = ' + min + ', max = ' + max);
+        if (min === Infinity) {
+            min = 0;
+            max = 1;
+        }
+        if (min !== min || max !== max) {
+            console.log('WARNING: min or max is NaN');
+            min = 0;
+            max = 1;
+        }
+        const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
+        const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
+        // Now add a line layer for each vector feature
+        const lineLayers = features.map(feature => {
+            let duration = 0;
+            // Give the plot items positions relative to the start of the
+            // line, rather than relative to absolute time 0. This is
+            // because we'll be setting the layer timeline start property
+            // later on and these will be positioned relative to that
+            const plotData = [...feature.data].map((val, i) => {
+                const t = i * feature.stepDuration;
+                duration = t + feature.stepDuration;
+                return {
+                    cx: t,
+                    cy: val
+                };
+            });
+            const lineLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.LineLayer(plotData, {
+                color: colour,
+                height: height,
+                yDomain: [min, max]
+            });
+            this.addLayer(lineLayer, waveTrack, this.timeline.timeContext);
+            // Set start and duration so that the highlight layer can use
+            // them to determine which line to draw values from
+            lineLayer.start = feature.startTime;
+            lineLayer.duration = duration;
+            return lineLayer;
+        });
+        // And a single scale layer at left
+        // !!! todo: unit in scale layer
+        const scaleLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.ScaleLayer({
+            tickColor: colour,
+            textColor: colour,
+            height: height,
+            yDomain: [min, max]
+        });
+        this.addLayer(scaleLayer, waveTrack, this.timeline.timeContext);
+        // And a single highlight layer which uses all of the line layers
+        // as its source material
+        this.highlightLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.HighlightLayer(lineLayers, {
+            opacity: 0.7,
+            height: height,
+            color: '#c33c54',
+            labelOffset: 38,
+            yDomain: [min, max],
+            unit
+        });
+        this.addLayer(this.highlightLayer, waveTrack, this.timeline.timeContext);
+    }
     // TODO refactor - this doesn't belong here
     renderFeatures(extracted, colour) {
         if (this.isOneShotExtractor && !this.hasShot) {
@@ -2012,65 +2090,31 @@ let WaveformComponent = class WaveformComponent {
             return;
         }
         if (!extracted.features.hasOwnProperty('shape')
-            || !extracted.features.hasOwnProperty('data')) {
+            || !extracted.features.hasOwnProperty('collected')) {
             return;
         }
         const features = extracted.features;
         const outputDescriptor = extracted.outputDescriptor;
-        // const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
         const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
         const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
+        let unit = '';
+        if (outputDescriptor.configured.hasOwnProperty('unit')) {
+            unit = outputDescriptor.configured.unit;
+        }
         // TODO refactor all of this
         switch (features.shape) {
             case 'vector': {
-                const stepDuration = features.stepDuration;
-                const featureData = features.data;
-                if (featureData.length === 0) {
-                    return;
-                }
-                const plotData = [...featureData].map((feature, i) => {
-                    return {
-                        cx: i * stepDuration,
-                        cy: feature
-                    };
-                });
-                let min = featureData.reduce((m, f) => Math.min(m, f), Infinity);
-                let max = featureData.reduce((m, f) => Math.max(m, f), -Infinity);
-                if (min === Infinity) {
-                    min = 0;
-                    max = 1;
-                }
-                console.log('adding line layer: min = ' + min + ', max = ' + max);
-                if (min !== min || max !== max) {
-                    console.log('WARNING: min or max is NaN');
-                    min = 0;
-                    max = 1;
-                }
-                const lineLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.LineLayer(plotData, {
-                    color: colour,
-                    height: height,
-                    yDomain: [min, max]
-                });
-                this.addLayer(lineLayer, waveTrack, this.timeline.timeContext);
-                const scaleLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.ScaleLayer({
-                    tickColor: colour,
-                    textColor: colour,
-                    height: height,
-                    yDomain: [min, max]
-                });
-                this.addLayer(scaleLayer, waveTrack, this.timeline.timeContext);
-                this.highlightLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.HighlightLayer(lineLayer, {
-                    opacity: 0.7,
-                    height: height,
-                    color: '#c33c54',
-                    labelOffset: 38,
-                    yDomain: [min, max]
-                });
-                this.addLayer(this.highlightLayer, waveTrack, this.timeline.timeContext);
+                const collected = features.collected;
+                this.addLineLayers([collected], unit, colour);
+                break;
+            }
+            case 'tracks': {
+                const collected = features.collected;
+                this.addLineLayers(collected, unit, colour);
                 break;
             }
             case 'list': {
-                const featureData = features.data;
+                const featureData = features.collected;
                 if (featureData.length === 0) {
                     return;
                 }
@@ -2149,9 +2193,10 @@ let WaveformComponent = class WaveformComponent {
                 break;
             }
             case 'matrix': {
-                const stepDuration = features.stepDuration;
-                // !!! + start time
-                const matrixData = features.data;
+                const collected = features.collected;
+                const startTime = collected.startTime; // !!! + make use of
+                const stepDuration = collected.stepDuration;
+                const matrixData = collected.data;
                 if (matrixData.length === 0) {
                     return;
                 }
