@@ -610,6 +610,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private addLineLayers(features: VectorFeature[],
+                        unit: string,
                         colour: Colour) {
 
     // Winnow out empty features
@@ -678,6 +679,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // And a single scale layer at left
+    //!!! todo: unit in scale layer
     const scaleLayer = new wavesUI.helpers.ScaleLayer({
       tickColor: colour,
       textColor: colour,
@@ -697,7 +699,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       height: height,
       color: '#c33c54',
       labelOffset: 38,
-      yDomain: [ min, max ]
+      yDomain: [ min, max ],
+      unit
     });
     this.addLayer(
       this.highlightLayer,
@@ -726,18 +729,23 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
     const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
 
+    let unit = "";
+    if (outputDescriptor.configured.hasOwnProperty('unit')) {
+      unit = outputDescriptor.configured.unit;
+    }
+
     // TODO refactor all of this
     switch (features.shape) {
 
       case 'vector': {
         const collected = features.collected as VectorFeature;
-        this.addLineLayers([collected], colour);
+        this.addLineLayers([collected], unit, colour);
         break;
       }
 
       case 'tracks': {
         const collected = features.collected as TracksFeature;
-        this.addLineLayers(collected, colour);
+        this.addLineLayers(collected, unit, colour);
         break;
       }
       
