@@ -2,11 +2,12 @@
  * Created by lucast on 26/04/2017.
  */
 import {StreamingResponse} from 'piper/StreamingService';
-import {Feature} from 'piper/Feature';
-import {SampleType} from 'piper';
 
 export const arrayReducer = <T>(acc: T[], val: T[]): T[] => {
-  acc.push.apply(acc, val);
+  const len = val.length;
+  for (let i = 0; i < len; ++i) {
+    acc.push(val[i]);
+  }
   return acc;
 };
 
@@ -23,41 +24,12 @@ const inPlaceTypedArrayReducer = (acc: Float32Array,
 };
 
 export const streamingResponseReducer = (acc: StreamingResponse,
-                                         val: StreamingResponse,
-                                         i: number): StreamingResponse => {
-  acc.processedBlockCount = val.processedBlockCount;
-  if (acc.features.data instanceof Array &&
-    val.features.data instanceof Array) {
-    acc.features.data = arrayReducer<Feature>(
-      acc.features.data,
-      val.features.data
-    );
-  } else if (acc.features.data instanceof Float32Array &&
-    val.features.data instanceof Float32Array) {
-    const isOneSamplePerStep = acc.outputDescriptor.configured.sampleType ===
-      SampleType.OneSamplePerStep;
-    if (isOneSamplePerStep) {
-      // for one sample per step vectors we know there will be totalBlockCount
-      // number of samples - so pre-allocate the Float32Array when we know
-      // the totalBlockCount (after receiving the first feature)
-      if ( i === 1  ) {
-        const newBlock = new Float32Array(acc.totalBlockCount);
-        newBlock[0] = acc.features.data[0];
-        acc.features.data = newBlock;
-      }
-      acc.features.data = inPlaceTypedArrayReducer(
-        acc.features.data,
-        val.features.data,
-        i
-      );
-    } else { // if not OneSamplePerStep we have to make a new array each time
-      acc.features.data = typedArrayReducer(
-        acc.features.data,
-        val.features.data
-      );
-    }
-  } else {
-    throw new Error('Invalid feature output. Aborting');
+                                         val: StreamingResponse):
+  StreamingResponse => {
+  acc.progress = val.progress;
+  if (val.configuration) {
+    acc.configuration = val.configuration;
   }
+  arrayReducer(acc.features, val.features);
   return acc;
 };

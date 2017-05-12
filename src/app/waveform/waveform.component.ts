@@ -20,8 +20,10 @@ import {
 import {Subscription} from 'rxjs/Subscription';
 import {
   FeatureCollection,
-  FixedSpacedFeatures,
-  SimpleResponse
+  SimpleResponse,
+  VectorFeature,
+  MatrixFeature,
+  TracksFeature
 } from 'piper/HigherLevelUtilities';
 import {toSeconds} from 'piper';
 import {FeatureList, Feature} from 'piper/Feature';
@@ -387,7 +389,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           isZooming = false;
           zoomGestureJustEnded = true;
         }
-       });
+      });
       element.addEventListener('touchmove', zoom);
     }
     // this.timeline.createTrack(track, height/2, `wave-${this.trackIdPrefix}`);
@@ -423,17 +425,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (sample.length === 0) {
       console.log('WARNING: No samples gathered, even though we hoped for ' +
-                  (m_per * w) + ' of them');
+        (m_per * w) + ' of them');
       return 0.0;
     }
     sample.sort((a, b) => { return a - b; });
     const ix = Math.floor((sample.length * percentile) / 100);
     console.log('Estimating ' + percentile + '-%ile of ' +
-                n + '-sample dataset (' + w + ' x ' + h + ') as value ' + ix +
-                ' of sorted ' + sample.length + '-sample subset');
+      n + '-sample dataset (' + w + ' x ' + h + ') as value ' + ix +
+      ' of sorted ' + sample.length + '-sample subset');
     const estimate = sample[ix];
     console.log('Estimate is: ' + estimate + ' (where min sampled value = ' +
-                sample[0] + ' and max = ' + sample[sample.length - 1] + ')');
+      sample[0] + ' and max = ' + sample[sample.length - 1] + ')');
     return estimate;
   }
 
@@ -441,8 +443,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const colours = hexColours.map(n => {
       const i = parseInt(n, 16);
       return [ ((i >> 16) & 255) / 255.0,
-               ((i >> 8) & 255) / 255.0,
-               ((i) & 255) / 255.0 ];
+        ((i >> 8) & 255) / 255.0,
+        ((i) & 255) / 255.0 ];
     });
     const last = colours.length - 1;
     return (value => {
@@ -459,8 +461,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       const c0 = colours[base];
       const c1 = colours[base + 1];
       return [ c0[0] * prop0 + c1[0] * prop1,
-               c0[1] * prop0 + c1[1] * prop1,
-               c0[2] * prop0 + c1[2] * prop1 ];
+        c0[1] * prop0 + c1[1] * prop1,
+        c0[2] * prop0 + c1[2] * prop1 ];
     });
   }
 
@@ -482,12 +484,12 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const t = v * (1 - (1 - f) * s);
     let r = 0, g = 0, b = 0;
     switch (i % 6) {
-        case 0: r = v; g = t; b = p; break;
-        case 1: r = q; g = v; b = p; break;
-        case 2: r = p; g = v; b = t; break;
-        case 3: r = p; g = q; b = v; break;
-        case 4: r = t; g = p; b = v; break;
-        case 5: r = v; g = p; b = q; break;
+      case 0: r = v; g = t; b = p; break;
+      case 1: r = q; g = v; b = p; break;
+      case 2: r = p; g = v; b = t; break;
+      case 3: r = p; g = q; b = v; break;
+      case 4: r = t; g = p; b = v; break;
+      case 5: r = v; g = p; b = q; break;
     }
     return [ r, g, b ];
   }
@@ -607,6 +609,106 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.timeline.tracks.update();
   }
 
+  private addLineLayers(features: VectorFeature[],
+                        unit: string,
+                        colour: Colour) {
+
+    // Winnow out empty features
+    features = features.filter(feature => (feature.data.length > 0));
+
+    // First establish a [min,max] range across all of the features
+    let [min, max] = features.reduce((acc, feature) => {
+      return feature.data.reduce((acc, val) => {
+        const [min, max] = acc;
+        return [Math.min (min, val), Math.max (max, val)];
+      }, acc);
+    }, [Infinity, -Infinity]);
+
+    console.log('addLineLayers: ' + features.length + ' non-empty features, overall min = ' + min + ', max = ' + max);
+
+    if (min === Infinity) {
+      min = 0;
+      max = 1;
+    }
+
+    if (min !== min || max !== max) {
+      console.log('WARNING: min or max is NaN');
+      min = 0;
+      max = 1;
+    }
+
+    const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
+    const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
+
+    // Now add a line layer for each vector feature
+    const lineLayers = features.map(feature => {
+
+      let duration = 0;
+
+      // Give the plot items positions relative to the start of the
+      // line, rather than relative to absolute time 0. This is
+      // because we'll be setting the layer timeline start property
+      // later on and these will be positioned relative to that
+
+      const plotData = [...feature.data].map((val, i) => {
+        const t = i * feature.stepDuration;
+        duration = t + feature.stepDuration;
+        return {
+          cx: t,
+          cy: val
+        };
+      });
+
+      const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
+        color: colour,
+        height: height,
+        yDomain: [ min, max ]
+      });
+      this.addLayer(
+        lineLayer,
+        waveTrack,
+        this.timeline.timeContext
+      );
+
+      // Set start and duration so that the highlight layer can use
+      // them to determine which line to draw values from
+      lineLayer.start = feature.startTime;
+      lineLayer.duration = duration;
+
+      return lineLayer;
+    });
+
+    // And a single scale layer at left
+    // !!! todo: unit in scale layer
+    const scaleLayer = new wavesUI.helpers.ScaleLayer({
+      tickColor: colour,
+      textColor: colour,
+      height: height,
+      yDomain: [ min, max ]
+    });
+    this.addLayer(
+      scaleLayer,
+      waveTrack,
+      this.timeline.timeContext
+    );
+
+    // And a single highlight layer which uses all of the line layers
+    // as its source material
+    this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayers, {
+      opacity: 0.7,
+      height: height,
+      color: '#c33c54',
+      labelOffset: 38,
+      yDomain: [ min, max ],
+      unit
+    });
+    this.addLayer(
+      this.highlightLayer,
+      waveTrack,
+      this.timeline.timeContext
+    );
+  }
+
   // TODO refactor - this doesn't belong here
   private renderFeatures(extracted: SimpleResponse, colour: Colour): void {
     if (this.isOneShotExtractor && !this.hasShot) {
@@ -619,78 +721,36 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     if (!extracted.features.hasOwnProperty('shape')
-      || !extracted.features.hasOwnProperty('data')) {
+      || !extracted.features.hasOwnProperty('collected')) {
       return;
     }
     const features: FeatureCollection = (extracted.features as FeatureCollection);
     const outputDescriptor = extracted.outputDescriptor;
-    // const height = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
     const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
 
+    let unit = '';
+    if (outputDescriptor.configured.hasOwnProperty('unit')) {
+      unit = outputDescriptor.configured.unit;
+    }
+
     // TODO refactor all of this
     switch (features.shape) {
+
       case 'vector': {
-        const stepDuration = (features as FixedSpacedFeatures).stepDuration;
-        const featureData = (features.data as Float32Array);
-        if (featureData.length === 0) {
-          return;
-        }
-        const plotData = [...featureData].map((feature, i) => {
-          return {
-            cx: i * stepDuration,
-            cy: feature
-          };
-        });
-        let min = featureData.reduce((m, f) => Math.min(m, f), Infinity);
-        let max = featureData.reduce((m, f) => Math.max(m, f), -Infinity);
-        if (min === Infinity) {
-          min = 0;
-          max = 1;
-        }
-	console.log("adding line layer: min = " + min + ", max = " + max);
-	if (min !== min || max !== max) {
-	  console.log("WARNING: min or max is NaN");
-	  min = 0;
-	  max = 1;
-	}
-        const lineLayer = new wavesUI.helpers.LineLayer(plotData, {
-          color: colour,
-          height: height,
-          yDomain: [ min, max ]
-        });
-        this.addLayer(
-          lineLayer,
-          waveTrack,
-          this.timeline.timeContext
-        );
-        const scaleLayer = new wavesUI.helpers.ScaleLayer({
-          tickColor: colour,
-          textColor: colour,
-          height: height,
-          yDomain: [ min, max ]
-        });
-        this.addLayer(
-          scaleLayer,
-          waveTrack,
-          this.timeline.timeContext
-        );
-        this.highlightLayer = new wavesUI.helpers.HighlightLayer(lineLayer, {
-          opacity: 0.7,
-          height: height,
-          color: '#c33c54',
-          labelOffset: 38,
-          yDomain: [ min, max ]
-        });
-        this.addLayer(
-          this.highlightLayer,
-          waveTrack,
-          this.timeline.timeContext
-        );
+        const collected = features.collected as VectorFeature;
+        this.addLineLayers([collected], unit, colour);
         break;
       }
+
+      case 'tracks': {
+        const collected = features.collected as TracksFeature;
+        this.addLineLayers(collected, unit, colour);
+        break;
+      }
+
       case 'list': {
-        const featureData = (features.data as FeatureList);
+        const featureData = features.collected as FeatureList;
         if (featureData.length === 0) {
           return;
         }
@@ -702,8 +762,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const isRegion = hasDuration
           && featureData[0].timestamp != null;
         console.log('Have list features: length ' + featureData.length +
-                    ', isMarker ' + isMarker + ', isRegion ' + isRegion +
-                    ', hasDuration ' + hasDuration);
+          ', isMarker ' + isMarker + ', isRegion ' + isRegion +
+          ', hasDuration ' + hasDuration);
         // TODO refactor, this is incomprehensible
         if (isMarker) {
           const plotData = featureData.map(feature => ({
@@ -792,9 +852,10 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       }
       case 'matrix': {
-        const stepDuration = (features as FixedSpacedFeatures).stepDuration;
-        // !!! + start time
-        const matrixData = (features.data as Float32Array[]);
+        const collected = features.collected as MatrixFeature;
+        const startTime = collected.startTime; // !!! + make use of
+        const stepDuration = collected.stepDuration;
+        const matrixData = collected.data;
 
         if (matrixData.length === 0) {
           return;
@@ -807,8 +868,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log('setting gain to ' + gain);
         const matrixEntity =
           new wavesUI.utils.PrefilledMatrixEntity(matrixData,
-                                                  0, // startTime
-                                                  stepDuration);
+            0, // startTime
+            stepDuration);
         const matrixLayer = new wavesUI.helpers.MatrixLayer(matrixEntity, {
           gain,
           top: 0,
@@ -864,17 +925,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         if (mustPageForward) {
           const hasSkippedMultiplePages = offsetTimestamp - visibleDuration > visibleDuration;
 
-            this.timeline.timeContext.offset = hasSkippedMultiplePages ?
-                -currentTime +  0.5 * visibleDuration :
-                currentOffset - visibleDuration;
+          this.timeline.timeContext.offset = hasSkippedMultiplePages ?
+            -currentTime +  0.5 * visibleDuration :
+            currentOffset - visibleDuration;
           this.timeline.tracks.update();
         }
 
         if (mustPageBackward) {
           const hasSkippedMultiplePages = currentTime + visibleDuration < -currentOffset;
-            this.timeline.timeContext.offset = hasSkippedMultiplePages ?
-                -currentTime + 0.5 * visibleDuration :
-                currentOffset + visibleDuration;
+          this.timeline.timeContext.offset = hasSkippedMultiplePages ?
+            -currentTime + 0.5 * visibleDuration :
+            currentOffset + visibleDuration;
           this.timeline.tracks.update();
         }
 
