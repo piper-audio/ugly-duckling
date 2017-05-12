@@ -63,11 +63,7 @@ class AggregateStreamingService implements StreamingService {
     return this.dispatch('process', request);
   }
 
-  collect(request: SimpleRequest): Observable<StreamingResponse> {
-    return this.dispatch('collect', request);
-  }
-
-  protected dispatch(method: 'process' | 'collect',
+  protected dispatch(method: 'process',
                      request: SimpleRequest): Observable<StreamingResponse> {
     const key = request.key.split(':')[0];
     return this.services.has(key) ?
@@ -80,19 +76,27 @@ class ThrottledReducingAggregateService extends AggregateStreamingService {
     super();
   }
 
-  protected dispatch(method: 'process' | 'collect',
+  protected dispatch(method: 'process',
                      request: SimpleRequest): Observable<StreamingResponse> {
     let lastPercentagePoint = 0;
+    let shouldClear = false;
     return super.dispatch(method, request)
-      .scan(streamingResponseReducer)
+      .scan((acc, value) => {
+        if (shouldClear) {
+          acc.features = [];
+        }
+        return streamingResponseReducer(acc, value);
+      })
       .filter(val => {
+        const progress = val.progress;
         const percentage =
-          100 * (val.processedBlockCount / val.totalBlockCount) | 0;
+          100 * (progress.processedBlockCount / progress.totalBlockCount) | 0;
         const pointDifference = (percentage - lastPercentagePoint);
         const shouldEmit = pointDifference === 1 || percentage === 100;
         if (shouldEmit) {
           lastPercentagePoint = percentage;
         }
+        shouldClear = shouldEmit;
         return shouldEmit;
       });
   }
