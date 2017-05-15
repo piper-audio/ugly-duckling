@@ -2118,77 +2118,35 @@ let WaveformComponent = class WaveformComponent {
                 if (featureData.length === 0) {
                     return;
                 }
-                // TODO look at output descriptor instead of directly inspecting features
-                const hasDuration = outputDescriptor.configured.hasDuration;
-                const isMarker = !hasDuration
-                    && outputDescriptor.configured.binCount === 0
-                    && featureData[0].featureValues == null;
-                const isRegion = hasDuration
-                    && featureData[0].timestamp != null;
-                console.log('Have list features: length ' + featureData.length +
-                    ', isMarker ' + isMarker + ', isRegion ' + isRegion +
-                    ', hasDuration ' + hasDuration);
                 // TODO refactor, this is incomprehensible
-                if (isMarker) {
-                    const plotData = featureData.map(feature => ({
-                        time: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
-                        label: feature.label
-                    }));
-                    const featureLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.TickLayer(plotData, {
-                        height: height,
-                        color: colour,
-                        labelPosition: 'bottom',
-                        shadeSegments: true
-                    });
-                    this.addLayer(featureLayer, waveTrack, this.timeline.timeContext);
+                try {
+                    const featureShape = deduceHigherLevelFeatureShape(featureData, outputDescriptor);
+                    switch (featureShape) {
+                        case 'instants':
+                            const plotData = featureData.map(feature => ({
+                                time: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
+                                label: feature.label
+                            }));
+                            const featureLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.TickLayer(plotData, {
+                                height: height,
+                                color: colour,
+                                labelPosition: 'bottom',
+                                shadeSegments: true
+                            });
+                            this.addLayer(featureLayer, waveTrack, this.timeline.timeContext);
+                            break;
+                        case 'regions':
+                            this.renderRegions(featureData, outputDescriptor, waveTrack, height, colour);
+                            break;
+                        case 'notes':
+                            const pianoRollLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.PianoRollLayer(mapFeaturesToNotes(featureData, outputDescriptor), { height: height, color: colour });
+                            this.addLayer(pianoRollLayer, waveTrack, this.timeline.timeContext);
+                            break;
+                    }
                 }
-                else if (isRegion) {
-                    console.log('Output is of region type');
-                    const binCount = outputDescriptor.configured.binCount || 0;
-                    const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1;
-                    const getSegmentArgs = () => {
-                        if (isBarRegion) {
-                            // TODO potentially change impl., i.e avoid reduce
-                            const findMin = (arr, getElement) => {
-                                return arr.reduce((min, val) => Math.min(min, getElement(val)), Infinity);
-                            };
-                            const findMax = (arr, getElement) => {
-                                return arr.reduce((min, val) => Math.max(min, getElement(val)), -Infinity);
-                            };
-                            const min = findMin(featureData, (x) => {
-                                return findMin(x.featureValues, y => y);
-                            });
-                            const max = findMax(featureData, (x) => {
-                                return findMax(x.featureValues, y => y);
-                            });
-                            const barHeight = 1.0 / height;
-                            return [
-                                featureData.reduce((bars, feature) => {
-                                    const staticProperties = {
-                                        x: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
-                                        width: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.duration),
-                                        height: min + barHeight,
-                                        color: colour,
-                                        opacity: 0.8
-                                    };
-                                    // TODO avoid copying Float32Array to an array - map is problematic here
-                                    return bars.concat([...feature.featureValues]
-                                        .map(val => Object.assign({}, staticProperties, { y: val })));
-                                }, []),
-                                { yDomain: [min, max + barHeight], height: height }
-                            ];
-                        }
-                        else {
-                            return [featureData.map(feature => ({
-                                    x: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
-                                    width: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.duration),
-                                    color: colour,
-                                    opacity: 0.8
-                                })), { height: height }];
-                        }
-                    };
-                    const segmentLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.SegmentLayer(...getSegmentArgs());
-                    this.addLayer(segmentLayer, waveTrack, this.timeline.timeContext);
+                catch (e) {
+                    console.warn(e); // TODO display
+                    break;
                 }
                 break;
             }
@@ -2266,6 +2224,56 @@ let WaveformComponent = class WaveformComponent {
             };
             updateSeekingCursor();
         });
+    }
+    // TODO not sure how much of the logic in here is actually sensible w.r.t
+    // what it functionally produces
+    renderRegions(featureData, outputDescriptor, waveTrack, height, colour) {
+        console.log('Output is of region type');
+        const binCount = outputDescriptor.configured.binCount || 0;
+        const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1;
+        const getSegmentArgs = () => {
+            if (isBarRegion) {
+                // TODO potentially change impl., i.e avoid reduce
+                const findMin = (arr, getElement) => {
+                    return arr.reduce((min, val) => Math.min(min, getElement(val)), Infinity);
+                };
+                const findMax = (arr, getElement) => {
+                    return arr.reduce((min, val) => Math.max(min, getElement(val)), -Infinity);
+                };
+                const min = findMin(featureData, (x) => {
+                    return findMin(x.featureValues, y => y);
+                });
+                const max = findMax(featureData, (x) => {
+                    return findMax(x.featureValues, y => y);
+                });
+                const barHeight = 1.0 / height;
+                return [
+                    featureData.reduce((bars, feature) => {
+                        const staticProperties = {
+                            x: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
+                            width: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.duration),
+                            height: min + barHeight,
+                            color: colour,
+                            opacity: 0.8
+                        };
+                        // TODO avoid copying Float32Array to an array - map is problematic here
+                        return bars.concat([...feature.featureValues]
+                            .map(val => Object.assign({}, staticProperties, { y: val })));
+                    }, []),
+                    { yDomain: [min, max + barHeight], height: height }
+                ];
+            }
+            else {
+                return [featureData.map(feature => ({
+                        x: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
+                        width: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.duration),
+                        color: colour,
+                        opacity: 0.8
+                    })), { height: height }];
+            }
+        };
+        const segmentLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.SegmentLayer(...getSegmentArgs());
+        this.addLayer(segmentLayer, waveTrack, this.timeline.timeContext);
     }
     addLayer(layer, track, timeContext, isAxis = false) {
         timeContext.zoom = 1.0;
@@ -2363,6 +2371,48 @@ WaveformComponent = __decorate([
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* NgZone */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ChangeDetectorRef */]) === "function" && _e || Object])
 ], WaveformComponent);
 
+function deduceHigherLevelFeatureShape(featureData, descriptor) {
+    // TODO look at output descriptor instead of directly inspecting features
+    const hasDuration = descriptor.configured.hasDuration;
+    const binCount = descriptor.configured.binCount;
+    const isMarker = !hasDuration
+        && binCount === 0
+        && featureData[0].featureValues == null;
+    const isMaybeNote = getCanonicalNoteLikeUnit(descriptor.configured.unit)
+        && [1, 2].find(nBins => nBins === binCount);
+    const isRegionLike = hasDuration && featureData[0].timestamp != null;
+    const isNote = isMaybeNote && isRegionLike;
+    const isRegion = !isMaybeNote && isRegionLike;
+    if (isMarker) {
+        return 'instants';
+    }
+    if (isNote) {
+        return 'notes';
+    }
+    if (isRegion) {
+        return 'regions';
+    }
+    throw 'No shape could be deduced';
+}
+function getCanonicalNoteLikeUnit(unit) {
+    const canonicalUnits = ['midi', 'hz'];
+    return canonicalUnits.find(canonicalUnit => {
+        return unit.toLowerCase().indexOf(canonicalUnit) >= 0;
+    });
+}
+function mapFeaturesToNotes(featureData, descriptor) {
+    const canonicalUnit = getCanonicalNoteLikeUnit(descriptor.configured.unit);
+    const isHz = canonicalUnit === 'hz';
+    return featureData.map(feature => ({
+        time: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.timestamp),
+        duration: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper__["toSeconds"])(feature.duration),
+        pitch: isHz ?
+            frequencyToMidiNote(feature.featureValues[0]) : feature.featureValues[0]
+    }));
+}
+function frequencyToMidiNote(frequency, concertA = 440.0) {
+    return 69 + 12 * Math.log2(frequency / concertA);
+}
 var _a, _b, _c, _d, _e;
 //# sourceMappingURL=waveform.component.js.map
 
