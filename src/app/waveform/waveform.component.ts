@@ -25,7 +25,7 @@ import {
   MatrixFeature,
   TracksFeature
 } from 'piper/HigherLevelUtilities';
-import {toSeconds} from 'piper';
+import {toSeconds, OutputDescriptor} from 'piper';
 import {FeatureList, Feature} from 'piper/Feature';
 import * as Hammer from 'hammerjs';
 import {WavesSpectrogramLayer} from '../spectrogram/Spectrogram';
@@ -52,6 +52,15 @@ const defaultColourGenerator = createColourGenerator([
   '#fa8334', // "mango tango"
   '#034748' // "deep jungle green"
 ]);
+
+type HigherLevelFeatureShape = 'regions' | 'instants' | 'notes';
+type NoteLikeUnit = 'midi' | 'hz' ;
+interface Note {
+  time: number;
+  duration: number;
+  pitch: number;
+  velocity?: number;
+}
 
 @Component({
   selector: 'ugly-waveform',
@@ -754,100 +763,55 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         if (featureData.length === 0) {
           return;
         }
-        // TODO look at output descriptor instead of directly inspecting features
-        const hasDuration = outputDescriptor.configured.hasDuration;
-        const isMarker = !hasDuration
-          && outputDescriptor.configured.binCount === 0
-          && featureData[0].featureValues == null;
-        const isRegion = hasDuration
-          && featureData[0].timestamp != null;
-        console.log('Have list features: length ' + featureData.length +
-          ', isMarker ' + isMarker + ', isRegion ' + isRegion +
-          ', hasDuration ' + hasDuration);
+
         // TODO refactor, this is incomprehensible
-        if (isMarker) {
-          const plotData = featureData.map(feature => ({
-            time: toSeconds(feature.timestamp),
-            label: feature.label
-          }));
-          const featureLayer = new wavesUI.helpers.TickLayer(plotData, {
-            height: height,
-            color: colour,
-            labelPosition: 'bottom',
-            shadeSegments: true
-          });
-          this.addLayer(
-            featureLayer,
-            waveTrack,
-            this.timeline.timeContext
+        try {
+          const featureShape = deduceHigherLevelFeatureShape(
+            featureData,
+            outputDescriptor
           );
-        } else if (isRegion) {
-          console.log('Output is of region type');
-          const binCount = outputDescriptor.configured.binCount || 0;
-          const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1 ;
-          const getSegmentArgs = () => {
-            if (isBarRegion) {
-
-              // TODO refactor - this is messy
-              interface FoldsToNumber<T> {
-                reduce(fn: (previousValue: number,
-                            currentValue: T,
-                            currentIndex: number,
-                            array: ArrayLike<T>) => number,
-                       initialValue?: number): number;
-              }
-
-              // TODO potentially change impl., i.e avoid reduce
-              const findMin = <T>(arr: FoldsToNumber<T>, getElement: (x: T) => number): number => {
-                return arr.reduce((min, val) => Math.min(min, getElement(val)), Infinity);
-              };
-
-              const findMax = <T>(arr: FoldsToNumber<T>, getElement: (x: T) => number): number => {
-                return arr.reduce((min, val) => Math.max(min, getElement(val)), -Infinity);
-              };
-
-              const min = findMin<Feature>(featureData, (x: Feature) => {
-                return findMin<number>(x.featureValues, y => y);
-              });
-
-              const max = findMax<Feature>(featureData, (x: Feature) => {
-                return findMax<number>(x.featureValues, y => y);
-              });
-
-              const barHeight = 1.0 / height;
-              return [
-                featureData.reduce((bars, feature) => {
-                  const staticProperties = {
-                    x: toSeconds(feature.timestamp),
-                    width: toSeconds(feature.duration),
-                    height: min + barHeight,
-                    color: colour,
-                    opacity: 0.8
-                  };
-                  // TODO avoid copying Float32Array to an array - map is problematic here
-                  return bars.concat([...feature.featureValues]
-                    .map(val => Object.assign({}, staticProperties, {y: val})));
-                }, []),
-                {yDomain: [min, max + barHeight], height: height} as any
-              ];
-            } else {
-              return [featureData.map(feature => ({
-                x: toSeconds(feature.timestamp),
-                width: toSeconds(feature.duration),
+          switch (featureShape) {
+            case 'instants':
+              const plotData = featureData.map(feature => ({
+                time: toSeconds(feature.timestamp),
+                label: feature.label
+              }));
+              const featureLayer = new wavesUI.helpers.TickLayer(plotData, {
+                height: height,
                 color: colour,
-                opacity: 0.8
-              })), {height: height}];
-            }
-          };
-
-          const segmentLayer = new wavesUI.helpers.SegmentLayer(
-            ...getSegmentArgs()
-          );
-          this.addLayer(
-            segmentLayer,
-            waveTrack,
-            this.timeline.timeContext
-          );
+                labelPosition: 'bottom',
+                shadeSegments: true
+              });
+              this.addLayer(
+                featureLayer,
+                waveTrack,
+                this.timeline.timeContext
+              );
+              break;
+            case 'regions':
+              this.renderRegions(
+                featureData,
+                outputDescriptor,
+                waveTrack,
+                height,
+                colour
+              );
+              break;
+            case 'notes':
+              const pianoRollLayer = new wavesUI.helpers.PianoRollLayer(
+                mapFeaturesToNotes(featureData, outputDescriptor),
+                {height: height, color: colour}
+              );
+              this.addLayer(
+                pianoRollLayer,
+                waveTrack,
+                this.timeline.timeContext
+              );
+              break;
+          }
+        } catch (e) {
+          console.warn(e); // TODO display
+          break;
         }
         break;
       }
@@ -947,6 +911,89 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  // TODO not sure how much of the logic in here is actually sensible w.r.t
+  // what it functionally produces
+  private renderRegions(featureData: FeatureList,
+                        outputDescriptor: OutputDescriptor,
+                        waveTrack: any,
+                        height: number,
+                        colour: Colour) {
+    console.log('Output is of region type');
+    const binCount = outputDescriptor.configured.binCount || 0;
+    const isBarRegion = featureData[0].featureValues.length >= 1 || binCount >= 1 ;
+    const getSegmentArgs = () => {
+      if (isBarRegion) {
+
+        // TODO refactor - this is messy
+        interface FoldsToNumber<T> {
+          reduce(fn: (previousValue: number,
+                      currentValue: T,
+                      currentIndex: number,
+                      array: ArrayLike<T>) => number,
+                 initialValue?: number): number;
+        }
+
+        // TODO potentially change impl., i.e avoid reduce
+        const findMin = <T>(arr: FoldsToNumber<T>,
+                            getElement: (x: T) => number): number => {
+          return arr.reduce(
+            (min, val) => Math.min(min, getElement(val)),
+            Infinity
+          );
+        };
+
+        const findMax = <T>(arr: FoldsToNumber<T>,
+                            getElement: (x: T) => number): number => {
+          return arr.reduce(
+            (min, val) => Math.max(min, getElement(val)),
+            -Infinity
+          );
+        };
+
+        const min = findMin<Feature>(featureData, (x: Feature) => {
+          return findMin<number>(x.featureValues, y => y);
+        });
+
+        const max = findMax<Feature>(featureData, (x: Feature) => {
+          return findMax<number>(x.featureValues, y => y);
+        });
+
+        const barHeight = 1.0 / height;
+        return [
+          featureData.reduce((bars, feature) => {
+            const staticProperties = {
+              x: toSeconds(feature.timestamp),
+              width: toSeconds(feature.duration),
+              height: min + barHeight,
+              color: colour,
+              opacity: 0.8
+            };
+            // TODO avoid copying Float32Array to an array - map is problematic here
+            return bars.concat([...feature.featureValues]
+              .map(val => Object.assign({}, staticProperties, {y: val})));
+          }, []),
+          {yDomain: [min, max + barHeight], height: height} as any
+        ];
+      } else {
+        return [featureData.map(feature => ({
+          x: toSeconds(feature.timestamp),
+          width: toSeconds(feature.duration),
+          color: colour,
+          opacity: 0.8
+        })), {height: height}];
+      }
+    };
+
+    const segmentLayer = new wavesUI.helpers.SegmentLayer(
+      ...getSegmentArgs()
+    );
+    this.addLayer(
+      segmentLayer,
+      waveTrack,
+      this.timeline.timeContext
+    );
+  }
+
   private addLayer(layer: Layer, track: Track, timeContext: any, isAxis: boolean = false): void {
     timeContext.zoom = 1.0;
     if (!layer.timeContext) {
@@ -1002,4 +1049,57 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
+}
+
+function deduceHigherLevelFeatureShape(featureData: FeatureList,
+                                       descriptor: OutputDescriptor)
+: HigherLevelFeatureShape {
+  // TODO look at output descriptor instead of directly inspecting features
+  const hasDuration = descriptor.configured.hasDuration;
+  const binCount = descriptor.configured.binCount;
+  const isMarker = !hasDuration
+    && binCount === 0
+    && featureData[0].featureValues == null;
+
+  const isMaybeNote = getCanonicalNoteLikeUnit(descriptor.configured.unit)
+    && [1, 2].find(nBins => nBins === binCount);
+
+  const isRegionLike = hasDuration && featureData[0].timestamp != null;
+
+  const isNote = isMaybeNote && isRegionLike;
+  const isRegion = !isMaybeNote && isRegionLike;
+  if (isMarker) {
+    return 'instants';
+  }
+  if (isNote) {
+    return 'notes';
+  }
+  if (isRegion) {
+    return 'regions';
+  }
+  throw 'No shape could be deduced';
+}
+
+function getCanonicalNoteLikeUnit(unit: string): NoteLikeUnit | null {
+  const canonicalUnits: NoteLikeUnit[] = ['midi', 'hz'];
+  return canonicalUnits.find(canonicalUnit => {
+    return unit.toLowerCase().indexOf(canonicalUnit) >= 0
+  });
+}
+
+function mapFeaturesToNotes(featureData: FeatureList,
+                            descriptor: OutputDescriptor): Note[] {
+  const canonicalUnit = getCanonicalNoteLikeUnit(descriptor.configured.unit);
+  const isHz = canonicalUnit === 'hz';
+  return featureData.map(feature => ({
+    time: toSeconds(feature.timestamp),
+    duration: toSeconds(feature.duration),
+    pitch: isHz ?
+      frequencyToMidiNote(feature.featureValues[0]) : feature.featureValues[0]
+  }));
+}
+
+function frequencyToMidiNote(frequency: number,
+                             concertA: number = 440.0): number {
+  return 69 + 12 * Math.log2(frequency / concertA);
 }
