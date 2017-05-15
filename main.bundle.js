@@ -2478,7 +2478,7 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     ngOnInit() {
         this.piperService.list().then(this.populateExtractors).then(() => {
             this.piperService.load('pyin');
-            this.piperService.load('nnls-chroma');
+            // this.piperService.load('nnls-chroma');
         });
         this.librariesUpdatedSubscription =
             this.piperService.librariesUpdated$.subscribe(this.populateExtractors);
