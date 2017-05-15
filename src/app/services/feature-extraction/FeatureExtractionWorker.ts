@@ -111,7 +111,10 @@ export default class FeatureExtractionWorker {
   constructor(workerScope: DedicatedWorkerGlobalScope,
               private requireJs: RequireJs) {
     this.workerScope = workerScope;
-    this.remoteLibraries = new Map<LibraryKey, LibraryUri>();
+    this.remoteLibraries = new Map<LibraryKey, LibraryUri>([
+      ['nnls-chroma', 'assets/extractors/NNLSChroma.js'],
+      ['pyin', 'assets/extractors/PYin.umd.js'],
+    ]);
     this.service = new ThrottledReducingAggregateService();
     this.setupImportLibraryListener();
     this.server = new WebWorkerStreamingServer(
@@ -124,6 +127,7 @@ export default class FeatureExtractionWorker {
 
     this.workerScope.onmessage = (ev: MessageEvent) => {
       const sendResponse = (result) => {
+        console.warn(ev.data.method);
         this.workerScope.postMessage({
           method: ev.data.method,
           result: result
