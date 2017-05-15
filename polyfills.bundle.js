@@ -921,7 +921,10 @@ class FeatureExtractionWorker {
     constructor(workerScope, requireJs) {
         this.requireJs = requireJs;
         this.workerScope = workerScope;
-        this.remoteLibraries = new Map();
+        this.remoteLibraries = new Map([
+            ['nnls-chroma', 'assets/extractors/NNLSChroma.js'],
+            ['pyin', 'assets/extractors/PYin.umd.js'],
+        ]);
         this.service = new ThrottledReducingAggregateService();
         this.setupImportLibraryListener();
         this.server = new __WEBPACK_IMPORTED_MODULE_2_piper_servers_WebWorkerStreamingServer__["WebWorkerStreamingServer"](this.workerScope, this.service);
@@ -929,6 +932,7 @@ class FeatureExtractionWorker {
     setupImportLibraryListener() {
         this.workerScope.onmessage = (ev) => {
             const sendResponse = (result) => {
+                console.warn(ev.data.method);
                 this.workerScope.postMessage({
                     method: ev.data.method,
                     result: result
