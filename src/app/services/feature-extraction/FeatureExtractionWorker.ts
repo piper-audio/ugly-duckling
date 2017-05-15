@@ -37,10 +37,10 @@ class AggregateStreamingService implements StreamingService {
 
   constructor() {
     this.services = new Map<LibraryKey, PiperStreamingService>();
-    this.services.set(
-      'vamp-example-plugins',
-      new PiperStreamingService(new PiperVampService(VampExamplePlugins()))
-    );
+    // this.services.set(
+    //   'vamp-example-plugins',
+    //   new PiperStreamingService(new PiperVampService(VampExamplePlugins()))
+    // );
   }
 
   addService(key: LibraryKey, service: PiperStreamingService): void {
@@ -112,7 +112,7 @@ export default class FeatureExtractionWorker {
               private requireJs: RequireJs) {
     this.workerScope = workerScope;
     this.remoteLibraries = new Map<LibraryKey, LibraryUri>([
-      ['nnls-chroma', 'assets/extractors/NNLSChroma.js'],
+      // ['nnls-chroma', 'assets/extractors/NNLSChroma.js'],
       ['pyin', 'assets/extractors/PYin.umd.js'],
     ]);
     this.service = new ThrottledReducingAggregateService();
