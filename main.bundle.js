@@ -40,13 +40,11 @@ module.exports = module.exports.toString();
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("3j3K");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__ = __webpack_require__("EEr4");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__("rCTf");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__("Fzro");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__ = __webpack_require__("4AhG");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_piper_StreamingService__ = __webpack_require__("e4w8");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_piper_StreamingService___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_piper_StreamingService__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_http__ = __webpack_require__("Fzro");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_piper_client_stubs_WebWorkerStreamingClient__ = __webpack_require__("4AhG");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_piper_client_stubs_WebWorkerStreamingClient___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_piper_client_stubs_WebWorkerStreamingClient__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_StreamingService__ = __webpack_require__("e4w8");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_StreamingService___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_piper_StreamingService__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FeatureExtractionService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -60,7 +58,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-
 
 
 
@@ -85,14 +82,17 @@ let FeatureExtractionService = class FeatureExtractionService {
                 this.librariesUpdated.next(ev.data.result);
             }
         }, true);
-        this.client = new __WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__["WebWorkerStreamingClient"](this.worker, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__["countingIdProvider"])(0));
+        this.client = new __WEBPACK_IMPORTED_MODULE_3_piper_client_stubs_WebWorkerStreamingClient__["WebWorkerStreamingClient"](this.worker, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3_piper_client_stubs_WebWorkerStreamingClient__["countingIdProvider"])(0));
     }
     list() {
-        return this.client.list({});
+        return this.client.list({}).then(response => {
+            this.librariesUpdated.next(response);
+            return response;
+        });
     }
     extract(analysisItemId, request) {
         let config;
-        return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5_piper_StreamingService__["collect"])(this.client.process(request), val => {
+        return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper_StreamingService__["collect"])(this.client.process(request), val => {
             if (val.configuration) {
                 config = val.configuration;
             }
@@ -111,19 +111,15 @@ let FeatureExtractionService = class FeatureExtractionService {
         });
     }
     updateAvailableLibraries() {
-        return this.http.get(this.repositoryUri)
-            .map(res => {
-            const map = res.json();
+        this.http.get(this.repositoryUri)
+            .toPromise() // just turn into a promise for now to subscribe / execute
+            .then(res => {
             this.worker.postMessage({
                 method: 'addRemoteLibraries',
-                params: map
+                params: res.json()
             });
-            return map;
         })
-            .catch((error) => {
-            console.error(error);
-            return __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__["Observable"].throw(error);
-        });
+            .catch(console.error); // TODO Report error to user
     }
     load(libraryKey) {
         this.worker.postMessage({ method: 'import', params: libraryKey });
@@ -132,7 +128,7 @@ let FeatureExtractionService = class FeatureExtractionService {
 FeatureExtractionService = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
     __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Inject */])('PiperRepoUri')),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__angular_http__["b" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_http__["b" /* Http */]) === "function" && _a || Object, String])
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__angular_http__["b" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_http__["b" /* Http */]) === "function" && _a || Object, String])
 ], FeatureExtractionService);
 
 var _a;
@@ -2476,12 +2472,9 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
         return '';
     }
     ngOnInit() {
-        this.piperService.list().then(this.populateExtractors).then(() => {
-            this.piperService.load('pyin');
-            // this.piperService.load('nnls-chroma');
-        });
         this.librariesUpdatedSubscription =
             this.piperService.librariesUpdated$.subscribe(this.populateExtractors);
+        this.piperService.list().then(this.populateExtractors);
     }
     extract(combinedKey) {
         const info = this.extractorsMap.get(combinedKey);
@@ -2490,9 +2483,7 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
         }
     }
     load() {
-        this.piperService.updateAvailableLibraries().subscribe(res => {
-            Object.keys(res).forEach(key => this.piperService.load(key));
-        });
+        this.piperService.updateAvailableLibraries();
     }
     ngOnDestroy() {
         this.librariesUpdatedSubscription.unsubscribe();
