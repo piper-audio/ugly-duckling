@@ -80,9 +80,9 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.piperService.list().then(this.populateExtractors);
     this.librariesUpdatedSubscription =
       this.piperService.librariesUpdated$.subscribe(this.populateExtractors);
+    this.piperService.list().then(this.populateExtractors);
   }
 
   extract(combinedKey: string): void {
@@ -94,9 +94,7 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   }
 
   load(): void {
-    this.piperService.updateAvailableLibraries().subscribe(res => {
-      Object.keys(res).forEach(key => this.piperService.load(key));
-    });
+    this.piperService.updateAvailableLibraries();
   }
 
   ngOnDestroy(): void {
