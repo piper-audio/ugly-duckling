@@ -63,10 +63,7 @@ export class FeatureExtractionService {
   }
 
   list(): Promise<ListResponse> {
-    return this.client.list({}).then(response => {
-      this.librariesUpdated.next(response);
-      return response;
-    });
+    return this.client.list({});
   }
 
   extract(analysisItemId: string, request: SimpleRequest): Promise<void> {
