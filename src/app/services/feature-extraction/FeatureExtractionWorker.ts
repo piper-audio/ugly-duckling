@@ -152,9 +152,7 @@ export default class FeatureExtractionWorker {
           const importThunks = Object.keys(available).map(libraryKey => {
             return () => {
               this.remoteLibraries.set(libraryKey, available[libraryKey]);
-              return this.import(libraryKey).then(key => {
-                return key;
-              });
+              return this.import(libraryKey);
             };
           });
           waterfall(importThunks).then(() => {
