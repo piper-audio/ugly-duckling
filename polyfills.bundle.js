@@ -877,9 +877,21 @@ class AggregateStreamingService {
         this.services.set(key, service);
     }
     list(request) {
-        return Promise.all([...this.services.values()].map(client => client().list({}))).then(allAvailable => ({
-            available: allAvailable.reduce((all, current) => all.concat(current.available), [])
-        }));
+        //TODO refactor
+        const listThunks = [
+            ...this.services.values()
+        ].map(client => () => client().list({}));
+        const concatAvailable = (running, nextResponse) => {
+            return nextResponse.then(response => {
+                running.available = running.available.concat(response.available);
+                return running;
+            });
+        };
+        return listThunks.reduce((runningResponses, nextResponse) => {
+            return runningResponses.then(response => {
+                return concatAvailable(response, nextResponse());
+            });
+        }, Promise.resolve({ available: [] }));
     }
     process(request) {
         return this.dispatch('process', request);
@@ -932,7 +944,7 @@ class FeatureExtractionWorker {
     setupImportLibraryListener() {
         this.workerScope.onmessage = (ev) => {
             const sendResponse = (result) => {
-                console.warn(ev.data.method);
+                console.warn(ev.data.method, ev.data);
                 this.workerScope.postMessage({
                     method: ev.data.method,
                     result: result
