@@ -51,15 +51,25 @@ class AggregateStreamingService implements StreamingService {
   }
 
   list(request: ListRequest): Promise<ListResponse> {
-    return Promise.all(
-      [...this.services.values()].map(client => client().list({}))
-    ).then(allAvailable => ({
-        available: allAvailable.reduce(
-          (all, current) => all.concat(current.available),
-          []
-        )
+    //TODO refactor
+    const listThunks: (() => Promise<ListResponse>)[] = [
+      ...this.services.values()
+    ].map(client => () => client().list({}));
+
+    const concatAvailable = (running: ListResponse,
+                             nextResponse: Promise<ListResponse>)
+      : Promise<ListResponse> => {
+      return nextResponse.then(response => {
+        running.available = running.available.concat(response.available);
+        return running;
+      });
+    };
+
+    return listThunks.reduce((runningResponses, nextResponse) => {
+      return runningResponses.then(response => {
+        return concatAvailable(response, nextResponse());
       })
-    );
+    }, Promise.resolve({available: []}));
   }
 
   process(request: SimpleRequest): Observable<StreamingResponse> {
@@ -130,7 +140,7 @@ export default class FeatureExtractionWorker {
 
     this.workerScope.onmessage = (ev: MessageEvent) => {
       const sendResponse = (result) => {
-        console.warn(ev.data.method);
+        console.warn(ev.data.method, ev.data);
         this.workerScope.postMessage({
           method: ev.data.method,
           result: result
