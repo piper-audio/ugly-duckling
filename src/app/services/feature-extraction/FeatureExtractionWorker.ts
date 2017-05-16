@@ -2,7 +2,7 @@
  * Created by lucas on 01/12/2016.
  */
 
-import {PiperVampService, ListRequest, ListResponse} from 'piper';
+import {PiperVampService, ListRequest, ListResponse, Service} from 'piper';
 import {
   SimpleRequest
 } from 'piper/HigherLevelUtilities';
@@ -31,25 +31,28 @@ type LibraryUri = string;
 type LibraryKey = string;
 
 type RequireJs = (libs: string[], callback: (...libs: any[]) => void) => void;
+type Factory<T> = () => T;
 
 class AggregateStreamingService implements StreamingService {
-  private services: Map<LibraryKey, PiperStreamingService>;
+  private services: Map<LibraryKey, Factory<PiperStreamingService>>;
 
   constructor() {
-    this.services = new Map<LibraryKey, PiperStreamingService>();
-    // this.services.set(
-    //   'vamp-example-plugins',
-    //   new PiperStreamingService(new PiperVampService(VampExamplePlugins()))
-    // );
+    this.services = new Map<LibraryKey, Factory<PiperStreamingService>>();
+    this.services.set(
+      'vamp-example-plugins',
+      () => new PiperStreamingService(
+        new PiperVampService(VampExamplePlugins())
+      )
+    );
   }
 
-  addService(key: LibraryKey, service: PiperStreamingService): void {
+  addService(key: LibraryKey, service: Factory<PiperStreamingService>): void {
     this.services.set(key, service);
   }
 
   list(request: ListRequest): Promise<ListResponse> {
     return Promise.all(
-      [...this.services.values()].map(client => client.list({}))
+      [...this.services.values()].map(client => client().list({}))
     ).then(allAvailable => ({
         available: allAvailable.reduce(
           (all, current) => all.concat(current.available),
@@ -66,8 +69,8 @@ class AggregateStreamingService implements StreamingService {
   protected dispatch(method: 'process',
                      request: SimpleRequest): Observable<StreamingResponse> {
     const key = request.key.split(':')[0];
-    return this.services.has(key) ?
-      this.services.get(key)[method](request) : Observable.throw('Invalid key');
+    return this.services.has(key) ? this.services.get(key)()[method](request) :
+      Observable.throw('Invalid key');
   }
 }
 
@@ -138,12 +141,15 @@ export default class FeatureExtractionWorker {
           const key: LibraryKey = ev.data.params;
           if (this.remoteLibraries.has(key)) {
             this.requireJs([this.remoteLibraries.get(key)], (plugin) => {
-              // TODO a factory with more logic probably belongs in piper-js
-              const lib: any | EmscriptenModule = plugin.createLibrary();
-              const isEmscriptenModule = typeof lib.cwrap === 'function';
-              const service = new PiperStreamingService(
-                isEmscriptenModule ? new PiperVampService(lib) : lib // TODO
-              );
+
+              const service = () => {
+                // TODO a factory with more logic probably belongs in piper-js
+                const lib: any | EmscriptenModule = plugin.createLibrary();
+                const isEmscriptenModule = typeof lib.cwrap === 'function';
+                return new PiperStreamingService(
+                  isEmscriptenModule ? new PiperVampService(lib) : lib // TODO
+                );
+              };
               this.service.addService(key, service);
               this.service.list({}).then(sendResponse);
             });
