@@ -2,7 +2,7 @@
  * Created by lucas on 01/12/2016.
  */
 
-import {PiperVampService, ListRequest, ListResponse, Service} from 'piper';
+import {PiperVampService, ListRequest, ListResponse} from 'piper';
 import {
   SimpleRequest
 } from 'piper/HigherLevelUtilities';
@@ -33,6 +33,21 @@ type LibraryKey = string;
 type RequireJs = (libs: string[], callback: (...libs: any[]) => void) => void;
 type Factory<T> = () => T;
 
+function waterfall<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
+  const reducer = (running: T[], next: Promise<T>): Promise<T[]> => {
+    return next.then(response => {
+      running = running.concat(response);
+      return running;
+    });
+  };
+
+  return tasks.reduce((runningResponses, nextResponse) => {
+    return runningResponses.then(response => {
+      return reducer(response, nextResponse());
+    })
+  }, Promise.resolve([]));
+}
+
 class AggregateStreamingService implements StreamingService {
   private services: Map<LibraryKey, Factory<PiperStreamingService>>;
 
@@ -50,26 +65,21 @@ class AggregateStreamingService implements StreamingService {
     this.services.set(key, service);
   }
 
+  hasRemoteService(key: LibraryKey): boolean {
+    return this.services.has(key);
+  }
+
   list(request: ListRequest): Promise<ListResponse> {
-    //TODO refactor
     const listThunks: (() => Promise<ListResponse>)[] = [
       ...this.services.values()
     ].map(client => () => client().list({}));
 
-    const concatAvailable = (running: ListResponse,
-                             nextResponse: Promise<ListResponse>)
-      : Promise<ListResponse> => {
-      return nextResponse.then(response => {
-        running.available = running.available.concat(response.available);
-        return running;
-      });
-    };
-
-    return listThunks.reduce((runningResponses, nextResponse) => {
-      return runningResponses.then(response => {
-        return concatAvailable(response, nextResponse());
-      })
-    }, Promise.resolve({available: []}));
+    return waterfall(listThunks).then(responses => {
+      return responses.reduce((allAvailable, res) => {
+        allAvailable.available = allAvailable.available.concat(res.available);
+        return allAvailable;
+      }, {available: []});
+    })
   }
 
   process(request: SimpleRequest): Observable<StreamingResponse> {
@@ -124,10 +134,7 @@ export default class FeatureExtractionWorker {
   constructor(workerScope: DedicatedWorkerGlobalScope,
               private requireJs: RequireJs) {
     this.workerScope = workerScope;
-    this.remoteLibraries = new Map<LibraryKey, LibraryUri>([
-      // ['nnls-chroma', 'assets/extractors/NNLSChroma.js'],
-      ['pyin', 'assets/extractors/PYin.umd.js'],
-    ]);
+    this.remoteLibraries = new Map<LibraryKey, LibraryUri>();
     this.service = new ThrottledReducingAggregateService();
     this.setupImportLibraryListener();
     this.server = new WebWorkerStreamingServer(
@@ -139,40 +146,49 @@ export default class FeatureExtractionWorker {
   private setupImportLibraryListener(): void {
 
     this.workerScope.onmessage = (ev: MessageEvent) => {
-      const sendResponse = (result) => {
-        console.warn(ev.data.method, ev.data);
-        this.workerScope.postMessage({
-          method: ev.data.method,
-          result: result
-        });
-      };
       switch (ev.data.method) {
-        case 'import':
-          const key: LibraryKey = ev.data.params;
-          if (this.remoteLibraries.has(key)) {
-            this.requireJs([this.remoteLibraries.get(key)], (plugin) => {
-
-              const service = () => {
-                // TODO a factory with more logic probably belongs in piper-js
-                const lib: any | EmscriptenModule = plugin.createLibrary();
-                const isEmscriptenModule = typeof lib.cwrap === 'function';
-                return new PiperStreamingService(
-                  isEmscriptenModule ? new PiperVampService(lib) : lib // TODO
-                );
-              };
-              this.service.addService(key, service);
-              this.service.list({}).then(sendResponse);
-            });
-          } else {
-            console.error('Non registered library key.'); // TODO handle error
-          }
-          break;
         case 'addRemoteLibraries': // TODO rename
           const available: AvailableLibraries = ev.data.params;
-          Object.keys(available).forEach(libraryKey => {
-            this.remoteLibraries.set(libraryKey, available[libraryKey]);
+          const importThunks = Object.keys(available).map(libraryKey => {
+            return () => {
+              this.remoteLibraries.set(libraryKey, available[libraryKey]);
+              return this.import(libraryKey).then(key => {
+                return key;
+              });
+            };
           });
+          waterfall(importThunks).then(() => {
+            this.service.list({}).then(response => {
+              this.workerScope.postMessage({
+                method: 'import',
+                result: response
+              });
+            });
+          })
       }
     };
+  }
+
+  private import(key: LibraryKey): Promise<LibraryKey> { // TODO return type?
+    return new Promise((res, rej) => {
+      if (this.remoteLibraries.has(key)) {
+        // TODO RequireJs can fail... need to reject the promise then
+        this.requireJs([this.remoteLibraries.get(key)], (plugin) => {
+
+          const service = () => {
+            // TODO a factory with more logic probably belongs in piper-js
+            const lib: any | EmscriptenModule = plugin.createLibrary();
+            const isEmscriptenModule = typeof lib.cwrap === 'function';
+            return new PiperStreamingService(
+              isEmscriptenModule ? new PiperVampService(lib) : lib // TODO
+            );
+          };
+          this.service.addService(key, service);
+          res(key);
+        });
+      } else {
+        rej('Invalid remote library key');
+      }
+    });
   }
 }

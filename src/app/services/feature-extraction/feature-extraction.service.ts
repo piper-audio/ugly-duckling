@@ -8,7 +8,7 @@ import {
 } from 'piper/HigherLevelUtilities';
 import {Subject} from 'rxjs/Subject';
 import {Observable} from 'rxjs/Observable';
-import {Http, Response} from '@angular/http';
+import {Http} from '@angular/http';
 import {
   countingIdProvider,
   WebWorkerStreamingClient
@@ -63,7 +63,10 @@ export class FeatureExtractionService {
   }
 
   list(): Promise<ListResponse> {
-    return this.client.list({});
+    return this.client.list({}).then(response => {
+      this.librariesUpdated.next(response);
+      return response;
+    });
   }
 
   extract(analysisItemId: string, request: SimpleRequest): Promise<void> {
@@ -87,20 +90,16 @@ export class FeatureExtractionService {
     });
   }
 
-  updateAvailableLibraries(): Observable<AvailableLibraries> {
-    return this.http.get(this.repositoryUri)
-      .map(res => {
-        const map = res.json();
+  updateAvailableLibraries(): void {
+    this.http.get(this.repositoryUri)
+      .toPromise() // just turn into a promise for now to subscribe / execute
+      .then(res => {
         this.worker.postMessage({
           method: 'addRemoteLibraries',
-          params: map
-        });
-        return map;
+          params: res.json()
+        })
       })
-      .catch((error: Response | any) => {
-        console.error(error);
-        return Observable.throw(error);
-      });
+      .catch(console.error); // TODO Report error to user
   }
 
   load(libraryKey: string): void {
