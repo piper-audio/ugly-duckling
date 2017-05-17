@@ -2,7 +2,7 @@
  * Created by lucas on 01/12/2016.
  */
 
-import {PiperVampService, ListRequest, ListResponse} from 'piper';
+import {PiperVampService, ListRequest, ListResponse, Service} from 'piper';
 import {
   SimpleRequest
 } from 'piper/HigherLevelUtilities';
@@ -30,7 +30,9 @@ interface MessageEvent {
 type LibraryUri = string;
 type LibraryKey = string;
 
-type RequireJs = (libs: string[], callback: (...libs: any[]) => void) => void;
+type RequireJs = (libs: string[],
+                  callback: (...libs: any[]) => void,
+                  errBack: (...failedLibIds: string[]) => void) => void;
 type Factory<T> = () => T;
 
 function waterfall<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
@@ -44,7 +46,7 @@ function waterfall<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
   return tasks.reduce((runningResponses, nextResponse) => {
     return runningResponses.then(response => {
       return reducer(response, nextResponse());
-    })
+    });
   }, Promise.resolve([]));
 }
 
@@ -65,21 +67,14 @@ class AggregateStreamingService implements StreamingService {
     this.services.set(key, service);
   }
 
-  hasRemoteService(key: LibraryKey): boolean {
-    return this.services.has(key);
-  }
-
   list(request: ListRequest): Promise<ListResponse> {
     const listThunks: (() => Promise<ListResponse>)[] = [
       ...this.services.values()
-    ].map(client => () => client().list({}));
+    ].map(createClient => () => createClient().list({}));
 
-    return waterfall(listThunks).then(responses => {
-      return responses.reduce((allAvailable, res) => {
-        allAvailable.available = allAvailable.available.concat(res.available);
-        return allAvailable;
-      }, {available: []});
-    })
+    return waterfall(listThunks).then(responses => ({
+      available: responses.reduce((flat, res) => flat.concat(res.available), [])
+    }));
   }
 
   process(request: SimpleRequest): Observable<StreamingResponse> {
@@ -127,14 +122,12 @@ class ThrottledReducingAggregateService extends AggregateStreamingService {
 
 export default class FeatureExtractionWorker {
   private workerScope: DedicatedWorkerGlobalScope;
-  private remoteLibraries: Map<LibraryKey, LibraryUri>;
   private server: WebWorkerStreamingServer;
   private service: AggregateStreamingService;
 
   constructor(workerScope: DedicatedWorkerGlobalScope,
               private requireJs: RequireJs) {
     this.workerScope = workerScope;
-    this.remoteLibraries = new Map<LibraryKey, LibraryUri>();
     this.service = new ThrottledReducingAggregateService();
     this.setupImportLibraryListener();
     this.server = new WebWorkerStreamingServer(
@@ -151,42 +144,42 @@ export default class FeatureExtractionWorker {
           const available: AvailableLibraries = ev.data.params;
           const importThunks = Object.keys(available).map(libraryKey => {
             return () => {
-              this.remoteLibraries.set(libraryKey, available[libraryKey]);
-              return this.import(libraryKey);
+              return this.downloadRemoteLibrary(
+                libraryKey,
+                available[libraryKey]
+              ).then(createService => {
+                this.service.addService(libraryKey,
+                  () => new PiperStreamingService(
+                    createService()
+                  ));
+              });
             };
           });
-          waterfall(importThunks).then(() => {
-            this.service.list({}).then(response => {
+          waterfall(importThunks)
+            .then(() => this.service.list({}))
+            .then(response => {
               this.workerScope.postMessage({
                 method: 'import',
                 result: response
               });
             });
-          })
       }
     };
   }
 
-  private import(key: LibraryKey): Promise<LibraryKey> { // TODO return type?
+  private downloadRemoteLibrary(key: LibraryKey,
+                                uri: LibraryUri): Promise<Factory<Service>> {
     return new Promise((res, rej) => {
-      if (this.remoteLibraries.has(key)) {
-        // TODO RequireJs can fail... need to reject the promise then
-        this.requireJs([this.remoteLibraries.get(key)], (plugin) => {
-
-          const service = () => {
-            // TODO a factory with more logic probably belongs in piper-js
-            const lib: any | EmscriptenModule = plugin.createLibrary();
-            const isEmscriptenModule = typeof lib.cwrap === 'function';
-            return new PiperStreamingService(
-              isEmscriptenModule ? new PiperVampService(lib) : lib // TODO
-            );
-          };
-          this.service.addService(key, service);
-          res(key);
+      this.requireJs([uri], (plugin) => {
+        res(() => {
+          // TODO a factory with more logic probably belongs in piper-js
+          const lib: any | EmscriptenModule = plugin.createLibrary();
+          const isEmscriptenModule = typeof lib.cwrap === 'function';
+          return isEmscriptenModule ? new PiperVampService(lib) : lib; // TODO
         });
-      } else {
-        rej('Invalid remote library key');
-      }
+      }, (err) => {
+        rej(`Failed to load ${key} remote module.`);
+      });
     });
   }
 }
