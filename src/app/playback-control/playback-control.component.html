@@ -1,3 +1,6 @@
+<button md-icon-button (click)="emitFastRewindStart()">
+  <md-icon>skip_previous</md-icon>
+</button>
 <button md-icon-button (click)="emitPlayPause()">
   <md-icon>
     <ng-template [ngIf]="isPlaying()">pause</ng-template>
