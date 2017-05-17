@@ -889,19 +889,13 @@ class AggregateStreamingService {
     addService(key, service) {
         this.services.set(key, service);
     }
-    hasRemoteService(key) {
-        return this.services.has(key);
-    }
     list(request) {
         const listThunks = [
             ...this.services.values()
-        ].map(client => () => client().list({}));
-        return waterfall(listThunks).then(responses => {
-            return responses.reduce((allAvailable, res) => {
-                allAvailable.available = allAvailable.available.concat(res.available);
-                return allAvailable;
-            }, { available: [] });
-        });
+        ].map(createClient => () => createClient().list({}));
+        return waterfall(listThunks).then(responses => ({
+            available: responses.reduce((flat, res) => flat.concat(res.available), [])
+        }));
     }
     process(request) {
         return this.dispatch('process', request);
@@ -943,7 +937,6 @@ class FeatureExtractionWorker {
     constructor(workerScope, requireJs) {
         this.requireJs = requireJs;
         this.workerScope = workerScope;
-        this.remoteLibraries = new Map();
         this.service = new ThrottledReducingAggregateService();
         this.setupImportLibraryListener();
         this.server = new __WEBPACK_IMPORTED_MODULE_2_piper_servers_WebWorkerStreamingServer__["WebWorkerStreamingServer"](this.workerScope, this.service);
@@ -955,42 +948,34 @@ class FeatureExtractionWorker {
                     const available = ev.data.params;
                     const importThunks = Object.keys(available).map(libraryKey => {
                         return () => {
-                            this.remoteLibraries.set(libraryKey, available[libraryKey]);
-                            return this.import(libraryKey).then(key => {
-                                return key;
+                            return this.downloadRemoteLibrary(libraryKey, available[libraryKey]).then(createService => {
+                                this.service.addService(libraryKey, () => new __WEBPACK_IMPORTED_MODULE_3_piper_StreamingService__["PiperStreamingService"](createService()));
                             });
                         };
                     });
-                    waterfall(importThunks).then(() => {
-                        this.service.list({}).then(response => {
-                            this.workerScope.postMessage({
-                                method: 'import',
-                                result: response
-                            });
+                    waterfall(importThunks)
+                        .then(() => this.service.list({}))
+                        .then(response => {
+                        this.workerScope.postMessage({
+                            method: 'import',
+                            result: response
                         });
                     });
             }
         };
     }
-    import(key) {
+    downloadRemoteLibrary(key, uri) {
         return new Promise((res, rej) => {
-            if (this.remoteLibraries.has(key)) {
-                // TODO RequireJs can fail... need to reject the promise then
-                this.requireJs([this.remoteLibraries.get(key)], (plugin) => {
-                    const service = () => {
-                        // TODO a factory with more logic probably belongs in piper-js
-                        const lib = plugin.createLibrary();
-                        const isEmscriptenModule = typeof lib.cwrap === 'function';
-                        return new __WEBPACK_IMPORTED_MODULE_3_piper_StreamingService__["PiperStreamingService"](isEmscriptenModule ? new __WEBPACK_IMPORTED_MODULE_0_piper__["PiperVampService"](lib) : lib // TODO
-                        );
-                    };
-                    this.service.addService(key, service);
-                    res(key);
+            this.requireJs([uri], (plugin) => {
+                res(() => {
+                    // TODO a factory with more logic probably belongs in piper-js
+                    const lib = plugin.createLibrary();
+                    const isEmscriptenModule = typeof lib.cwrap === 'function';
+                    return isEmscriptenModule ? new __WEBPACK_IMPORTED_MODULE_0_piper__["PiperVampService"](lib) : lib; // TODO
                 });
-            }
-            else {
-                rej('Invalid remote library key');
-            }
+            }, (err) => {
+                rej(`Failed to load ${key} remote module.`);
+            });
         });
     }
 }

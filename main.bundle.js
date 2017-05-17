@@ -85,10 +85,7 @@ let FeatureExtractionService = class FeatureExtractionService {
         this.client = new __WEBPACK_IMPORTED_MODULE_3_piper_client_stubs_WebWorkerStreamingClient__["WebWorkerStreamingClient"](this.worker, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3_piper_client_stubs_WebWorkerStreamingClient__["countingIdProvider"])(0));
     }
     list() {
-        return this.client.list({}).then(response => {
-            this.librariesUpdated.next(response);
-            return response;
-        });
+        return this.client.list({});
     }
     extract(analysisItemId, request) {
         let config;
@@ -1306,7 +1303,7 @@ module.exports = module.exports.toString();
 /***/ "nKj7":
 /***/ (function(module, exports) {
 
-module.exports = "<button md-icon-button (click)=\"emitPlayPause()\">\n  <md-icon>\n    <ng-template [ngIf]=\"isPlaying()\">pause</ng-template>\n    <ng-template [ngIf]=\"!isPlaying()\">play_arrow</ng-template>\n  </md-icon>\n</button>\n"
+module.exports = "<button md-icon-button (click)=\"emitFastRewindStart()\">\n  <md-icon>skip_previous</md-icon>\n</button>\n<button md-icon-button (click)=\"emitPlayPause()\">\n  <md-icon>\n    <ng-template [ngIf]=\"isPlaying()\">pause</ng-template>\n    <ng-template [ngIf]=\"!isPlaying()\">play_arrow</ng-template>\n  </md-icon>\n</button>\n"
 
 /***/ }),
 
