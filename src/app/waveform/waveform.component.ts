@@ -227,7 +227,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.timeline = undefined;
     this.cursorLayer = undefined;
     this.highlightLayer = undefined;
-    this.isPlaying = false;
+    this.isPlaying = this.audioService.isPlaying();
     this.isLoading = true;
   }
 
@@ -869,6 +869,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = false;
     this.ref.markForCheck();
     this.timeline.tracks.update();
+    this.animate();
   }
 
   private animate(): void {
