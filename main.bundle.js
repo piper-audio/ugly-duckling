@@ -1524,7 +1524,6 @@ let WaveformComponent = class WaveformComponent {
         this.timeline = undefined;
         this.cursorLayer = undefined;
         this.highlightLayer = undefined;
-        this.isPlaying = false;
         this.isLoading = true;
     }
     set width(width) {
@@ -1593,22 +1592,18 @@ let WaveformComponent = class WaveformComponent {
                 return;
             }
             this.seekedSubscription = this.audioService.seeked$.subscribe(() => {
-                if (!this.isPlaying) {
+                if (!this.audioService.isPlaying()) {
                     this.animate();
                 }
             });
             this.playingStateSubscription =
                 this.audioService.playingStateChange$.subscribe(isPlaying => {
-                    this.isPlaying = isPlaying;
-                    if (this.isPlaying) {
+                    if (isPlaying) {
                         this.animate();
                     }
                 });
         }
         else {
-            if (this.isPlaying) {
-                this.isPlaying = false;
-            }
             if (this.playingStateSubscription) {
                 this.playingStateSubscription.unsubscribe();
             }
@@ -2186,6 +2181,7 @@ let WaveformComponent = class WaveformComponent {
         this.isLoading = false;
         this.ref.markForCheck();
         this.timeline.tracks.update();
+        this.animate();
     }
     animate() {
         if (!this.isSeeking) {
@@ -2223,7 +2219,7 @@ let WaveformComponent = class WaveformComponent {
                         currentOffset + visibleDuration;
                     this.timeline.tracks.update();
                 }
-                if (this.isPlaying) {
+                if (this.audioService.isPlaying()) {
                     requestAnimationFrame(updateSeekingCursor);
                 }
             };
@@ -2397,7 +2393,7 @@ function deduceHigherLevelFeatureShape(featureData, descriptor) {
     if (isRegion) {
         return 'regions';
     }
-    throw 'No shape could be deduced';
+    throw new Error('No shape could be deduced');
 }
 function getCanonicalNoteLikeUnit(unit) {
     const canonicalUnits = ['midi', 'hz'];
