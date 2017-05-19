@@ -832,7 +832,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const startTime = collected.startTime; // !!! + make use of
         const stepDuration = collected.stepDuration;
         const matrixData = collected.data;
-        
+
         if (matrixData.length === 0) {
           return;
         }
@@ -1089,13 +1089,13 @@ function deduceHigherLevelFeatureShape(featureData: FeatureList,
   if (isRegion) {
     return 'regions';
   }
-  throw 'No shape could be deduced';
+  throw new Error('No shape could be deduced');
 }
 
 function getCanonicalNoteLikeUnit(unit: string): NoteLikeUnit | null {
   const canonicalUnits: NoteLikeUnit[] = ['midi', 'hz'];
   return canonicalUnits.find(canonicalUnit => {
-    return unit.toLowerCase().indexOf(canonicalUnit) >= 0
+    return unit.toLowerCase().indexOf(canonicalUnit) >= 0;
   });
 }
 
