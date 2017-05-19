@@ -145,22 +145,18 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       this.seekedSubscription = this.audioService.seeked$.subscribe(() => {
-        if (!this.isPlaying) {
+        if (!this.audioService.isPlaying()) {
           this.animate();
         }
       });
       this.playingStateSubscription =
         this.audioService.playingStateChange$.subscribe(
           isPlaying => {
-            this.isPlaying = isPlaying;
-            if (this.isPlaying) {
+            if (isPlaying) {
               this.animate();
             }
           });
     } else {
-      if (this.isPlaying) {
-        this.isPlaying = false;
-      }
       if (this.playingStateSubscription) {
         this.playingStateSubscription.unsubscribe();
       }
@@ -197,7 +193,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private playingStateSubscription: Subscription;
   private seekedSubscription: Subscription;
   private onAudioDataSubscription: Subscription;
-  private isPlaying: boolean;
   private zoomOnMouseDown: number;
   private offsetOnMouseDown: number;
   private hasShot: boolean;
@@ -227,7 +222,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.timeline = undefined;
     this.cursorLayer = undefined;
     this.highlightLayer = undefined;
-    this.isPlaying = false;
     this.isLoading = true;
   }
 
@@ -832,7 +826,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const startTime = collected.startTime; // !!! + make use of
         const stepDuration = collected.stepDuration;
         const matrixData = collected.data;
-        
+
         if (matrixData.length === 0) {
           return;
         }
@@ -869,6 +863,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = false;
     this.ref.markForCheck();
     this.timeline.tracks.update();
+    this.animate();
   }
 
   private animate(): void {
@@ -915,7 +910,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           this.timeline.tracks.update();
         }
 
-        if (this.isPlaying) {
+        if (this.audioService.isPlaying()) {
           requestAnimationFrame(updateSeekingCursor);
         }
       };
@@ -1089,13 +1084,13 @@ function deduceHigherLevelFeatureShape(featureData: FeatureList,
   if (isRegion) {
     return 'regions';
   }
-  throw 'No shape could be deduced';
+  throw new Error('No shape could be deduced');
 }
 
 function getCanonicalNoteLikeUnit(unit: string): NoteLikeUnit | null {
   const canonicalUnits: NoteLikeUnit[] = ['midi', 'hz'];
   return canonicalUnits.find(canonicalUnit => {
-    return unit.toLowerCase().indexOf(canonicalUnit) >= 0
+    return unit.toLowerCase().indexOf(canonicalUnit) >= 0;
   });
 }
 
