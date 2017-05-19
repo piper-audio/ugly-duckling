@@ -798,9 +798,21 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
               );
               break;
             case 'notes':
+              const notes = mapFeaturesToNotes(featureData, outputDescriptor);
+              let [min, max] = notes.reduce((acc, note) => {
+                const [min, max] = acc;
+                return [Math.min (min, note.pitch), Math.max (max, note.pitch)];
+              }, [Infinity, -Infinity]);
+              if (min === Infinity || min < 0 || max < 0) {
+                min = 0;
+                max = 127;
+              }
+              // round min and max to octave boundaries (starting at C as in MIDI)
+              min = 12 * Math.floor(min / 12);
+              max = 12 * Math.ceil(max / 12);
               const pianoRollLayer = new wavesUI.helpers.PianoRollLayer(
-                mapFeaturesToNotes(featureData, outputDescriptor),
-                {height: height, color: colour}
+                notes,
+                {height: height, color: colour, yDomain: [min, max] }
               );
               this.addLayer(
                 pianoRollLayer,
@@ -820,7 +832,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         const startTime = collected.startTime; // !!! + make use of
         const stepDuration = collected.stepDuration;
         const matrixData = collected.data;
-
+        
         if (matrixData.length === 0) {
           return;
         }
