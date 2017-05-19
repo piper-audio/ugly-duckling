@@ -740,7 +740,7 @@ let UglyMaterialModule = class UglyMaterialModule {
 };
 UglyMaterialModule = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["b" /* NgModule */])({
-        imports: [],
+        imports: importExports,
         exports: importExports,
     })
 ], UglyMaterialModule);
@@ -1604,6 +1604,9 @@ let WaveformComponent = class WaveformComponent {
                 });
         }
         else {
+            if (this.cursorLayer && this.waveTrack) {
+                this.waveTrack.remove(this.cursorLayer);
+            }
             if (this.playingStateSubscription) {
                 this.playingStateSubscription.unsubscribe();
             }
@@ -1663,19 +1666,19 @@ let WaveformComponent = class WaveformComponent {
         else {
             this.timeline = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.core.Timeline(pixelsPerSecond, width);
         }
-        const waveTrack = this.timeline.createTrack(track, height, `wave-${this.trackIdPrefix}`);
+        this.waveTrack = this.timeline.createTrack(track, height, `wave-${this.trackIdPrefix}`);
         if (isInitialRender && hasExistingTimeline) {
             // time axis
             const timeAxis = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.TimeAxisLayer({
                 height: height,
                 color: '#b0b0b0'
             });
-            this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
+            this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);
             this.cursorLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.CursorLayer({
                 height: height,
                 color: '#c33c54'
             });
-            this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
+            this.addLayer(this.cursorLayer, this.waveTrack, this.timeline.timeContext);
         }
         if ('ontouchstart' in window) {
             let zoomGestureJustEnded = false;
@@ -1937,16 +1940,14 @@ let WaveformComponent = class WaveformComponent {
         }
     }
     renderWaveform(buffer) {
-        // const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
         const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-        const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
         if (this.timeline) {
             // resize
             const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
             this.clearTimeline();
             this.timeline.visibleWidth = width;
             this.timeline.pixelsPerSecond = width / buffer.duration;
-            waveTrack.height = height;
+            this.waveTrack.height = height;
         }
         else {
             this.renderTimeline(buffer.duration);
@@ -1957,7 +1958,7 @@ let WaveformComponent = class WaveformComponent {
             height: height,
             color: '#b0b0b0'
         });
-        this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
+        this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);
         const nchannels = buffer.numberOfChannels;
         const totalWaveHeight = height * 0.9;
         const waveHeight = totalWaveHeight / nchannels;
@@ -1969,16 +1970,16 @@ let WaveformComponent = class WaveformComponent {
                 color: '#0868ac',
                 channel: ch
             });
-            this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
+            this.addLayer(waveformLayer, this.waveTrack, this.timeline.timeContext);
         }
         this.cursorLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.CursorLayer({
             height: height,
             color: '#c33c54'
         });
-        this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
+        this.addLayer(this.cursorLayer, this.waveTrack, this.timeline.timeContext);
         this.timeline.state = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.states.CenteredZoomState(this.timeline);
-        waveTrack.render();
-        waveTrack.update();
+        this.waveTrack.render();
+        this.waveTrack.update();
         this.isLoading = false;
         this.ref.markForCheck();
         this.animate();
@@ -2018,7 +2019,6 @@ let WaveformComponent = class WaveformComponent {
             max = 1;
         }
         const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-        const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
         // Now add a line layer for each vector feature
         const lineLayers = features.map(feature => {
             let duration = 0;
@@ -2039,7 +2039,7 @@ let WaveformComponent = class WaveformComponent {
                 height: height,
                 yDomain: [min, max]
             });
-            this.addLayer(lineLayer, waveTrack, this.timeline.timeContext);
+            this.addLayer(lineLayer, this.waveTrack, this.timeline.timeContext);
             // Set start and duration so that the highlight layer can use
             // them to determine which line to draw values from
             lineLayer.start = feature.startTime;
@@ -2054,7 +2054,7 @@ let WaveformComponent = class WaveformComponent {
             height: height,
             yDomain: [min, max]
         });
-        this.addLayer(scaleLayer, waveTrack, this.timeline.timeContext);
+        this.addLayer(scaleLayer, this.waveTrack, this.timeline.timeContext);
         // And a single highlight layer which uses all of the line layers
         // as its source material
         this.highlightLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.HighlightLayer(lineLayers, {
@@ -2065,7 +2065,7 @@ let WaveformComponent = class WaveformComponent {
             yDomain: [min, max],
             unit
         });
-        this.addLayer(this.highlightLayer, waveTrack, this.timeline.timeContext);
+        this.addLayer(this.highlightLayer, this.waveTrack, this.timeline.timeContext);
     }
     // TODO refactor - this doesn't belong here
     renderFeatures(extracted, colour) {
@@ -2084,7 +2084,6 @@ let WaveformComponent = class WaveformComponent {
         const features = extracted.features;
         const outputDescriptor = extracted.outputDescriptor;
         const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-        const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
         let unit = '';
         if (outputDescriptor.configured.hasOwnProperty('unit')) {
             unit = outputDescriptor.configured.unit;
@@ -2121,10 +2120,10 @@ let WaveformComponent = class WaveformComponent {
                                 labelPosition: 'bottom',
                                 shadeSegments: true
                             });
-                            this.addLayer(featureLayer, waveTrack, this.timeline.timeContext);
+                            this.addLayer(featureLayer, this.waveTrack, this.timeline.timeContext);
                             break;
                         case 'regions':
-                            this.renderRegions(featureData, outputDescriptor, waveTrack, height, colour);
+                            this.renderRegions(featureData, outputDescriptor, this.waveTrack, height, colour);
                             break;
                         case 'notes':
                             const notes = mapFeaturesToNotes(featureData, outputDescriptor);
@@ -2140,7 +2139,7 @@ let WaveformComponent = class WaveformComponent {
                             min = 12 * Math.floor(min / 12);
                             max = 12 * Math.ceil(max / 12);
                             const pianoRollLayer = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.PianoRollLayer(notes, { height: height, color: colour, yDomain: [min, max] });
-                            this.addLayer(pianoRollLayer, waveTrack, this.timeline.timeContext);
+                            this.addLayer(pianoRollLayer, this.waveTrack, this.timeline.timeContext);
                             break;
                     }
                 }
@@ -2172,7 +2171,7 @@ let WaveformComponent = class WaveformComponent {
                     normalise: 'none',
                     mapper: this.iceMapper()
                 });
-                this.addLayer(matrixLayer, waveTrack, this.timeline.timeContext);
+                this.addLayer(matrixLayer, this.waveTrack, this.timeline.timeContext);
                 break;
             }
             default:
@@ -2193,7 +2192,7 @@ let WaveformComponent = class WaveformComponent {
                 const currentTime = this.audioService.getCurrentTime();
                 this.cursorLayer.currentPosition = currentTime;
                 this.cursorLayer.update();
-                if (typeof (this.highlightLayer) !== 'undefined') {
+                if (this.highlightLayer) {
                     this.highlightLayer.currentPosition = currentTime;
                     this.highlightLayer.update();
                 }
@@ -2320,8 +2319,15 @@ let WaveformComponent = class WaveformComponent {
     seek(x) {
         if (this.timeline) {
             const timeContext = this.timeline.timeContext;
+            const timeX = timeContext.timeToPixel.invert(x) - timeContext.offset;
             if (this.isSeeking) {
-                this.audioService.seekTo(timeContext.timeToPixel.invert(x) - timeContext.offset);
+                this.audioService.seekTo(timeX);
+            }
+            else {
+                if (this.highlightLayer) {
+                    this.highlightLayer.currentPosition = timeX;
+                    this.highlightLayer.update();
+                }
             }
         }
     }
