@@ -145,22 +145,18 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       this.seekedSubscription = this.audioService.seeked$.subscribe(() => {
-        if (!this.isPlaying) {
+        if (!this.audioService.isPlaying()) {
           this.animate();
         }
       });
       this.playingStateSubscription =
         this.audioService.playingStateChange$.subscribe(
           isPlaying => {
-            this.isPlaying = isPlaying;
-            if (this.isPlaying) {
+            if (isPlaying) {
               this.animate();
             }
           });
     } else {
-      if (this.isPlaying) {
-        this.isPlaying = false;
-      }
       if (this.playingStateSubscription) {
         this.playingStateSubscription.unsubscribe();
       }
@@ -197,7 +193,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private playingStateSubscription: Subscription;
   private seekedSubscription: Subscription;
   private onAudioDataSubscription: Subscription;
-  private isPlaying: boolean;
   private zoomOnMouseDown: number;
   private offsetOnMouseDown: number;
   private hasShot: boolean;
@@ -227,7 +222,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     this.timeline = undefined;
     this.cursorLayer = undefined;
     this.highlightLayer = undefined;
-    this.isPlaying = this.audioService.isPlaying();
     this.isLoading = true;
   }
 
@@ -916,7 +910,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           this.timeline.tracks.update();
         }
 
-        if (this.isPlaying) {
+        if (this.audioService.isPlaying()) {
           requestAnimationFrame(updateSeekingCursor);
         }
       };
