@@ -157,6 +157,9 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
             }
           });
     } else {
+      if (this.cursorLayer && this.waveTrack) {
+        this.waveTrack.remove(this.cursorLayer);
+      }
       if (this.playingStateSubscription) {
         this.playingStateSubscription.unsubscribe();
       }
@@ -197,6 +200,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   private offsetOnMouseDown: number;
   private hasShot: boolean;
   private isLoading: boolean;
+  private waveTrack: Track;
 
   private static changeColour(layer: Layer, colour: string): void {
     const butcherShapes = (shape) => {
@@ -255,7 +259,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.timeline = new wavesUI.core.Timeline(pixelsPerSecond, width);
     }
-    const waveTrack = this.timeline.createTrack(
+    this.waveTrack = this.timeline.createTrack(
       track,
       height,
       `wave-${this.trackIdPrefix}`
@@ -266,12 +270,16 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         height: height,
         color: '#b0b0b0'
       });
-      this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
+      this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);
       this.cursorLayer = new wavesUI.helpers.CursorLayer({
         height: height,
         color: '#c33c54'
       });
-      this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
+      this.addLayer(
+        this.cursorLayer,
+        this.waveTrack,
+        this.timeline.timeContext
+      );
     }
     if ('ontouchstart' in window) {
       interface Point {
@@ -542,9 +550,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   renderWaveform(buffer: AudioBuffer): void {
-    // const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height / 2;
-    const height: number = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
+    const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
     if (this.timeline) {
       // resize
       const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
@@ -553,7 +559,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.timeline.visibleWidth = width;
       this.timeline.pixelsPerSecond = width / buffer.duration;
-      waveTrack.height = height;
+      this.waveTrack.height = height;
     } else {
       this.renderTimeline(buffer.duration);
     }
@@ -564,7 +570,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       height: height,
       color: '#b0b0b0'
     });
-    this.addLayer(timeAxis, waveTrack, this.timeline.timeContext, true);
+    this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);
 
     const nchannels = buffer.numberOfChannels;
     const totalWaveHeight = height * 0.9;
@@ -578,17 +584,17 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         color: '#0868ac',
         channel: ch
       });
-      this.addLayer(waveformLayer, waveTrack, this.timeline.timeContext);
+      this.addLayer(waveformLayer, this.waveTrack, this.timeline.timeContext);
     }
 
     this.cursorLayer = new wavesUI.helpers.CursorLayer({
       height: height,
       color: '#c33c54'
     });
-    this.addLayer(this.cursorLayer, waveTrack, this.timeline.timeContext);
+    this.addLayer(this.cursorLayer, this.waveTrack, this.timeline.timeContext);
     this.timeline.state = new wavesUI.states.CenteredZoomState(this.timeline);
-    waveTrack.render();
-    waveTrack.update();
+    this.waveTrack.render();
+    this.waveTrack.update();
 
     this.isLoading = false;
     this.ref.markForCheck();
@@ -641,7 +647,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
 
     // Now add a line layer for each vector feature
     const lineLayers = features.map(feature => {
@@ -669,7 +674,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       });
       this.addLayer(
         lineLayer,
-        waveTrack,
+        this.waveTrack,
         this.timeline.timeContext
       );
 
@@ -691,7 +696,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.addLayer(
       scaleLayer,
-      waveTrack,
+      this.waveTrack,
       this.timeline.timeContext
     );
 
@@ -707,7 +712,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.addLayer(
       this.highlightLayer,
-      waveTrack,
+      this.waveTrack,
       this.timeline.timeContext
     );
   }
@@ -730,7 +735,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     const features: FeatureCollection = (extracted.features as FeatureCollection);
     const outputDescriptor = extracted.outputDescriptor;
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    const waveTrack = this.timeline.getTrackById(`wave-${this.trackIdPrefix}`);
 
     let unit = '';
     if (outputDescriptor.configured.hasOwnProperty('unit')) {
@@ -778,7 +782,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
               });
               this.addLayer(
                 featureLayer,
-                waveTrack,
+                this.waveTrack,
                 this.timeline.timeContext
               );
               break;
@@ -786,7 +790,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
               this.renderRegions(
                 featureData,
                 outputDescriptor,
-                waveTrack,
+                this.waveTrack,
                 height,
                 colour
               );
@@ -810,7 +814,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
               );
               this.addLayer(
                 pianoRollLayer,
-                waveTrack,
+                this.waveTrack,
                 this.timeline.timeContext
               );
               break;
@@ -849,7 +853,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         this.addLayer(
           matrixLayer,
-          waveTrack,
+          this.waveTrack,
           this.timeline.timeContext
         );
         break;
@@ -878,7 +882,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cursorLayer.currentPosition = currentTime;
         this.cursorLayer.update();
 
-        if (typeof(this.highlightLayer) !== 'undefined') {
+        if (this.highlightLayer) {
           this.highlightLayer.currentPosition = currentTime;
           this.highlightLayer.update();
         }
@@ -1049,10 +1053,14 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
   seek(x: number): void {
     if (this.timeline) {
       const timeContext: any = this.timeline.timeContext;
+      const timeX = timeContext.timeToPixel.invert(x) - timeContext.offset;
       if (this.isSeeking) {
-        this.audioService.seekTo(
-          timeContext.timeToPixel.invert(x) - timeContext.offset
-        );
+        this.audioService.seekTo(timeX);
+      } else {
+        if (this.highlightLayer) {
+          this.highlightLayer.currentPosition = timeX;
+          this.highlightLayer.update();
+        }
       }
     }
   }
