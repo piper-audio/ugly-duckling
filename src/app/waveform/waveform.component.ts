@@ -686,6 +686,18 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       return lineLayer;
     });
 
+    this.addScaleAndHighlight(waveTrack, lineLayers, unit, colour, min, max);
+  }
+
+  private addScaleAndHighlight(waveTrack,
+                               lineLayers,
+                               unit: string,
+                               colour: Colour,
+                               min: number,
+                               max: number) {
+
+    const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
+    
     // And a single scale layer at left
     // !!! todo: unit in scale layer
     const scaleLayer = new wavesUI.helpers.ScaleLayer({
@@ -817,6 +829,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.waveTrack,
                 this.timeline.timeContext
               );
+              this.addScaleAndHighlight(waveTrack, [pianoRollLayer], "",
+                                        colour, min, max);
               break;
           }
         } catch (e) {
