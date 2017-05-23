@@ -29,6 +29,8 @@ import {toSeconds, OutputDescriptor} from 'piper';
 import {FeatureList, Feature} from 'piper/Feature';
 import * as Hammer from 'hammerjs';
 import {WavesSpectrogramLayer} from '../spectrogram/Spectrogram';
+import {iceMapper, sunsetMapper} from 'app/spectrogram/ColourMap';
+import {estimatePercentile} from '../spectrogram/MatrixUtils';
 
 type Layer = any;
 type Track = any;
@@ -407,127 +409,6 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     // this.timeline.createTrack(track, height/2, `grid-${this.trackIdPrefix}`);
   }
 
-  estimatePercentile(matrix, percentile) {
-    // our sample is not evenly distributed across the whole data set:
-    // it is guaranteed to include at least one sample from every
-    // column, and could sample some values more than once. But it
-    // should be good enough in most cases (todo: show this)
-    if (matrix.length === 0) {
-      return 0.0;
-    }
-    const w = matrix.length;
-    const h = matrix[0].length;
-    const n = w * h;
-    const m = (n > 50000 ? 50000 : n); // should base that on the %ile
-    let m_per = Math.floor(m / w);
-    if (m_per < 1) {
-      m_per = 1;
-    }
-
-    const sample = [];
-    for (let x = 0; x < w; ++x) {
-      for (let i = 0; i < m_per; ++i) {
-        const y = Math.floor(Math.random() * h);
-        const value = matrix[x][y];
-        if (!isNaN(value) && value !== Infinity) {
-          sample.push(value);
-        }
-      }
-    }
-    if (sample.length === 0) {
-      console.log('WARNING: No samples gathered, even though we hoped for ' +
-        (m_per * w) + ' of them');
-      return 0.0;
-    }
-    sample.sort((a, b) => { return a - b; });
-    const ix = Math.floor((sample.length * percentile) / 100);
-    console.log('Estimating ' + percentile + '-%ile of ' +
-      n + '-sample dataset (' + w + ' x ' + h + ') as value ' + ix +
-      ' of sorted ' + sample.length + '-sample subset');
-    const estimate = sample[ix];
-    console.log('Estimate is: ' + estimate + ' (where min sampled value = ' +
-      sample[0] + ' and max = ' + sample[sample.length - 1] + ')');
-    return estimate;
-  }
-
-  interpolatingMapper(hexColours) {
-    const colours = hexColours.map(n => {
-      const i = parseInt(n, 16);
-      return [ ((i >> 16) & 255) / 255.0,
-        ((i >> 8) & 255) / 255.0,
-        ((i) & 255) / 255.0 ];
-    });
-    const last = colours.length - 1;
-    return (value => {
-      const m = value * last;
-      if (m >= last) {
-        return colours[last];
-      }
-      if (m <= 0) {
-        return colours[0];
-      }
-      const base = Math.floor(m);
-      const prop0 = base + 1.0 - m;
-      const prop1 = m - base;
-      const c0 = colours[base];
-      const c1 = colours[base + 1];
-      return [ c0[0] * prop0 + c1[0] * prop1,
-        c0[1] * prop0 + c1[1] * prop1,
-        c0[2] * prop0 + c1[2] * prop1 ];
-    });
-  }
-
-  iceMapper() {
-    const hexColours = [
-      // Based on ColorBrewer ylGnBu
-      'ffffff', 'ffff00', 'f7fcf0', 'e0f3db', 'ccebc5', 'a8ddb5',
-      '7bccc4', '4eb3d3', '2b8cbe', '0868ac', '084081', '042040'
-    ];
-    hexColours.reverse();
-    return this.interpolatingMapper(hexColours);
-  }
-
-  hsv2rgb(h, s, v) { // all values in range [0, 1]
-    const i = Math.floor(h * 6);
-    const f = h * 6 - i;
-    const p = v * (1 - s);
-    const q = v * (1 - f * s);
-    const t = v * (1 - (1 - f) * s);
-    let r = 0, g = 0, b = 0;
-    switch (i % 6) {
-      case 0: r = v; g = t; b = p; break;
-      case 1: r = q; g = v; b = p; break;
-      case 2: r = p; g = v; b = t; break;
-      case 3: r = p; g = q; b = v; break;
-      case 4: r = t; g = p; b = v; break;
-      case 5: r = v; g = p; b = q; break;
-    }
-    return [ r, g, b ];
-  }
-
-  greenMapper() {
-    const blue = 0.6666;
-    const pieslice = 0.3333;
-    return (value => {
-      const h = blue - value * 2.0 * pieslice;
-      const s = 0.5 + value / 2.0;
-      const v = value;
-      return this.hsv2rgb(h, s, v);
-    });
-  }
-
-  sunsetMapper() {
-    return (value => {
-      const r = (value - 0.24) * 2.38;
-      const g = (value - 0.64) * 2.777;
-      let b = (3.6 * value);
-      if (value > 0.277) {
-        b = 2.0 - b;
-      }
-      return [ r, g, b ];
-    });
-  }
-
   clearTimeline(): void {
     // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
     const timeContextChildren = this.timeline.timeContext._children;
@@ -611,7 +492,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       stepSize: 512,
       blockSize: 1024,
       normalise: 'none',
-      mapper: this.sunsetMapper()
+      mapper: sunsetMapper()
     });
     this.addLayer(spectrogramLayer, gridTrack, this.timeline.timeContext);
 
@@ -686,7 +567,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
       return lineLayer;
     });
 
-    this.addScaleAndHighlight(waveTrack, lineLayers, unit, colour, min, max);
+    this.addScaleAndHighlight(this.waveTrack, lineLayers, unit, colour, min, max);
   }
 
   private addScaleAndHighlight(waveTrack,
@@ -697,7 +578,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
                                max: number) {
 
     const height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    
+
     // And a single scale layer at left
     // !!! todo: unit in scale layer
     const scaleLayer = new wavesUI.helpers.ScaleLayer({
@@ -708,7 +589,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.addLayer(
       scaleLayer,
-      this.waveTrack,
+      waveTrack,
       this.timeline.timeContext
     );
 
@@ -724,7 +605,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.addLayer(
       this.highlightLayer,
-      this.waveTrack,
+      waveTrack,
       this.timeline.timeContext
     );
   }
@@ -829,8 +710,14 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.waveTrack,
                 this.timeline.timeContext
               );
-              this.addScaleAndHighlight(waveTrack, [pianoRollLayer], "",
-                                        colour, min, max);
+              this.addScaleAndHighlight(
+                this.waveTrack,
+                [pianoRollLayer],
+                '',
+                colour,
+                min,
+                max
+              );
               break;
           }
         } catch (e) {
@@ -851,9 +738,8 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
 
         console.log('matrix data length = ' + matrixData.length);
         console.log('height of first column = ' + matrixData[0].length);
-        const targetValue = this.estimatePercentile(matrixData, 95);
+        const targetValue = estimatePercentile(matrixData, 95);
         const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
-        console.log('setting gain to ' + gain);
         const matrixEntity =
           new wavesUI.utils.PrefilledMatrixEntity(matrixData,
             0, // startTime
@@ -863,7 +749,7 @@ export class WaveformComponent implements OnInit, AfterViewInit, OnDestroy {
           top: 0,
           height: height,
           normalise: 'none',
-          mapper: this.iceMapper()
+          mapper: iceMapper()
         });
         this.addLayer(
           matrixLayer,
