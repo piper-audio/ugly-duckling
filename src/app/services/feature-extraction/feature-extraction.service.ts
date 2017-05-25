@@ -15,6 +15,10 @@ import {
 } from 'piper/client-stubs/WebWorkerStreamingClient';
 import {RequestId} from 'piper/protocols/WebWorkerProtocol';
 import {collect, StreamingConfiguration} from 'piper/StreamingService';
+import {
+  KnownShapedFeature,
+  toKnownShape
+} from '../../visualisations/FeatureUtilities';
 
 type RepoUri = string;
 export interface AvailableLibraries {
@@ -30,8 +34,8 @@ export interface Progress {
 export class FeatureExtractionService {
 
   private worker: Worker;
-  private featuresExtracted: Subject<SimpleResponse>;
-  featuresExtracted$: Observable<SimpleResponse>;
+  private featuresExtracted: Subject<KnownShapedFeature>;
+  featuresExtracted$: Observable<KnownShapedFeature>;
   private librariesUpdated: Subject<ListResponse>;
   librariesUpdated$: Observable<ListResponse>;
   private progressUpdated: Subject<Progress>;
@@ -41,7 +45,7 @@ export class FeatureExtractionService {
   constructor(private http: Http,
               @Inject('PiperRepoUri') private repositoryUri: RepoUri) {
     this.worker = new Worker('bootstrap-feature-extraction-worker.js');
-    this.featuresExtracted = new Subject<SimpleResponse>();
+    this.featuresExtracted = new Subject<KnownShapedFeature>();
     this.featuresExtracted$ = this.featuresExtracted.asObservable();
     this.librariesUpdated = new Subject<ListResponse>();
     this.librariesUpdated$ = this.librariesUpdated.asObservable();
@@ -80,10 +84,12 @@ export class FeatureExtractionService {
         });
       }
     }).then(features => {
-      this.featuresExtracted.next({
+      const shaped = toKnownShape({
         features: features,
         outputDescriptor: config.outputDescriptor
       });
+      console.warn(shaped.shape);
+      this.featuresExtracted.next(shaped);
     });
   }
 
@@ -94,7 +100,7 @@ export class FeatureExtractionService {
         this.worker.postMessage({
           method: 'addRemoteLibraries',
           params: res.json()
-        })
+        });
       })
       .catch(console.error); // TODO Report error to user
   }
