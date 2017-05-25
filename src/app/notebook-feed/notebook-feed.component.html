@@ -3,9 +3,10 @@
     <div [class.break]="item.isRoot">
       <ugly-analysis-item
         [timeline]="getOrCreateTimeline(item)"
-        [isActive]="rootAudioUri === item.rootAudioUri"
+        [isActive]="isActiveItem(item)"
         [item]="item"
         [contentWidth]="width"
+        [onSeek]="getOnSeekForItem(item)"
       ></ugly-analysis-item>
     </div>
   </ng-template>

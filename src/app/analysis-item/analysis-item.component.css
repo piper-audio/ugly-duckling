@@ -13,3 +13,14 @@ md-card-actions {
 md-card-header {
   margin-bottom: 8px;
 }
+
+ugly-live-play-head {
+  position: absolute;
+  z-index: 99;
+  height: 160px;
+}
+
+.content {
+  height: 160px;
+  width: 100%;
+}

@@ -14,6 +14,7 @@ import {AnalysisItem} from '../analysis-item/analysis-item.component';
 import {Observable} from 'rxjs/Observable';
 import {Dimension} from '../app.module';
 import {Subscription} from 'rxjs/Subscription';
+import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
 
 @Component({
   selector: 'ugly-notebook-feed',
@@ -26,6 +27,7 @@ export class NotebookFeedComponent implements OnDestroy {
   @Input() set rootAudioUri(uri: string) {
     this._rootAudioUri = uri;
   }
+  @Input() onSeek: OnSeekHandler;
 
   get rootAudioUri(): string {
     return this._rootAudioUri;
@@ -71,6 +73,14 @@ export class NotebookFeedComponent implements OnDestroy {
       this.timelines.set(item.rootAudioUri, timeline);
       return timeline;
     }
+  }
+
+  isActiveItem(item: AnalysisItem): boolean {
+    return this.rootAudioUri === item.rootAudioUri;
+  }
+
+  getOnSeekForItem(item: AnalysisItem): (timeSecounds: number) => any {
+    return this.isActiveItem(item) ? this.onSeek : () => {};
   }
 
   ngOnDestroy(): void {

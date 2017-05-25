@@ -7,6 +7,8 @@ import {
   Input,
   OnInit
 } from '@angular/core';
+import {naivePagingMapper} from '../visualisations/WavesJunk';
+import {OnSeekHandler, TimePixelMapper} from '../playhead/PlayHeadHelpers';
 
 export interface AnalysisItem {
   rootAudioUri: string;
@@ -17,6 +19,7 @@ export interface AnalysisItem {
   description?: string;
   id?: string;
   progress?: number;
+  audioData?: AudioBuffer;
 }
 
 @Component({
@@ -31,13 +34,25 @@ export class AnalysisItemComponent implements OnInit {
   @Input() isActive: boolean;
   @Input() item: AnalysisItem;
   @Input() contentWidth: number;
+  @Input() onSeek: OnSeekHandler;
   private hasProgressOnInit = false;
+
+
+  // TODO move
+  private DOES_NOT_BELONG_HERE: TimePixelMapper;
 
   ngOnInit(): void {
     this.hasProgressOnInit = this.item.progress != null;
+    this.DOES_NOT_BELONG_HERE = naivePagingMapper(this.timeline);
   }
 
   isLoading(): boolean {
     return this.hasProgressOnInit && this.item.progress < 100;
+  }
+
+  isAudioItem(): boolean {
+    return this.item &&
+      this.item.isRoot &&
+      this.item.audioData instanceof AudioBuffer;
   }
 }
