@@ -1,4 +1,4 @@
-/// <reference path="../../../node_modules/@types/node/index.d.ts"/>
+/// <reference path="../../../../node_modules/@types/node/index.d.ts"/>
 declare const AmbientInstance: WavesUserInterface;
 
 declare module 'waves-ui-piper' {
@@ -94,14 +94,14 @@ interface Utilities {
   scales: any;
 }
 
+type Timeline = any;
+
 interface Core {
   Layer: LayerConstructor;
   LayerTimeContext: any; // TODO
-  Timeline: any; // TODO
+  Timeline: Timeline; // TODO
   TimelineTimeContext: TimelineTimeContextConstructor;
 }
-
-type Timeline = any;
 
 interface TimelineTimeContext {
   pixelsPerSecond: number;

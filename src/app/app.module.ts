@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
-import { WaveformComponent } from './waveform/waveform.component';
+import { WaveformComponent } from './visualisations/waveform/waveform.component';
 import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
 import { PlaybackControlComponent } from './playback-control/playback-control.component';
 import {
@@ -29,6 +29,8 @@ import {AnalysisItemComponent} from './analysis-item/analysis-item.component';
 import {ProgressBarComponent} from './progress-bar/progress-bar';
 import {UglyMaterialModule} from './ugly-material.module';
 import {Observable} from 'rxjs/Observable';
+import {PlayHeadComponent} from './playhead/playhead.component';
+import {LivePlayHeadComponent} from './playhead/live-play-head.component';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -114,7 +116,9 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     ProgressSpinnerComponent,
     AnalysisItemComponent,
     NotebookFeedComponent,
-    ProgressBarComponent
+    ProgressBarComponent,
+    PlayHeadComponent,
+    LivePlayHeadComponent
   ],
   imports: [
     BrowserModule,

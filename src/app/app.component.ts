@@ -9,6 +9,7 @@ import {DomSanitizer} from '@angular/platform-browser';
 import {MdIconRegistry} from '@angular/material';
 import {Subscription} from 'rxjs/Subscription';
 import {AnalysisItem} from './analysis-item/analysis-item.component';
+import {OnSeekHandler} from './playhead/PlayHeadHelpers';
 
 class PersistentStack<T> {
   private stack: T[];
@@ -74,6 +75,7 @@ export class AppComponent implements OnDestroy {
   private nRecordings: number; // TODO user control for naming a recording
   private countingId: number; // TODO improve uniquely identifying items
   private rootAudioUri: string;
+  private onSeek: OnSeekHandler;
 
   constructor(private audioService: AudioPlayerService,
               private featureService: FeatureExtractionService,
@@ -83,6 +85,7 @@ export class AppComponent implements OnDestroy {
     this.canExtract = false;
     this.nRecordings = 0;
     this.countingId = 0;
+    this.onSeek = (time) => this.audioService.seekTo(time);
 
     iconRegistry.addSvgIcon(
       'duck',
@@ -99,6 +102,19 @@ export class AppComponent implements OnDestroy {
           this.audioBuffer = (resource as AudioResource).samples;
           if (this.audioBuffer) {
             this.canExtract = true;
+            const currentRootIndex = this.analyses.findIndex(val => {
+              return val.rootAudioUri === this.rootAudioUri && val.isRoot;
+            });
+            if (currentRootIndex !== -1) {
+              this.analyses.set(
+                currentRootIndex,
+                Object.assign(
+                  {},
+                  this.analyses.get(currentRootIndex),
+                  {audioData: this.audioBuffer}
+                )
+              );
+            }
           }
         }
       }

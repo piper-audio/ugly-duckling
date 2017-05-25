@@ -2,6 +2,3 @@
   #track class="track"
   (mousedown)="seekStart()"
   (mouseup)="seekEnd($event.clientX)"></div>
-<ng-template [ngIf]="isLoading">
-  <ugly-progress-spinner></ugly-progress-spinner>
-</ng-template>
