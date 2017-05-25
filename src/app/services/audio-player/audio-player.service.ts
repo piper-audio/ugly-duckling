@@ -1,6 +1,7 @@
 import {Injectable, Inject} from '@angular/core';
 import {Subject} from 'rxjs/Subject';
 import {Observable} from 'rxjs/Observable';
+import {ReplaySubject} from 'rxjs/ReplaySubject';
 
 export interface UrlResourceLifetimeManager {
   createUrlToResource(resource: File | Blob): string;
@@ -39,8 +40,10 @@ export class AudioPlayerService {
                 'UrlResourceLifetimeManager'
               ) private resourceManager: UrlResourceLifetimeManager) {
     this.currentObjectUrl = '';
-    this.playingStateChange = new Subject<boolean>();
-    this.playingStateChange$ = this.playingStateChange.asObservable();
+    this.playingStateChange = new ReplaySubject<boolean>(1);
+    this.playingStateChange$ = this.playingStateChange
+      .asObservable();
+
     this.seeked = new Subject<number>();
     this.seeked$ = this.seeked.asObservable();
     this.audioElement.addEventListener('ended', () => {
