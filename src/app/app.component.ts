@@ -9,7 +9,8 @@ import {DomSanitizer} from '@angular/platform-browser';
 import {MdIconRegistry} from '@angular/material';
 import {Subscription} from 'rxjs/Subscription';
 import {
-  AnalysisItem, isRootAudioItem,
+  AnalysisItem,
+  isRootAudioItem,
   Item, PendingAnalysisItem, PendingRootAudioItem, RootAudioItem
 } from './analysis-item/analysis-item.component';
 import {OnSeekHandler} from './playhead/PlayHeadHelpers';
@@ -89,6 +90,7 @@ export class AppComponent implements OnDestroy {
     this.nRecordings = 0;
     this.countingId = 0;
     this.onSeek = (time) => this.audioService.seekTo(time);
+    this.rootAudioItem = {} as any; // TODO eugh
 
     iconRegistry.addSvgIcon(
       'duck',
