@@ -3,8 +3,7 @@ import {
   ListResponse
 } from 'piper';
 import {
-  SimpleRequest,
-  SimpleResponse
+  SimpleRequest
 } from 'piper/HigherLevelUtilities';
 import {Subject} from 'rxjs/Subject';
 import {Observable} from 'rxjs/Observable';
@@ -30,12 +29,17 @@ export interface Progress {
   value: number; // between 0 and 100, for material-ui
 }
 
+export interface ExtractionResult {
+  id: RequestId;
+  result: KnownShapedFeature;
+}
+
 @Injectable()
 export class FeatureExtractionService {
 
   private worker: Worker;
-  private featuresExtracted: Subject<KnownShapedFeature>;
-  featuresExtracted$: Observable<KnownShapedFeature>;
+  private featuresExtracted: Subject<ExtractionResult>;
+  featuresExtracted$: Observable<ExtractionResult>;
   private librariesUpdated: Subject<ListResponse>;
   librariesUpdated$: Observable<ListResponse>;
   private progressUpdated: Subject<Progress>;
@@ -45,7 +49,7 @@ export class FeatureExtractionService {
   constructor(private http: Http,
               @Inject('PiperRepoUri') private repositoryUri: RepoUri) {
     this.worker = new Worker('bootstrap-feature-extraction-worker.js');
-    this.featuresExtracted = new Subject<KnownShapedFeature>();
+    this.featuresExtracted = new Subject<ExtractionResult>();
     this.featuresExtracted$ = this.featuresExtracted.asObservable();
     this.librariesUpdated = new Subject<ListResponse>();
     this.librariesUpdated$ = this.librariesUpdated.asObservable();
@@ -70,7 +74,8 @@ export class FeatureExtractionService {
     return this.client.list({});
   }
 
-  extract(analysisItemId: string, request: SimpleRequest): Promise<void> {
+  extract(analysisItemId: string,
+          request: SimpleRequest): Promise<ExtractionResult> {
     let config: StreamingConfiguration;
     return collect(this.client.process(request), val => {
       if (val.configuration) {
@@ -88,8 +93,12 @@ export class FeatureExtractionService {
         features: features,
         outputDescriptor: config.outputDescriptor
       });
-      console.warn(shaped.shape);
-      this.featuresExtracted.next(shaped);
+      const result = {
+        id: analysisItemId,
+        result: shaped
+      };
+      this.featuresExtracted.next(result);
+      return result;
     });
   }
 

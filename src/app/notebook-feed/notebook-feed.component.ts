@@ -10,7 +10,11 @@ import {
   OnDestroy
 } from '@angular/core';
 import Waves from 'waves-ui-piper';
-import {AnalysisItem} from '../analysis-item/analysis-item.component';
+import {
+  getRootUri,
+  isRootAudioItem,
+  Item
+} from '../analysis-item/analysis-item.component';
 import {Observable} from 'rxjs/Observable';
 import {Dimension} from '../app.module';
 import {Subscription} from 'rxjs/Subscription';
@@ -23,7 +27,7 @@ import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookFeedComponent implements OnDestroy {
-  @Input() analyses: AnalysisItem[];
+  @Input() analyses: Item[];
   @Input() set rootAudioUri(uri: string) {
     this._rootAudioUri = uri;
   }
@@ -61,25 +65,29 @@ export class NotebookFeedComponent implements OnDestroy {
     requestAnimationFrame(triggerChangeDetectionOnResize);
   }
 
-  getOrCreateTimeline(item: AnalysisItem): Timeline | void {
+  getOrCreateTimeline(item: Item): Timeline | void {
     if (!item.hasSharedTimeline) {
       return;
     }
-
-    if (this.timelines.has(item.rootAudioUri)) {
-      return this.timelines.get(item.rootAudioUri);
+    const uri = getRootUri(item);
+    if (this.timelines.has(uri)) {
+      return this.timelines.get(uri);
     } else {
       const timeline = new Waves.core.Timeline();
-      this.timelines.set(item.rootAudioUri, timeline);
+      this.timelines.set(uri, timeline);
       return timeline;
     }
   }
 
-  isActiveItem(item: AnalysisItem): boolean {
-    return this.rootAudioUri === item.rootAudioUri;
+  isAudioItem(item: Item): boolean {
+    return isRootAudioItem(item);
   }
 
-  getOnSeekForItem(item: AnalysisItem): (timeSecounds: number) => any {
+  isActiveItem(item: Item): boolean {
+    return this.rootAudioUri === getRootUri(item);
+  }
+
+  getOnSeekForItem(item: Item): (timeSeconds: number) => any {
     return this.isActiveItem(item) ? this.onSeek : () => {};
   }
 

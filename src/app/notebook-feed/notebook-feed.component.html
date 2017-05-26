@@ -1,6 +1,6 @@
 <div class="feed">
   <ng-template ngFor let-item [ngForOf]="analyses">
-    <div [class.break]="item.isRoot">
+    <div [class.break]="isAudioItem(item)">
       <ugly-analysis-item
         [timeline]="getOrCreateTimeline(item)"
         [isActive]="isActiveItem(item)"

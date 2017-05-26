@@ -8,7 +8,10 @@ import {ExtractorOutputInfo} from './feature-extraction-menu/feature-extraction-
 import {DomSanitizer} from '@angular/platform-browser';
 import {MdIconRegistry} from '@angular/material';
 import {Subscription} from 'rxjs/Subscription';
-import {AnalysisItem} from './analysis-item/analysis-item.component';
+import {
+  AnalysisItem, isRootAudioItem,
+  Item, PendingAnalysisItem, PendingRootAudioItem, RootAudioItem
+} from './analysis-item/analysis-item.component';
 import {OnSeekHandler} from './playhead/PlayHeadHelpers';
 
 class PersistentStack<T> {
@@ -71,10 +74,10 @@ export class AppComponent implements OnDestroy {
   canExtract: boolean;
   private onAudioDataSubscription: Subscription;
   private onProgressUpdated: Subscription;
-  private analyses: PersistentStack<AnalysisItem>; // TODO some immutable state container describing entire session
+  private analyses: PersistentStack<Item>; // TODO some immutable state container describing entire session
   private nRecordings: number; // TODO user control for naming a recording
   private countingId: number; // TODO improve uniquely identifying items
-  private rootAudioUri: string;
+  private rootAudioItem: RootAudioItem;
   private onSeek: OnSeekHandler;
 
   constructor(private audioService: AudioPlayerService,
@@ -100,10 +103,11 @@ export class AppComponent implements OnDestroy {
           this.canExtract = false;
         } else {
           this.audioBuffer = (resource as AudioResource).samples;
+          this.rootAudioItem.audioData = this.audioBuffer;
           if (this.audioBuffer) {
             this.canExtract = true;
             const currentRootIndex = this.analyses.findIndex(val => {
-              return val.rootAudioUri === this.rootAudioUri && val.isRoot;
+              return isRootAudioItem(val) && val.uri === this.rootAudioItem.uri;
             });
             if (currentRootIndex !== -1) {
               this.analyses.set(
@@ -141,8 +145,6 @@ export class AppComponent implements OnDestroy {
   onFileOpened(file: File | Blob) {
     this.canExtract = false;
     const url = this.audioService.loadAudio(file);
-    this.rootAudioUri = url; // TODO this isn't going to work to id previously loaded files
-
     // TODO is it safe to assume it is a recording?
     const title = (file instanceof File) ?
       (file as File).name : `Recording ${this.nRecordings++}`;
@@ -155,17 +157,18 @@ export class AppComponent implements OnDestroy {
       return;
     }
 
-    // TODO re-ordering of items for display
-    // , one alternative is a Angular Pipe / Filter for use in the Template
-    this.analyses.unshift({
-      rootAudioUri: url,
+    const pending = {
+      uri: url,
       hasSharedTimeline: true,
-      extractorKey: 'not:real',
-      isRoot: true,
       title: title,
       description: new Date().toLocaleString(),
       id: `${++this.countingId}`
-    });
+    } as PendingRootAudioItem;
+    this.rootAudioItem = pending as RootAudioItem; // TODO this is silly
+
+    // TODO re-ordering of items for display
+    // , one alternative is a Angular Pipe / Filter for use in the Template
+    this.analyses.unshift(pending);
   }
 
   extractFeatures(outputInfo: ExtractorOutputInfo): void {
@@ -175,16 +178,16 @@ export class AppComponent implements OnDestroy {
 
     this.canExtract = false;
 
-    this.analyses.unshift({
-      rootAudioUri: this.rootAudioUri,
+    const placeholderCard: PendingAnalysisItem = {
+      parent: this.rootAudioItem,
       hasSharedTimeline: true,
       extractorKey: outputInfo.combinedKey,
-      isRoot: false,
       title: outputInfo.name,
       description: outputInfo.outputId,
       id: `${++this.countingId}`,
       progress: 0
-    });
+    };
+    this.analyses.unshift(placeholderCard);
 
     this.featureService.extract(`${this.countingId}`, {
       audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]

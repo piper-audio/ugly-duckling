@@ -9,17 +9,61 @@ import {
 } from '@angular/core';
 import {naivePagingMapper} from '../visualisations/WavesJunk';
 import {OnSeekHandler, TimePixelMapper} from '../playhead/PlayHeadHelpers';
+import {HigherLevelFeatureShape} from '../visualisations/FeatureUtilities';
 
-export interface AnalysisItem {
-  rootAudioUri: string;
+export interface Item {
+  id: string;
   hasSharedTimeline: boolean;
-  isRoot: boolean;
-  extractorKey: string;
   title?: string;
   description?: string;
-  id?: string;
   progress?: number;
-  audioData?: AudioBuffer;
+}
+
+export interface PendingRootAudioItem extends Item {
+  uri: string;
+}
+export interface RootAudioItem extends PendingRootAudioItem{
+  audioData: AudioBuffer;
+}
+
+export interface PendingAnalysisItem extends Item {
+  parent: RootAudioItem;
+  extractorKey: string;
+}
+
+export interface AnalysisItem extends PendingAnalysisItem {
+  kind: HigherLevelFeatureShape;
+}
+
+export function isPendingRootAudioItem(item: Item): item is PendingRootAudioItem {
+  return typeof (item as RootAudioItem).uri === 'string';
+}
+
+export function isRootAudioItem(item: Item): item is RootAudioItem {
+  return isPendingRootAudioItem(item) &&
+    typeof (item as RootAudioItem).uri === 'string';
+}
+
+export function isPendingAnalysisItem(item: Item): item is AnalysisItem {
+  const downcast = (item as AnalysisItem);
+  return isRootAudioItem(downcast.parent)
+    && typeof downcast.extractorKey === 'string';
+}
+
+export function isAnalysisItem(item: Item): item is AnalysisItem {
+  const downcast = (item as AnalysisItem);
+  return isPendingAnalysisItem(item) && downcast.kind != null;
+}
+
+// these should probably be actual concrete types with their own getUri methods
+export function getRootUri(item: Item): string {
+  if (isPendingRootAudioItem(item)) {
+    return item.uri;
+  }
+  if (isPendingAnalysisItem(item)) {
+    return item.parent.uri;
+  }
+  throw new Error('Invalid item: No URI property set.');
 }
 
 @Component({
@@ -30,9 +74,9 @@ export interface AnalysisItem {
 })
 export class AnalysisItemComponent implements OnInit {
 
-  @Input() timeline: Timeline;
+  @Input() timeline: Timeline; // TODO should be TimelineTimeContext?
   @Input() isActive: boolean;
-  @Input() item: AnalysisItem;
+  @Input() item: Item;
   @Input() contentWidth: number;
   @Input() onSeek: OnSeekHandler;
   private hasProgressOnInit = false;
@@ -51,8 +95,7 @@ export class AnalysisItemComponent implements OnInit {
   }
 
   isAudioItem(): boolean {
-    return this.item &&
-      this.item.isRoot &&
-      this.item.audioData instanceof AudioBuffer;
+    console.warn('is root?', isRootAudioItem(this.item), this.item);
+    return isRootAudioItem(this.item);
   }
 }
