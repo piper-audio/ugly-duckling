@@ -38,6 +38,7 @@ interface Layer extends NodeJS.EventEmitter {
   stretchRatio: number;
   yDomain: number[];
   opacity: number;
+  timeContext: any; // TODO
   readonly timeToPixel: () => (time: number) => number;
   readonly valueToPixel: () => (value: number) => number;
   readonly items: Element[];
@@ -95,6 +96,7 @@ interface Utilities {
 }
 
 type Timeline = any;
+type Track = any; // TODO
 
 interface Core {
   Layer: LayerConstructor;
