@@ -41,7 +41,7 @@ export function isPendingRootAudioItem(item: Item): item is PendingRootAudioItem
 
 export function isRootAudioItem(item: Item): item is RootAudioItem {
   return isPendingRootAudioItem(item) &&
-    typeof (item as RootAudioItem).uri === 'string';
+    (item as RootAudioItem).audioData instanceof AudioBuffer;
 }
 
 export function isPendingAnalysisItem(item: Item): item is AnalysisItem {
