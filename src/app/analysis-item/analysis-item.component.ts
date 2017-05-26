@@ -95,7 +95,6 @@ export class AnalysisItemComponent implements OnInit {
   }
 
   isAudioItem(): boolean {
-    console.warn('is root?', isRootAudioItem(this.item), this.item);
     return isRootAudioItem(this.item);
   }
 }
