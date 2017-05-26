@@ -38,22 +38,13 @@ export class WaveformComponent extends WavesComponent {
     if (this.timeline && this.waveTrack) {
       // resize
       const width = this.trackDiv.nativeElement.getBoundingClientRect().width;
-
-      this.clearTimeline();
+      this.clearTimeline(this.trackDiv);
       this.timeline.visibleWidth = width;
       this.timeline.pixelsPerSecond = width / buffer.duration;
       this.waveTrack.height = height;
     } else {
       this.renderTimeline(this.trackDiv, buffer.duration);
     }
-    this.timeline.timeContext.offset = 0.5 * this.timeline.timeContext.visibleDuration;
-
-    // time axis
-    const timeAxis = new wavesUI.helpers.TimeAxisLayer({
-      height: height,
-      color: '#b0b0b0'
-    });
-    this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);
 
     const nchannels = buffer.numberOfChannels;
     const totalWaveHeight = height * 0.9;
@@ -69,7 +60,6 @@ export class WaveformComponent extends WavesComponent {
       this.addLayer(waveformLayer, this.waveTrack, this.timeline.timeContext);
     }
 
-    this.timeline.state = new wavesUI.states.CenteredZoomState(this.timeline);
     this.waveTrack.render();
     this.waveTrack.update();
     this.ref.markForCheck();

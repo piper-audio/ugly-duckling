@@ -47,10 +47,11 @@ export abstract class WavesComponent {
         this.timeline
       );
     }
+    this.resetTimelineState($el);
   }
 
   // TODO can likely be removed, or use waves-ui methods
-  protected clearTimeline(): void {
+  protected clearTimeline($el: ElementRef): void {
     // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
     const timeContextChildren = this.timeline.timeContext._children;
     for (const track of this.timeline.tracks) {
@@ -69,6 +70,21 @@ export abstract class WavesComponent {
         }
       }
     }
+    this.resetTimelineState($el);
+  }
+
+  private resetTimelineState($el: ElementRef): void {
+    const height = $el.nativeElement.getBoundingClientRect().height;
+    this.timeline.timeContext.offset =
+      0.5 * this.timeline.timeContext.visibleDuration;
+
+    // time axis
+    const timeAxis = new Waves.helpers.TimeAxisLayer({
+      height: height,
+      color: '#b0b0b0'
+    });
+    this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);
+    this.timeline.state = new Waves.states.CenteredZoomState(this.timeline);
   }
 
 
