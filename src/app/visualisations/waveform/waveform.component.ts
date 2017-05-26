@@ -11,8 +11,8 @@ import {WavesComponent} from '../waves-base.component';
 
 @Component({
   selector: 'ugly-waveform',
-  templateUrl: './waveform.component.html',
-  styleUrls: ['./waveform.component.css']
+  templateUrl: '../waves-template.html',
+  styleUrls: ['../waves-template.css']
 })
 export class WaveformComponent extends WavesComponent {
   @ViewChild('track') trackDiv: ElementRef;
