@@ -21,7 +21,7 @@
         </ng-template>
         <ugly-waveform *ngIf="isAudioItem(); else showSpinner"
           [timeline]="timeline"
-          [trackIdPrefix]=" item.id || item.title"
+          [trackIdPrefix]=" item.id"
           [width]="contentWidth"
           [audioBuffer]="item.audioData"
           [onSeek]="onSeek"
