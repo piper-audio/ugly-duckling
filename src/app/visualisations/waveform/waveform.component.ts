@@ -3,7 +3,8 @@ import {
   Input,
   ChangeDetectorRef,
   ElementRef,
-  ViewChild
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import wavesUI from 'waves-ui-piper';
 import {WavesComponent} from '../waves-base.component';
@@ -12,7 +13,8 @@ import {WavesComponent} from '../waves-base.component';
 @Component({
   selector: 'ugly-waveform',
   templateUrl: '../waves-template.html',
-  styleUrls: ['../waves-template.css']
+  styleUrls: ['../waves-template.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WaveformComponent extends WavesComponent {
   @ViewChild('track') trackDiv: ElementRef;
