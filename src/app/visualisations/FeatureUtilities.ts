@@ -148,6 +148,8 @@ export function toKnownShape(response: SimpleResponse): KnownShapedFeature {
       return response.features as Vector;
     case 'matrix':
       return response.features as Matrix;
+    case 'tracks':
+      return response.features as Tracks;
     case 'notes':
       return {
         shape: deducedShape,
