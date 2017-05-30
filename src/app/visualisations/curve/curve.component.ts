@@ -57,6 +57,7 @@ export class CurveComponent extends WavesComponent implements AfterViewInit {
 
   update(): void {
     if (this.waveTrack) {
+      this.clearTimeline(this.trackDiv);
       for (const feature of this.currentState) {
         const lineLayer = new Waves.helpers.LineLayer(feature.data, {
           color: feature.color,
