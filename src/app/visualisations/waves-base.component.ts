@@ -77,8 +77,6 @@ export abstract class WavesComponent {
 
   private resetTimelineState($el: ElementRef): void {
     const height = $el.nativeElement.getBoundingClientRect().height;
-    this.timeline.timeContext.offset =
-      0.5 * this.timeline.timeContext.visibleDuration;
 
     // time axis
     const timeAxis = new Waves.helpers.TimeAxisLayer({
@@ -96,7 +94,6 @@ export abstract class WavesComponent {
                      track: Track,
                      timeContext: any,
                      isAxis: boolean = false): void {
-    timeContext.zoom = 1.0;
     if (!layer.timeContext) {
       layer.setTimeContext(isAxis ?
         timeContext : new Waves.core.LayerTimeContext(timeContext));
