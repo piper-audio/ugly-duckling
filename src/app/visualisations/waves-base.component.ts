@@ -28,13 +28,15 @@ export abstract class WavesComponent {
     this.layers = [];
   }
 
-  protected renderTimeline($el: ElementRef, duration: number = 1.0): Timeline {
+  protected renderTimeline($el: ElementRef, duration?: number): Timeline {
     const track: HTMLElement = $el.nativeElement;
     track.innerHTML = '';
     const height: number = track.getBoundingClientRect().height;
-    const width: number = track.getBoundingClientRect().width;
-    this.timeline.pixelsPerSecond = width / duration;
-    this.timeline.visibleWidth = width;
+    if (duration >= 0) {
+      const width: number = track.getBoundingClientRect().width;
+      this.timeline.pixelsPerSecond = width / duration;
+      this.timeline.visibleWidth = width;
+    }
     this.waveTrack = this.timeline.createTrack(
       track,
       height,
@@ -85,14 +87,15 @@ export abstract class WavesComponent {
     });
     this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);
     this.timeline.state = new Waves.states.CenteredZoomState(this.timeline);
+    this.timeline.tracks.update(); // TODO this is problematic, shared state across components
   }
 
 
   // TODO can likely use methods in waves-ui directly
   protected addLayer(layer: Layer,
-                   track: Track,
-                   timeContext: any,
-                   isAxis: boolean = false): void {
+                     track: Track,
+                     timeContext: any,
+                     isAxis: boolean = false): void {
     timeContext.zoom = 1.0;
     if (!layer.timeContext) {
       layer.setTimeContext(isAxis ?
