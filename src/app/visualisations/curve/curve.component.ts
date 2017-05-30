@@ -24,18 +24,18 @@ export class CurveComponent extends WavesComponent implements AfterViewInit {
 
   @ViewChild('track') trackDiv: ElementRef;
 
-  private mFeature: VectorFeature;
+  private mFeature: VectorFeature[];
   private currentState: PlotLayerData[];
   private height: number; // As it stands, height is fixed. Store once onInit.
 
-  @Input() set feature(input: VectorFeature) {
+  @Input() set feature(input: VectorFeature[]) {
     this.mFeature = input;
-    this.currentState = generatePlotData([input]);
+    this.currentState = generatePlotData(input);
     this.update();
   }
   @Input() colour: string;
 
-  get feature(): VectorFeature {
+  get feature(): VectorFeature[] {
     return this.mFeature;
   }
 
@@ -64,6 +64,7 @@ export class CurveComponent extends WavesComponent implements AfterViewInit {
         // them to determine which line to draw values from
         lineLayer.start = feature.startTime;
         lineLayer.duration = feature.duration;
+        lineLayer.update(); // TODO probably better to update after all added
       }
     }
   }

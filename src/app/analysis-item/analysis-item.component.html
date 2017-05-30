@@ -37,8 +37,17 @@
                 [trackIdPrefix]="item.id"
                 [width]="contentWidth"
                 [onSeek]="onSeek"
+                [feature]="[item.collected]"
+              ></ugly-curve>
+              <ugly-curve
+                *ngSwitchCase="'tracks'"
+                [timeline]="timeline"
+                [trackIdPrefix]="item.id"
+                [width]="contentWidth"
+                [onSeek]="onSeek"
                 [feature]="item.collected"
               ></ugly-curve>
+
               <div *ngSwitchDefault>Feature cannot be visualised.</div>
             </div>
           </div>
