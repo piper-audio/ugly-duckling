@@ -19,16 +19,27 @@
           >
           </ugly-live-play-head>
         </ng-template>
-        <ugly-waveform *ngIf="isAudioItem(); else showSpinner"
+        <ugly-waveform *ngIf="isAudioItem(); else notAudio"
           [timeline]="timeline"
           [trackIdPrefix]=" item.id"
           [width]="contentWidth"
           [audioBuffer]="item.audioData"
           [onSeek]="onSeek"
         ></ugly-waveform>
-        <ng-template #showSpinner>
-          <ugly-progress-spinner></ugly-progress-spinner>
+
+        <ng-template #notAudio>
+          <div
+            *ngIf="getFeatureShape() as shape; else showSpinner">
+            <div [ngSwitch]="shape">
+              <ugly-curve *ngSwitchCase="'vector'"></ugly-curve>
+              <div *ngSwitchDefault>Feature cannot be visualised.</div>
+            </div>
+          </div>
+          <ng-template #showSpinner>
+            <ugly-progress-spinner></ugly-progress-spinner>
+          </ng-template>
         </ng-template>
+
       </ng-template>
     </div>
   </md-card-content>
