@@ -9,7 +9,10 @@ import {
 } from '@angular/core';
 import {naivePagingMapper} from '../visualisations/WavesJunk';
 import {OnSeekHandler, TimePixelMapper} from '../playhead/PlayHeadHelpers';
-import {HigherLevelFeatureShape} from '../visualisations/FeatureUtilities';
+import {
+  HigherLevelFeatureShape,
+  KnownShapedFeature
+} from '../visualisations/FeatureUtilities';
 
 export interface Item {
   id: string;
@@ -31,12 +34,14 @@ export interface PendingAnalysisItem extends Item {
   extractorKey: string;
 }
 
-export interface AnalysisItem extends PendingAnalysisItem {
-  kind: HigherLevelFeatureShape;
+export type AnalysisItem = PendingAnalysisItem & KnownShapedFeature;
+
+export function isItem(item: Item): item is Item {
+  return item.id != null && item.hasSharedTimeline != null;
 }
 
 export function isPendingRootAudioItem(item: Item): item is PendingRootAudioItem {
-  return typeof (item as RootAudioItem).uri === 'string';
+  return isItem(item) && typeof (item as RootAudioItem).uri === 'string';
 }
 
 export function isRootAudioItem(item: Item): item is RootAudioItem {
@@ -52,7 +57,9 @@ export function isPendingAnalysisItem(item: Item): item is AnalysisItem {
 
 export function isAnalysisItem(item: Item): item is AnalysisItem {
   const downcast = (item as AnalysisItem);
-  return isPendingAnalysisItem(item) && downcast.kind != null;
+  return isPendingAnalysisItem(item) &&
+    downcast.shape != null &&
+    downcast.collected != null;
 }
 
 // these should probably be actual concrete types with their own getUri methods
@@ -96,5 +103,10 @@ export class AnalysisItemComponent implements OnInit {
 
   isAudioItem(): boolean {
     return isRootAudioItem(this.item);
+  }
+
+  getFeatureShape(): HigherLevelFeatureShape | null {
+    return !isPendingRootAudioItem(this.item) &&
+    isAnalysisItem(this.item) ? this.item.shape : null;
   }
 }
