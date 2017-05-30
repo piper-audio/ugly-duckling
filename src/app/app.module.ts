@@ -31,6 +31,7 @@ import {UglyMaterialModule} from './ugly-material.module';
 import {Observable} from 'rxjs/Observable';
 import {PlayHeadComponent} from './playhead/playhead.component';
 import {LivePlayHeadComponent} from './playhead/live-play-head.component';
+import {CurveComponent} from "./visualisations/curve/curve.component";
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -118,7 +119,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     NotebookFeedComponent,
     ProgressBarComponent,
     PlayHeadComponent,
-    LivePlayHeadComponent
+    LivePlayHeadComponent,
+    CurveComponent
   ],
   imports: [
     BrowserModule,
