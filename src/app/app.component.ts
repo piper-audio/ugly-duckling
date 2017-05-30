@@ -201,8 +201,15 @@ export class AppComponent implements OnDestroy {
       },
       key: outputInfo.extractorKey,
       outputId: outputInfo.outputId
-    }).then(() => {
+    }).then(result => { // TODO subscribe to the extraction service instead
+      const i = this.analyses.findIndex(val => val.id === result.id);
       this.canExtract = true;
+      if (i !== -1) {
+        this.analyses.set(
+          i,
+          Object.assign({}, this.analyses.get(i), result.result)
+        );
+      }  // TODO else remove the item?
     }).catch(err => {
       this.canExtract = true;
       this.analyses.shift();
