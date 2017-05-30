@@ -168,3 +168,64 @@ export function toKnownShape(response: SimpleResponse): KnownShapedFeature {
   }
   throwShapeError();
 }
+
+export interface PlotData {
+  cx: number;
+  cy: number;
+}
+
+export interface PlotLayerData {
+  data: PlotData[];
+  yDomain: [number, number];
+  startTime: number;
+  duration: number;
+}
+
+export function generatePlotData(features: VectorFeature[]): PlotLayerData[] {
+
+  const winnowed = features.filter(feature => feature.data.length > 0);
+
+  // First establish a [min,max] range across all of the features
+  let [min, max] = winnowed.reduce((acc, feature) => {
+    return feature.data.reduce((acc, val) => {
+      const [min, max] = acc;
+      return [Math.min(min, val), Math.max(max, val)];
+    }, acc);
+  }, [Infinity, -Infinity]);
+
+  if (min === Infinity) {
+    min = 0;
+    max = 1;
+  }
+
+  if (min !== min || max !== max) {
+    console.warn('WARNING: min or max is NaN');
+    min = 0;
+    max = 1;
+  }
+
+  return winnowed.map(feature => {
+    let duration = 0;
+
+    // Give the plot items positions relative to the start of the
+    // line, rather than relative to absolute time 0. This is
+    // because we'll be setting the layer timeline start property
+    // later on and these will be positioned relative to that
+
+    const plotData = [...feature.data].map((val, i) => {
+      const t = i * feature.stepDuration;
+      duration = t + feature.stepDuration;
+      return {
+        cx: t,
+        cy: val
+      };
+    });
+
+    return {
+      data: plotData,
+      yDomain: [min, max] as [number, number],
+      startTime: feature.startTime,
+      duration: duration
+    };
+  });
+}
