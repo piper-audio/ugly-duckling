@@ -28,10 +28,17 @@
         ></ugly-waveform>
 
         <ng-template #notAudio>
-          <div
+          <div class="content"
             *ngIf="getFeatureShape() as shape; else showSpinner">
-            <div [ngSwitch]="shape">
-              <ugly-curve *ngSwitchCase="'vector'"></ugly-curve>
+            <div [ngSwitch]="shape" class="content">
+              <ugly-curve
+                *ngSwitchCase="'vector'"
+                [timeline]="timeline"
+                [trackIdPrefix]="item.id"
+                [width]="contentWidth"
+                [onSeek]="onSeek"
+                [feature]="item.collected"
+              ></ugly-curve>
               <div *ngSwitchDefault>Feature cannot be visualised.</div>
             </div>
           </div>
