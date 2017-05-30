@@ -1,4 +1,4 @@
-/// <reference path="../../../../node_modules/@types/node/index.d.ts"/>
+/// <reference path="../../../node_modules/@types/node/index.d.ts"/>
 declare const AmbientInstance: WavesUserInterface;
 
 declare module 'waves-ui-piper' {
