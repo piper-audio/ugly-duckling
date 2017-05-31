@@ -91,7 +91,7 @@ interface Utilities {
   MatrixEntity: MatrixEntityConstructor;
   PrefilledMatrixEntity: PrefilledMatrixEntityConstructor;
   scales: {
-    linear: Scale;
+    linear: () => Scale;
   };
 }
 
