@@ -46,6 +46,13 @@
                 [onSeek]="onSeek"
                 [tracks]="item.collected"
               ></ugly-tracks>
+              <ugly-notes
+                *ngSwitchCase="'notes'"
+                [timeline]="timeline"
+                [width]="contentWidth"
+                [onSeek]="onSeek"
+                [notes]="item.collected"
+              ></ugly-notes>
 
               <div *ngSwitchDefault>Feature cannot be visualised.</div>
             </div>
