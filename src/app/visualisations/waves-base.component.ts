@@ -1,15 +1,18 @@
 /**
  * Created by lucast on 26/05/2017.
  */
-import {ElementRef, Input} from '@angular/core';
+import {AfterViewInit, ElementRef, Input} from '@angular/core';
 import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
 import {attachTouchHandlerBodges} from './WavesJunk';
 import Waves from 'waves-ui-piper';
 import {countingIdProvider} from 'piper/client-stubs/WebWorkerStreamingClient';
+import {ShapedFeatureData} from './FeatureUtilities';
 
 const trackIdGenerator = countingIdProvider(0);
 
-export abstract class WavesComponent {
+export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
+  implements AfterViewInit {
+
   @Input() set width(width: number) {
     if (this.timeline) {
       requestAnimationFrame(() => {
@@ -21,11 +24,26 @@ export abstract class WavesComponent {
   @Input() timeline: Timeline;
   @Input() onSeek: OnSeekHandler;
   @Input() colour: string;
+  @Input() set feature(feature: T) {
+    this.mFeature = feature;
+    this.update();
+  }
+
+  get feature(): T {
+    return this.mFeature;
+  }
 
   protected layers: Layer[];
   protected zoomOnMouseDown: number;
   protected offsetOnMouseDown: number;
   protected waveTrack: Track;
+  protected abstract get containerHeight(): number;
+  protected abstract get trackContainer(): ElementRef;
+  protected abstract get featureLayers(): Layer[];
+  protected postAddMap: (value: Layer, index: number, array: Layer[]) => void;
+  protected height: number;
+  protected duration: number;
+  private mFeature: T;
   private id: string;
 
   constructor() {
@@ -33,18 +51,38 @@ export abstract class WavesComponent {
     this.id = trackIdGenerator.next().value;
   }
 
-  protected renderTimeline($el: ElementRef, duration?: number): Timeline {
+  ngAfterViewInit(): void {
+    this.height = this.containerHeight;
+    this.renderTimeline(this.trackContainer);
+    this.update();
+  }
+
+  update(): void {
+    if (!this.waveTrack || !this.mFeature) {
+      return;
+    }
+    this.clearTimeline(this.trackContainer);
+    const layers = this.featureLayers;
+    for (const layer of layers) {
+      this.addLayer(layer, this.waveTrack, this.timeline.timeContext);
+    }
+    if (this.postAddMap) {
+      layers.forEach(this.postAddMap);
+    }
+  }
+
+
+  protected renderTimeline($el: ElementRef): Timeline {
     const track: HTMLElement = $el.nativeElement;
     track.innerHTML = '';
-    const height: number = track.getBoundingClientRect().height;
-    if (duration >= 0) {
+    if (this.duration >= 0) {
       const width: number = track.getBoundingClientRect().width;
-      this.timeline.pixelsPerSecond = width / duration;
+      this.timeline.pixelsPerSecond = width / this.duration;
       this.timeline.visibleWidth = width;
     }
     this.waveTrack = this.timeline.createTrack(
       track,
-      height,
+      this.height,
       this.id
     );
 
@@ -54,7 +92,7 @@ export abstract class WavesComponent {
         this.timeline
       );
     }
-    this.resetTimelineState($el);
+    this.resetTimelineState();
   }
 
   // TODO can likely be removed, or use waves-ui methods
@@ -77,15 +115,13 @@ export abstract class WavesComponent {
         }
       }
     }
-    this.resetTimelineState($el);
+    this.resetTimelineState();
   }
 
-  private resetTimelineState($el: ElementRef): void {
-    const height = $el.nativeElement.getBoundingClientRect().height;
-
+  private resetTimelineState(): void {
     // time axis
     const timeAxis = new Waves.helpers.TimeAxisLayer({
-      height: height,
+      height: this.containerHeight,
       color: '#b0b0b0'
     });
     this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);

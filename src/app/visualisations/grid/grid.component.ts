@@ -21,37 +21,29 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GridComponent extends WavesComponent implements AfterViewInit {
+export class GridComponent extends WavesComponent<MatrixFeature> {
+
   @ViewChild('track') trackDiv: ElementRef;
 
-  private mFeature: MatrixFeature;
-  private height: number; // As it stands, height is fixed. Store once onInit.
-
   @Input() set grid(grid: MatrixFeature) {
-    this.mFeature = grid;
-    this.update();
+    this.feature = grid;
   }
 
-  get grid(): MatrixFeature {
-    return this.mFeature;
+  protected get containerHeight(): number {
+    return this.trackDiv.nativeElement.getBoundingClientRect().height;
   }
 
-  ngAfterViewInit(): void {
-    this.height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    this.renderTimeline(this.trackDiv);
-    this.update();
+  protected get trackContainer(): ElementRef {
+    return this.trackDiv;
   }
 
-  update(): void {
-    if (!this.waveTrack || !this.grid) { return; }
-    this.clearTimeline(this.trackDiv);
-
-    const startTime = this.grid.startTime; // !!! + make use of
-    const stepDuration = this.grid.stepDuration;
-    const matrixData = this.grid.data;
+  protected get featureLayers(): Layer[] {
+    const startTime = this.feature.startTime; // !!! + make use of
+    const stepDuration = this.feature.stepDuration;
+    const matrixData = this.feature.data;
 
     if (matrixData.length === 0) {
-      return;
+      return [];
     }
 
     const targetValue = estimatePercentile(matrixData, 95);
@@ -62,7 +54,7 @@ export class GridComponent extends WavesComponent implements AfterViewInit {
       stepDuration
     );
 
-    this.addLayer(
+    return [
       new Waves.helpers.MatrixLayer(
         matrixEntity,
         {
@@ -71,9 +63,7 @@ export class GridComponent extends WavesComponent implements AfterViewInit {
           normalise: 'none',
           mapper: iceMapper()
         }
-      ),
-      this.waveTrack,
-      this.timeline.timeContext
-    );
+      )
+    ];
   }
 }

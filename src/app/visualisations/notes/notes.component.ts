@@ -19,44 +19,32 @@ import Waves from 'waves-ui-piper';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NotesComponent extends WavesComponent implements AfterViewInit {
-
+export class NotesComponent extends WavesComponent<Note[]> {
   @ViewChild('track') trackDiv: ElementRef;
 
-  private mFeature: Note[];
-  private height: number; // As it stands, height is fixed. Store once onInit.
-
   @Input() set notes(notes: Note[]) {
-    this.mFeature = notes;
-    this.update();
+    this.feature = notes;
   }
 
-  get notes(): Note[] {
-    return this.mFeature;
+  protected get containerHeight(): number {
+    return this.trackDiv.nativeElement.getBoundingClientRect().height;
   }
 
-  ngAfterViewInit(): void {
-    this.height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    this.renderTimeline(this.trackDiv);
-    this.update();
+  protected get trackContainer(): ElementRef {
+    return this.trackDiv;
   }
 
-  update(): void {
-    if (!this.waveTrack || !this.notes) { return; }
-    this.clearTimeline(this.trackDiv);
-
-    this.addLayer(
+  protected get featureLayers(): Layer[] {
+    return [
       new Waves.helpers.PianoRollLayer(
-        this.notes,
+        this.feature,
         {
           height: this.height,
           color: this.colour,
-          yDomain: findVerticalRange(this.notes)
+          yDomain: findVerticalRange(this.feature)
         }
-      ),
-      this.waveTrack,
-      this.timeline.timeContext
-    );
+      )
+    ];
   }
 }
 

@@ -20,51 +20,40 @@ import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TracksComponent extends WavesComponent implements AfterViewInit {
+export class TracksComponent extends WavesComponent<TracksFeature> {
 
   @ViewChild('track') trackDiv: ElementRef;
 
-  private mFeature: TracksFeature;
   private currentState: PlotLayerData[];
-  private height: number; // As it stands, height is fixed. Store once onInit.
 
   @Input() set tracks(input: TracksFeature) {
-    this.mFeature = input;
-    this.currentState = generatePlotData(input);
-    this.update();
+    this.feature = input;
   }
 
-  get tracks(): TracksFeature {
-    return this.mFeature;
+  protected get containerHeight(): number {
+    return this.trackDiv.nativeElement.getBoundingClientRect().height;
   }
 
-  ngAfterViewInit(): void {
-    this.height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    this.renderTimeline(this.trackDiv);
-    this.update();
+  protected get trackContainer(): ElementRef {
+    return this.trackDiv;
   }
 
-  update(): void {
-    if (this.waveTrack) {
-      this.clearTimeline(this.trackDiv);
-      for (const feature of this.currentState) {
-        const lineLayer = new Waves.helpers.LineLayer(feature.data, {
-          color: this.colour,
-          height: this.height,
-          yDomain: feature.yDomain
-        });
-        this.addLayer(
-          lineLayer,
-          this.waveTrack,
-          this.timeline.timeContext
-        );
+  protected get featureLayers(): Layer[] {
+    this.currentState = generatePlotData(this.feature);
+    return this.currentState.map(feature => new Waves.helpers.LineLayer(
+      feature.data, {
+        color: this.colour,
+        height: this.height,
+        yDomain: feature.yDomain
+      })
+    );
+  }
 
-        // Set start and duration so that the highlight layer can use
-        // them to determine which line to draw values from
-        lineLayer.start = feature.startTime;
-        lineLayer.duration = feature.duration;
-        lineLayer.update(); // TODO probably better to update after all added
-      }
-    }
+  protected get postAddMap() {
+    return (layer, index) => {
+      layer.start = this.currentState[index].startTime;
+      layer.duration = this.currentState[index].duration;
+      layer.update();
+    };
   }
 }

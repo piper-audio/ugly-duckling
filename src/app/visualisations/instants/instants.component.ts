@@ -19,43 +19,33 @@ import Waves from 'waves-ui-piper';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InstantsComponent extends WavesComponent implements AfterViewInit {
+export class InstantsComponent extends WavesComponent<Instant[]> {
+
   @ViewChild('track') trackDiv: ElementRef;
 
-  private mFeature: Instant[];
-  private height: number; // As it stands, height is fixed. Store once onInit.
-
   @Input() set instants(instants: Instant[]) {
-    this.mFeature = instants;
-    this.update();
+    this.feature = instants;
   }
 
-  get instants(): Instant[] {
-    return this.mFeature;
+  protected get containerHeight(): number {
+    return this.trackDiv.nativeElement.getBoundingClientRect().height;
   }
 
-  ngAfterViewInit(): void {
-    this.height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    this.renderTimeline(this.trackDiv);
-    this.update();
+  protected get trackContainer(): ElementRef {
+    return this.trackDiv;
   }
 
-  update(): void {
-    if (!this.waveTrack || !this.instants) { return; }
-    this.clearTimeline(this.trackDiv);
-
-    this.addLayer(
+  protected get featureLayers(): Layer[] {
+    return [
       new Waves.helpers.TickLayer(
-        this.instants,
+        this.feature,
         {
           height: this.height,
           color: this.colour,
           labelPosition: 'bottom',
           shadeSegments: true
         }
-      ),
-      this.waveTrack,
-      this.timeline.timeContext
-    );
+      )
+    ];
   }
 }
