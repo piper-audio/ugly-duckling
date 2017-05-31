@@ -10,6 +10,7 @@ import {
 import {naivePagingMapper} from '../visualisations/WavesJunk';
 import {OnSeekHandler, TimePixelMapper} from '../playhead/PlayHeadHelpers';
 import {
+  defaultColourGenerator,
   HigherLevelFeatureShape,
   KnownShapedFeature
 } from '../visualisations/FeatureUtilities';
@@ -108,5 +109,9 @@ export class AnalysisItemComponent implements OnInit {
   getFeatureShape(): HigherLevelFeatureShape | null {
     return !isPendingRootAudioItem(this.item) &&
     isAnalysisItem(this.item) ? this.item.shape : null;
+  }
+
+  getNextColour(): string {
+    return defaultColourGenerator.next().value;
   }
 }

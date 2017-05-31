@@ -34,6 +34,7 @@ import {LivePlayHeadComponent} from './playhead/live-play-head.component';
 import {CurveComponent} from './visualisations/curve/curve.component';
 import {TracksComponent} from './visualisations/tracks/tracks.components';
 import {NotesComponent} from './visualisations/notes/notes.component';
+import {InstantsComponent} from './visualisations/instants/instants.component';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -124,7 +125,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     LivePlayHeadComponent,
     CurveComponent,
     TracksComponent,
-    NotesComponent
+    NotesComponent,
+    InstantsComponent
   ],
   imports: [
     BrowserModule,

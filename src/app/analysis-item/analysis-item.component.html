@@ -34,6 +34,7 @@
             <div [ngSwitch]="shape" class="content">
               <ugly-curve
                 *ngSwitchCase="'vector'"
+                [colour]="getNextColour()"
                 [timeline]="timeline"
                 [width]="contentWidth"
                 [onSeek]="onSeek"
@@ -41,6 +42,7 @@
               ></ugly-curve>
               <ugly-tracks
                 *ngSwitchCase="'tracks'"
+                [colour]="getNextColour()"
                 [timeline]="timeline"
                 [width]="contentWidth"
                 [onSeek]="onSeek"
@@ -48,12 +50,20 @@
               ></ugly-tracks>
               <ugly-notes
                 *ngSwitchCase="'notes'"
+                [colour]="getNextColour()"
                 [timeline]="timeline"
                 [width]="contentWidth"
                 [onSeek]="onSeek"
                 [notes]="item.collected"
               ></ugly-notes>
-
+              <ugly-instants
+                *ngSwitchCase="'instants'"
+                [colour]="getNextColour()"
+                [timeline]="timeline"
+                [width]="contentWidth"
+                [onSeek]="onSeek"
+                [instants]="item.collected"
+              ></ugly-instants>
               <div *ngSwitchDefault>Feature cannot be visualised.</div>
             </div>
           </div>
