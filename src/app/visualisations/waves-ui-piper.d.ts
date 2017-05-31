@@ -22,8 +22,6 @@ interface MatrixEntity {
   dispose(): void;
 }
 
-type TimeContext = any; // TODO
-
 interface Area {
   top: number;
   left: number;
@@ -38,7 +36,7 @@ interface Layer extends NodeJS.EventEmitter {
   stretchRatio: number;
   yDomain: number[];
   opacity: number;
-  timeContext: any; // TODO
+  timeContext: LayerTimeContext;
   readonly timeToPixel: () => (time: number) => number;
   readonly valueToPixel: () => (value: number) => number;
   readonly items: Element[];
@@ -46,7 +44,7 @@ interface Layer extends NodeJS.EventEmitter {
   data: ArrayLike<any> | Object;
   destroy(): void;
   configureTimeContextBehaviour(ctor: ObjectConstructor): void;
-  setTimeContext(context: TimeContext): void;
+  setTimeContext(context: LayerTimeContext): void;
   configureShape(ctor: ObjectConstructor /* TODO BaseShape*/,
                  accessors: Object,
                  options: Object): void;
@@ -92,15 +90,39 @@ interface PrefilledMatrixEntityConstructor {
 interface Utilities {
   MatrixEntity: MatrixEntityConstructor;
   PrefilledMatrixEntity: PrefilledMatrixEntityConstructor;
-  scales: any;
+  scales: {
+    linear: Scale;
+  };
 }
 
 type Timeline = any;
 type Track = any; // TODO
 
+interface Scale {
+  (value: number): number;
+  invert(): (value: number) => number;
+  domain(arr?: [number, number]): Scale;
+  range(arr?: [number, number]): Scale;
+}
+
+interface LayerTimeContext {
+  start: number;
+  duration: number;
+  offset: number;
+  stretchRatio: number;
+  parent: TimelineTimeContext;
+  timeToPixel(): Scale;
+  pixelToTime(px: number): number;
+  clone(): LayerTimeContext;
+}
+
+interface LayerTimeContextConstructor {
+  new(parent: TimelineTimeContext): LayerTimeContext;
+}
+
 interface Core {
   Layer: LayerConstructor;
-  LayerTimeContext: any; // TODO
+  LayerTimeContext: LayerTimeContextConstructor;
   Timeline: Timeline; // TODO
   TimelineTimeContext: TimelineTimeContextConstructor;
 }
@@ -113,7 +135,7 @@ interface TimelineTimeContext {
   visibleWidth: number;
   readonly visibleDuration: number;
   maintainVisibleDuration: boolean;
-  timeToPixel: (time: number) => number;
+  timeToPixel: Scale;
 }
 
 interface TimelineTimeContextConstructor {
