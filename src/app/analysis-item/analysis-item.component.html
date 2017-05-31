@@ -64,6 +64,14 @@
                 [onSeek]="onSeek"
                 [instants]="item.collected"
               ></ugly-instants>
+              <ugly-grid
+                *ngSwitchCase="'matrix'"
+                [timeline]="timeline"
+                [width]="contentWidth"
+                [onSeek]="onSeek"
+                [grid]="item.collected"
+              ></ugly-grid>
+
               <div *ngSwitchDefault>Feature cannot be visualised.</div>
             </div>
           </div>
