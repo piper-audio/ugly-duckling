@@ -19,7 +19,6 @@ import {VectorFeature} from "piper/HigherLevelUtilities";
     [colour]="colour"
     [tracks]="[curve]"
   ></ugly-tracks>`,
-  styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CurveComponent {
