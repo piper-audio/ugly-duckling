@@ -52,15 +52,15 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   ngAfterViewInit(): void {
     this.height =
       this.trackContainer.nativeElement.getBoundingClientRect().height;
-    this.renderTimeline(this.trackContainer);
+    this.renderTimeline();
     this.update();
   }
 
-  update(): void {
+  private update(): void {
     if (!this.waveTrack || !this.mFeature) {
       return;
     }
-    this.clearTimeline(this.trackContainer);
+    this.clearTimeline();
     const layers = this.featureLayers;
     for (const layer of layers) {
       this.addLayer(layer, this.waveTrack, this.timeline.timeContext);
@@ -71,8 +71,8 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   }
 
 
-  protected renderTimeline($el: ElementRef): Timeline {
-    const track: HTMLElement = $el.nativeElement;
+  private renderTimeline(): Timeline {
+    const track: HTMLElement = this.trackContainer.nativeElement;
     track.innerHTML = '';
     if (this.duration >= 0) {
       const width: number = track.getBoundingClientRect().width;
@@ -87,7 +87,7 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
 
     if ('ontouchstart' in window) {
       attachTouchHandlerBodges(
-        $el.nativeElement,
+        track,
         this.timeline
       );
     }
@@ -95,7 +95,7 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   }
 
   // TODO can likely be removed, or use waves-ui methods
-  protected clearTimeline($el: ElementRef): void {
+  private clearTimeline(): void {
     // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
     const timeContextChildren = this.timeline.timeContext._children;
     for (const track of this.timeline.tracks) {
@@ -130,10 +130,10 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
 
 
   // TODO can likely use methods in waves-ui directly
-  protected addLayer(layer: Layer,
-                     track: Track,
-                     timeContext: any,
-                     isAxis: boolean = false): void {
+  private addLayer(layer: Layer,
+                   track: Track,
+                   timeContext: any,
+                   isAxis: boolean = false): void {
     if (!layer.timeContext) {
       layer.setTimeContext(isAxis ?
         timeContext : new Waves.core.LayerTimeContext(timeContext));
