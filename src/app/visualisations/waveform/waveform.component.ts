@@ -1,8 +1,6 @@
 import {
   Component,
   Input,
-  ElementRef,
-  ViewChild,
   ChangeDetectionStrategy
 } from '@angular/core';
 import wavesUI from 'waves-ui-piper';

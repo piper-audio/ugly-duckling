@@ -3,12 +3,9 @@
  */
 import {WavesComponent} from '../waves-base.component';
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   Input,
-  ViewChild
 } from '@angular/core';
 import Waves from 'waves-ui-piper';
 import {MatrixFeature} from 'piper/HigherLevelUtilities';
