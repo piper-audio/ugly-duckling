@@ -21,7 +21,6 @@
         </ng-template>
         <ugly-waveform *ngIf="isAudioItem(); else notAudio"
           [timeline]="timeline"
-          [trackIdPrefix]=" item.id"
           [width]="contentWidth"
           [audioBuffer]="item.audioData"
           [onSeek]="onSeek"
@@ -42,7 +41,6 @@
               <ugly-tracks
                 *ngSwitchCase="'tracks'"
                 [timeline]="timeline"
-                [trackIdPrefix]="item.id"
                 [width]="contentWidth"
                 [onSeek]="onSeek"
                 [tracks]="item.collected"

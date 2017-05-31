@@ -13,7 +13,6 @@ import {VectorFeature} from "piper/HigherLevelUtilities";
   selector: 'ugly-curve',
   template: `<ugly-tracks
     [timeline]="timeline"
-    [trackIdPrefix]="id"
     [width]="width"
     [onSeek]="onSeek"
     [colour]="colour"
@@ -22,8 +21,7 @@ import {VectorFeature} from "piper/HigherLevelUtilities";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CurveComponent {
-  @Input() id: string; // TODO refactor WaveComponents to have own Timeline, sharing a TimeContext
-  @Input() timeline: Timeline; // TODO as above
+  @Input() timeline: Timeline; // TODO refactor WaveComponents to have own Timeline, sharing a TimeContext
   @Input() onSeek: OnSeekHandler;
   @Input() width: number;
   @Input() curve: VectorFeature;

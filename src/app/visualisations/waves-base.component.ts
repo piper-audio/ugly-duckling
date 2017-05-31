@@ -5,6 +5,9 @@ import {ElementRef, Input} from '@angular/core';
 import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
 import {attachTouchHandlerBodges} from './WavesJunk';
 import Waves from 'waves-ui-piper';
+import {countingIdProvider} from 'piper/client-stubs/WebWorkerStreamingClient';
+
+const trackIdGenerator = countingIdProvider(0);
 
 export abstract class WavesComponent {
   @Input() set width(width: number) {
@@ -16,16 +19,17 @@ export abstract class WavesComponent {
     }
   }
   @Input() timeline: Timeline;
-  @Input() trackIdPrefix: string;
   @Input() onSeek: OnSeekHandler;
 
   protected layers: Layer[];
   protected zoomOnMouseDown: number;
   protected offsetOnMouseDown: number;
   protected waveTrack: Track;
+  private id: string;
 
   constructor() {
     this.layers = [];
+    this.id = trackIdGenerator.next().value;
   }
 
   protected renderTimeline($el: ElementRef, duration?: number): Timeline {
@@ -40,7 +44,7 @@ export abstract class WavesComponent {
     this.waveTrack = this.timeline.createTrack(
       track,
       height,
-      `wave-${this.trackIdPrefix || 'default'}`
+      this.id
     );
 
     if ('ontouchstart' in window) {
