@@ -23,18 +23,8 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
 })
 export class GridComponent extends WavesComponent<MatrixFeature> {
 
-  @ViewChild('track') trackDiv: ElementRef;
-
   @Input() set grid(grid: MatrixFeature) {
     this.feature = grid;
-  }
-
-  protected get containerHeight(): number {
-    return this.trackDiv.nativeElement.getBoundingClientRect().height;
-  }
-
-  protected get trackContainer(): ElementRef {
-    return this.trackDiv;
   }
 
   protected get featureLayers(): Layer[] {

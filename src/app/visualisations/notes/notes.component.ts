@@ -20,18 +20,9 @@ import Waves from 'waves-ui-piper';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotesComponent extends WavesComponent<Note[]> {
-  @ViewChild('track') trackDiv: ElementRef;
 
   @Input() set notes(notes: Note[]) {
     this.feature = notes;
-  }
-
-  protected get containerHeight(): number {
-    return this.trackDiv.nativeElement.getBoundingClientRect().height;
-  }
-
-  protected get trackContainer(): ElementRef {
-    return this.trackDiv;
   }
 
   protected get featureLayers(): Layer[] {

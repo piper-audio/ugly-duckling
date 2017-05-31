@@ -20,19 +20,8 @@ import Waves from 'waves-ui-piper';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InstantsComponent extends WavesComponent<Instant[]> {
-
-  @ViewChild('track') trackDiv: ElementRef;
-
   @Input() set instants(instants: Instant[]) {
     this.feature = instants;
-  }
-
-  protected get containerHeight(): number {
-    return this.trackDiv.nativeElement.getBoundingClientRect().height;
-  }
-
-  protected get trackContainer(): ElementRef {
-    return this.trackDiv;
   }
 
   protected get featureLayers(): Layer[] {

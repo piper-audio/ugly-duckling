@@ -16,20 +16,10 @@ import {WavesComponent} from '../waves-base.component';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WaveformComponent extends WavesComponent<AudioBuffer> {
-
-  @ViewChild('track') trackDiv: ElementRef;
   @Input() set audioBuffer(buffer: AudioBuffer) {
     this.duration = buffer.duration;
     this.timeline.pixelsPerSecond = this.timeline.visibleWidth / buffer.duration;
     this.feature = buffer;
-  }
-
-  protected get containerHeight(): number {
-    return this.trackDiv.nativeElement.getBoundingClientRect().height;
-  }
-
-  protected get trackContainer(): ElementRef {
-    return this.trackDiv;
   }
 
   protected get featureLayers(): Layer[] {

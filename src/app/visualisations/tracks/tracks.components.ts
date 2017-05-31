@@ -21,21 +21,10 @@ import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TracksComponent extends WavesComponent<TracksFeature> {
-
-  @ViewChild('track') trackDiv: ElementRef;
-
   private currentState: PlotLayerData[];
 
   @Input() set tracks(input: TracksFeature) {
     this.feature = input;
-  }
-
-  protected get containerHeight(): number {
-    return this.trackDiv.nativeElement.getBoundingClientRect().height;
-  }
-
-  protected get trackContainer(): ElementRef {
-    return this.trackDiv;
   }
 
   protected get featureLayers(): Layer[] {

@@ -1,7 +1,7 @@
 /**
  * Created by lucast on 26/05/2017.
  */
-import {AfterViewInit, ElementRef, Input} from '@angular/core';
+import {AfterViewInit, ElementRef, Input, ViewChild} from '@angular/core';
 import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
 import {attachTouchHandlerBodges} from './WavesJunk';
 import Waves from 'waves-ui-piper';
@@ -12,7 +12,7 @@ const trackIdGenerator = countingIdProvider(0);
 
 export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   implements AfterViewInit {
-
+  @ViewChild('track') trackContainer: ElementRef;
   @Input() set width(width: number) {
     if (this.timeline) {
       requestAnimationFrame(() => {
@@ -37,8 +37,6 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   protected zoomOnMouseDown: number;
   protected offsetOnMouseDown: number;
   protected waveTrack: Track;
-  protected abstract get containerHeight(): number;
-  protected abstract get trackContainer(): ElementRef;
   protected abstract get featureLayers(): Layer[];
   protected postAddMap: (value: Layer, index: number, array: Layer[]) => void;
   protected height: number;
@@ -52,7 +50,8 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   }
 
   ngAfterViewInit(): void {
-    this.height = this.containerHeight;
+    this.height =
+      this.trackContainer.nativeElement.getBoundingClientRect().height;
     this.renderTimeline(this.trackContainer);
     this.update();
   }
@@ -121,7 +120,7 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   private resetTimelineState(): void {
     // time axis
     const timeAxis = new Waves.helpers.TimeAxisLayer({
-      height: this.containerHeight,
+      height: this.height,
       color: '#b0b0b0'
     });
     this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);
