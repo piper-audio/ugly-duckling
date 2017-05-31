@@ -1,7 +1,7 @@
 /**
  * Created by lucas on 30/05/2017.
  */
-import {WavesComponent} from "../waves-base.component";
+import {WavesComponent} from '../waves-base.component';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -9,10 +9,10 @@ import {
   ElementRef,
   Input,
   ViewChild
-} from "@angular/core";
-import {TracksFeature} from "piper/HigherLevelUtilities";
+} from '@angular/core';
+import {TracksFeature} from 'piper/HigherLevelUtilities';
 import Waves from 'waves-ui-piper';
-import {generatePlotData, PlotLayerData} from "../FeatureUtilities";
+import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
 
 @Component({
   selector: 'ugly-tracks',

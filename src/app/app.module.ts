@@ -31,8 +31,9 @@ import {UglyMaterialModule} from './ugly-material.module';
 import {Observable} from 'rxjs/Observable';
 import {PlayHeadComponent} from './playhead/playhead.component';
 import {LivePlayHeadComponent} from './playhead/live-play-head.component';
-import {CurveComponent} from "./visualisations/curve/curve.component";
-import {TracksComponent} from "./visualisations/tracks/tracks.components";
+import {CurveComponent} from './visualisations/curve/curve.component';
+import {TracksComponent} from './visualisations/tracks/tracks.components';
+import {NotesComponent} from './visualisations/notes/notes.component';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -122,7 +123,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     PlayHeadComponent,
     LivePlayHeadComponent,
     CurveComponent,
-    TracksComponent
+    TracksComponent,
+    NotesComponent
   ],
   imports: [
     BrowserModule,

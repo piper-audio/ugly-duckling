@@ -5,9 +5,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input
-} from "@angular/core";
-import {OnSeekHandler} from "../../playhead/PlayHeadHelpers";
-import {VectorFeature} from "piper/HigherLevelUtilities";
+} from '@angular/core';
+import {OnSeekHandler} from '../../playhead/PlayHeadHelpers';
+import {VectorFeature} from 'piper/HigherLevelUtilities';
 
 @Component({
   selector: 'ugly-curve',

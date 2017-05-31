@@ -25,7 +25,7 @@ export interface Item {
 export interface PendingRootAudioItem extends Item {
   uri: string;
 }
-export interface RootAudioItem extends PendingRootAudioItem{
+export interface RootAudioItem extends PendingRootAudioItem {
   audioData: AudioBuffer;
 }
 
