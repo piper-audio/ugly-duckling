@@ -56,7 +56,7 @@ export class WaveformComponent extends WavesComponent {
       const waveformLayer = new wavesUI.helpers.WaveformLayer(buffer, {
         top: (height - totalWaveHeight) / 2 + waveHeight * ch,
         height: waveHeight,
-        color: '#0868ac',
+        color: this.colour,
         channel: ch
       });
       this.addLayer(waveformLayer, this.waveTrack, this.timeline.timeContext);

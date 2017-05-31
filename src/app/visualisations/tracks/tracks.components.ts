@@ -33,7 +33,6 @@ export class TracksComponent extends WavesComponent implements AfterViewInit {
     this.currentState = generatePlotData(input);
     this.update();
   }
-  @Input() colour: string;
 
   get tracks(): TracksFeature {
     return this.mFeature;

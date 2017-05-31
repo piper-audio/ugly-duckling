@@ -20,6 +20,7 @@ export abstract class WavesComponent {
   }
   @Input() timeline: Timeline;
   @Input() onSeek: OnSeekHandler;
+  @Input() colour: string;
 
   protected layers: Layer[];
   protected zoomOnMouseDown: number;

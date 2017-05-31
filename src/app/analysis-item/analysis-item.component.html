@@ -19,11 +19,13 @@
           >
           </ugly-live-play-head>
         </ng-template>
-        <ugly-waveform *ngIf="isAudioItem(); else notAudio"
+        <ugly-waveform
+          *ngIf="isAudioItem(); else notAudio"
           [timeline]="timeline"
           [width]="contentWidth"
           [audioBuffer]="item.audioData"
           [onSeek]="onSeek"
+          [colour]="'#0868ac'"
         ></ugly-waveform>
 
         <ng-template #notAudio>
