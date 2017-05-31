@@ -33,16 +33,16 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
     return this.mFeature;
   }
 
-  protected layers: Layer[];
-  protected zoomOnMouseDown: number;
-  protected offsetOnMouseDown: number;
-  protected waveTrack: Track;
+  private layers: Layer[];
+  private zoomOnMouseDown: number;
+  private offsetOnMouseDown: number;
+  private waveTrack: Track;
+  private mFeature: T;
+  private id: string;
   protected abstract get featureLayers(): Layer[];
   protected postAddMap: (value: Layer, index: number, array: Layer[]) => void;
   protected height: number;
   protected duration: number;
-  private mFeature: T;
-  private id: string;
 
   constructor() {
     this.layers = [];
