@@ -1,71 +1,32 @@
 /**
  * Created by lucas on 30/05/2017.
  */
-import {WavesComponent} from "../waves-base.component";
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
-  Input,
-  ViewChild
+  Input
 } from "@angular/core";
+import {OnSeekHandler} from "../../playhead/PlayHeadHelpers";
 import {VectorFeature} from "piper/HigherLevelUtilities";
-import Waves from 'waves-ui-piper';
-import {generatePlotData, PlotLayerData} from "../FeatureUtilities";
 
 @Component({
   selector: 'ugly-curve',
-  templateUrl: '../waves-template.html',
+  template: `<ugly-tracks
+    [timeline]="timeline"
+    [trackIdPrefix]="id"
+    [width]="width"
+    [onSeek]="onSeek"
+    [colour]="colour"
+    [tracks]="[curve]"
+  ></ugly-tracks>`,
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CurveComponent extends WavesComponent implements AfterViewInit {
-
-  @ViewChild('track') trackDiv: ElementRef;
-
-  private mFeature: VectorFeature[];
-  private currentState: PlotLayerData[];
-  private height: number; // As it stands, height is fixed. Store once onInit.
-
-  @Input() set feature(input: VectorFeature[]) {
-    this.mFeature = input;
-    this.currentState = generatePlotData(input);
-    this.update();
-  }
+export class CurveComponent {
+  @Input() id: string; // TODO refactor WaveComponents to have own Timeline, sharing a TimeContext
+  @Input() timeline: Timeline; // TODO as above
+  @Input() onSeek: OnSeekHandler;
+  @Input() width: number;
+  @Input() curve: VectorFeature;
   @Input() colour: string;
-
-  get feature(): VectorFeature[] {
-    return this.mFeature;
-  }
-
-  ngAfterViewInit(): void {
-    this.height = this.trackDiv.nativeElement.getBoundingClientRect().height;
-    this.renderTimeline(this.trackDiv);
-    this.update();
-  }
-
-  update(): void {
-    if (this.waveTrack) {
-      this.clearTimeline(this.trackDiv);
-      for (const feature of this.currentState) {
-        const lineLayer = new Waves.helpers.LineLayer(feature.data, {
-          color: this.colour,
-          height: this.height,
-          yDomain: feature.yDomain
-        });
-        this.addLayer(
-          lineLayer,
-          this.waveTrack,
-          this.timeline.timeContext
-        );
-
-        // Set start and duration so that the highlight layer can use
-        // them to determine which line to draw values from
-        lineLayer.start = feature.startTime;
-        lineLayer.duration = feature.duration;
-        lineLayer.update(); // TODO probably better to update after all added
-      }
-    }
-  }
 }

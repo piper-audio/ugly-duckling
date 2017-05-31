@@ -34,19 +34,19 @@
               <ugly-curve
                 *ngSwitchCase="'vector'"
                 [timeline]="timeline"
-                [trackIdPrefix]="item.id"
+                [id]="item.id"
                 [width]="contentWidth"
                 [onSeek]="onSeek"
-                [feature]="[item.collected]"
+                [curve]="item.collected"
               ></ugly-curve>
-              <ugly-curve
+              <ugly-tracks
                 *ngSwitchCase="'tracks'"
                 [timeline]="timeline"
                 [trackIdPrefix]="item.id"
                 [width]="contentWidth"
                 [onSeek]="onSeek"
-                [feature]="item.collected"
-              ></ugly-curve>
+                [tracks]="item.collected"
+              ></ugly-tracks>
 
               <div *ngSwitchDefault>Feature cannot be visualised.</div>
             </div>

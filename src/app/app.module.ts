@@ -32,6 +32,7 @@ import {Observable} from 'rxjs/Observable';
 import {PlayHeadComponent} from './playhead/playhead.component';
 import {LivePlayHeadComponent} from './playhead/live-play-head.component';
 import {CurveComponent} from "./visualisations/curve/curve.component";
+import {TracksComponent} from "./visualisations/tracks/tracks.components";
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -120,7 +121,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     ProgressBarComponent,
     PlayHeadComponent,
     LivePlayHeadComponent,
-    CurveComponent
+    CurveComponent,
+    TracksComponent
   ],
   imports: [
     BrowserModule,
