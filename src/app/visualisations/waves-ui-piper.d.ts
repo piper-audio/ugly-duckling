@@ -71,6 +71,10 @@ interface Layer extends NodeJS.EventEmitter {
   updateShapes(): void;
 }
 
+interface HighlightLayer extends Layer {
+  currentPosition: number;
+}
+
 interface LayerConstructor {
   new(dataType: 'entity' | 'collection',
       data: ArrayLike<any> | Object,
