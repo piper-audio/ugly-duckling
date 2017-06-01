@@ -10,6 +10,12 @@ import {ShapedFeatureData} from './FeatureUtilities';
 
 const trackIdGenerator = countingIdProvider(0);
 
+// has to be an abstract class vs as interface for Angular's DI
+export abstract class VerticallyBounded {
+  abstract get range(): [number, number];
+  abstract renderScale(range: [number, number]): void;
+}
+
 export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   implements AfterViewInit {
   @ViewChild('track') trackContainer: ElementRef;
@@ -63,7 +69,7 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
     this.clearTimeline();
     const layers = this.featureLayers;
     for (const layer of layers) {
-      this.addLayer(layer, this.waveTrack, this.timeline.timeContext);
+      this.addLayer(layer);
     }
     if (this.postAddMap) {
       layers.forEach(this.postAddMap);
@@ -123,22 +129,21 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
       height: this.height,
       color: '#b0b0b0'
     });
-    this.addLayer(timeAxis, this.waveTrack, this.timeline.timeContext, true);
+    this.addLayer(timeAxis, true);
     this.timeline.state = new Waves.states.CenteredZoomState(this.timeline);
     this.timeline.tracks.update(); // TODO this is problematic, shared state across components
   }
 
 
   // TODO can likely use methods in waves-ui directly
-  private addLayer(layer: Layer,
-                   track: Track,
-                   timeContext: any,
-                   isAxis: boolean = false): void {
+  protected addLayer(layer: Layer,
+                     isAxis: boolean = false): void {
+    const timeContext = this.timeline.timeContext;
     if (!layer.timeContext) {
       layer.setTimeContext(isAxis ?
         timeContext : new Waves.core.LayerTimeContext(timeContext));
     }
-    track.add(layer);
+    this.waveTrack.add(layer);
     this.layers.push(layer);
     layer.render();
     layer.update();
@@ -166,5 +171,20 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
         this.onSeek(timeContext.timeToPixel.invert(x) - timeContext.offset);
       }
     }
+  }
+}
+
+export abstract class VerticallyBoundedWavesComponent
+<T extends ShapedFeatureData> extends WavesComponent<T>
+  implements VerticallyBounded {
+  abstract range: [number, number];
+
+  renderScale(range: [number, number]): void {
+    this.addLayer(new Waves.helpers.ScaleLayer({
+      tickColor: this.colour,
+      textColor: this.colour,
+      height: this.height,
+      yDomain: range
+    }));
   }
 }
