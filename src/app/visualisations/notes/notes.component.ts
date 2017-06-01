@@ -3,7 +3,8 @@
  */
 import {
   VerticallyBounded,
-  VerticallyBoundedWavesComponent
+  VerticallyBoundedWavesComponent,
+  VerticalScaleRenderer
 } from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
@@ -18,7 +19,10 @@ import Waves from 'waves-ui-piper';
   templateUrl: '../waves-template.html',
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{ provide: VerticallyBounded, useExisting: NotesComponent }]
+  providers: [
+    { provide: VerticallyBounded, useExisting: NotesComponent },
+    { provide: VerticalScaleRenderer, useExisting: NotesComponent }
+  ]
 })
 export class NotesComponent extends VerticallyBoundedWavesComponent<Note[]> {
   private currentVerticalRange: [number, number];

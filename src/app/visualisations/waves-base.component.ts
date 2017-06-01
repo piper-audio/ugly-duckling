@@ -13,7 +13,16 @@ const trackIdGenerator = countingIdProvider(0);
 // has to be an abstract class vs as interface for Angular's DI
 export abstract class VerticallyBounded {
   abstract get range(): [number, number];
+}
+
+export abstract class VerticalScaleRenderer extends VerticallyBounded {
   abstract renderScale(range: [number, number]): void;
+}
+
+export abstract class VerticalValueInspectorRenderer
+  extends VerticalScaleRenderer {
+  // TODO how do I know these layers are actually 'describable'?
+  abstract renderInspector(range: [number, number]): void;
 }
 
 export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
@@ -46,6 +55,7 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   private mFeature: T;
   private id: string;
   protected abstract get featureLayers(): Layer[];
+  protected cachedFeatureLayers: Layer[];
   protected postAddMap: (value: Layer, index: number, array: Layer[]) => void;
   protected height: number;
   protected duration: number;
@@ -67,12 +77,12 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
       return;
     }
     this.clearTimeline();
-    const layers = this.featureLayers;
-    for (const layer of layers) {
+    this.cachedFeatureLayers = this.featureLayers;
+    for (const layer of this.cachedFeatureLayers) {
       this.addLayer(layer);
     }
     if (this.postAddMap) {
-      layers.forEach(this.postAddMap);
+      this.cachedFeatureLayers.forEach(this.postAddMap);
     }
   }
 
@@ -176,7 +186,7 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
 
 export abstract class VerticallyBoundedWavesComponent
 <T extends ShapedFeatureData> extends WavesComponent<T>
-  implements VerticallyBounded {
+  implements VerticalScaleRenderer {
   abstract range: [number, number];
 
   renderScale(range: [number, number]): void {
@@ -186,5 +196,41 @@ export abstract class VerticallyBoundedWavesComponent
       height: this.height,
       yDomain: range
     }));
+  }
+}
+
+export abstract class InspectableVerticallyBoundedComponent
+<T extends ShapedFeatureData> extends VerticallyBoundedWavesComponent<T>
+  implements VerticalValueInspectorRenderer {
+
+  private wrappedSeekHandler: OnSeekHandler;
+  private highlight: HighlightLayer;
+
+  @Input() set onSeek(handler: OnSeekHandler) {
+    this.wrappedSeekHandler = (x: number) => {
+      handler(x);
+      this.highlight.currentPosition = x;
+      this.highlight.update();
+    };
+  }
+
+  get onSeek(): OnSeekHandler {
+    return this.wrappedSeekHandler;
+  }
+
+
+  renderInspector(range: [number, number]): void {
+    this.highlight = new Waves.helpers.HighlightLayer(
+      this.cachedFeatureLayers,
+      {
+        opacity: 0.7,
+        height: this.height,
+        color: '#c33c54', // TODO pass in?
+        labelOffset: 38,
+        yDomain: range,
+        unit: ''// TODO
+      }
+    );
+    this.addLayer(this.highlight);
   }
 }

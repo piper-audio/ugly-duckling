@@ -2,8 +2,10 @@
  * Created by lucas on 30/05/2017.
  */
 import {
+  InspectableVerticallyBoundedComponent,
   VerticallyBounded,
-  VerticallyBoundedWavesComponent,
+  VerticalScaleRenderer,
+  VerticalValueInspectorRenderer,
 } from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
@@ -19,10 +21,14 @@ import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
   templateUrl: '../waves-template.html',
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{ provide: VerticallyBounded, useExisting: TracksComponent }]
+  providers: [
+    {provide: VerticallyBounded, useExisting: TracksComponent },
+    {provide: VerticalScaleRenderer, useExisting: TracksComponent},
+    {provide: VerticalValueInspectorRenderer, useExisting: TracksComponent},
+  ],
 })
 export class TracksComponent
-  extends VerticallyBoundedWavesComponent<TracksFeature> {
+  extends InspectableVerticallyBoundedComponent<TracksFeature> {
 
   private currentState: PlotLayerData[];
 
