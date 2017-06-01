@@ -1,7 +1,10 @@
 /**
  * Created by lucas on 30/05/2017.
  */
-import {WavesComponent} from '../waves-base.component';
+import {
+  VerticallyBounded,
+  VerticallyBoundedWavesComponent,
+} from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,13 +18,21 @@ import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
   selector: 'ugly-tracks',
   templateUrl: '../waves-template.html',
   styleUrls: ['../waves-template.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: VerticallyBounded, useExisting: TracksComponent }]
 })
-export class TracksComponent extends WavesComponent<TracksFeature> {
+export class TracksComponent
+  extends VerticallyBoundedWavesComponent<TracksFeature> {
+
   private currentState: PlotLayerData[];
 
   @Input() set tracks(input: TracksFeature) {
     this.feature = input;
+  }
+
+  get range(): [number, number] {
+    return this.currentState && this.currentState.length > 0 ?
+      this.currentState[0].yDomain : null;
   }
 
   protected get featureLayers(): Layer[] {

@@ -11,13 +11,15 @@ import {VectorFeature} from 'piper/HigherLevelUtilities';
 
 @Component({
   selector: 'ugly-curve',
-  template: `<ugly-tracks
-    [timeline]="timeline"
-    [width]="width"
-    [onSeek]="onSeek"
-    [colour]="colour"
-    [tracks]="[curve]"
-  ></ugly-tracks>`,
+  template: `<ugly-vertical-scale>
+    <ugly-tracks
+      [timeline]="timeline"
+      [width]="width"
+      [onSeek]="onSeek"
+      [colour]="colour"
+      [tracks]="[curve]"
+    ></ugly-tracks>
+  </ugly-vertical-scale>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CurveComponent {

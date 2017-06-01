@@ -40,22 +40,24 @@
                 [onSeek]="onSeek"
                 [curve]="item.collected"
               ></ugly-curve>
-              <ugly-tracks
-                *ngSwitchCase="'tracks'"
-                [colour]="getNextColour()"
-                [timeline]="timeline"
-                [width]="contentWidth"
-                [onSeek]="onSeek"
-                [tracks]="item.collected"
-              ></ugly-tracks>
-              <ugly-notes
-                *ngSwitchCase="'notes'"
-                [colour]="getNextColour()"
-                [timeline]="timeline"
-                [width]="contentWidth"
-                [onSeek]="onSeek"
-                [notes]="item.collected"
-              ></ugly-notes>
+              <ugly-vertical-scale *ngSwitchCase="'tracks'">
+                <ugly-tracks
+                  [colour]="getNextColour()"
+                  [timeline]="timeline"
+                  [width]="contentWidth"
+                  [onSeek]="onSeek"
+                  [tracks]="item.collected"
+                ></ugly-tracks>
+              </ugly-vertical-scale>
+              <ugly-vertical-scale *ngSwitchCase="'notes'">
+                <ugly-notes
+                  [colour]="getNextColour()"
+                  [timeline]="timeline"
+                  [width]="contentWidth"
+                  [onSeek]="onSeek"
+                  [notes]="item.collected"
+                ></ugly-notes>
+              </ugly-vertical-scale>
               <ugly-instants
                 *ngSwitchCase="'instants'"
                 [colour]="getNextColour()"

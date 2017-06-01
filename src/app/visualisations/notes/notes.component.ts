@@ -1,7 +1,10 @@
 /**
  * Created by lucast on 31/05/2017.
  */
-import {WavesComponent} from '../waves-base.component';
+import {
+  VerticallyBounded,
+  VerticallyBoundedWavesComponent
+} from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,22 +17,29 @@ import Waves from 'waves-ui-piper';
   selector: 'ugly-notes',
   templateUrl: '../waves-template.html',
   styleUrls: ['../waves-template.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: VerticallyBounded, useExisting: NotesComponent }]
 })
-export class NotesComponent extends WavesComponent<Note[]> {
+export class NotesComponent extends VerticallyBoundedWavesComponent<Note[]> {
+  private currentVerticalRange: [number, number];
+
+  get range(): [number, number] {
+    return this.currentVerticalRange;
+  }
 
   @Input() set notes(notes: Note[]) {
     this.feature = notes;
   }
 
   protected get featureLayers(): Layer[] {
+    this.currentVerticalRange = findVerticalRange(this.feature);
     return [
       new Waves.helpers.PianoRollLayer(
         this.feature,
         {
           height: this.height,
           color: this.colour,
-          yDomain: findVerticalRange(this.feature)
+          yDomain: this.currentVerticalRange
         }
       )
     ];
