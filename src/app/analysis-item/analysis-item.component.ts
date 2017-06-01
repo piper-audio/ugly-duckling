@@ -35,7 +35,9 @@ export interface PendingAnalysisItem extends Item {
   extractorKey: string;
 }
 
-export type AnalysisItem = PendingAnalysisItem & KnownShapedFeature;
+export type AnalysisItem = PendingAnalysisItem & KnownShapedFeature & {
+  unit?: string
+};
 
 export function isItem(item: Item): item is Item {
   return item.id != null && item.hasSharedTimeline != null;

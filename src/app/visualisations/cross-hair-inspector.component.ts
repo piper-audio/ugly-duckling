@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChildren,
+  Input,
   QueryList
 } from '@angular/core';
 import {
@@ -23,11 +24,12 @@ export class CrossHairInspectorComponent extends VerticalScaleComponent
   @ContentChildren(
     VerticalValueInspectorRenderer
   ) inspectorRenderers: QueryList<VerticalValueInspectorRenderer>;
+  @Input() unit: string;
 
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
     this.inspectorRenderers.forEach(renderer => {
-      renderer.renderInspector(this.cachedRanged);
+      renderer.renderInspector(this.cachedRanged, this.unit);
     });
   }
 }

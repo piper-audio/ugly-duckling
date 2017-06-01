@@ -207,7 +207,12 @@ export class AppComponent implements OnDestroy {
       if (i !== -1) {
         this.analyses.set(
           i,
-          Object.assign({}, this.analyses.get(i), result.result)
+          Object.assign(
+            {},
+            this.analyses.get(i),
+            result.result,
+            result.unit ? {unit: result.unit} : {}
+          )
         );
       }  // TODO else remove the item?
     }).catch(err => {

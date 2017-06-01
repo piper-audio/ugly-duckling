@@ -231,7 +231,7 @@ export abstract class InspectableVerticallyBoundedComponent
           color: '#c33c54', // TODO pass in?
           labelOffset: 38,
           yDomain: range,
-          unit: unit || this.feature.unit || ''
+          unit: unit || ''
         }
       );
       this.addLayer(this.highlight);

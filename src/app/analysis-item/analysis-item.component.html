@@ -39,8 +39,12 @@
                 [width]="contentWidth"
                 [onSeek]="onSeek"
                 [curve]="item.collected"
+                [unit]="item.unit"
               ></ugly-curve>
-              <ugly-cross-hair-inspector *ngSwitchCase="'tracks'">
+              <ugly-cross-hair-inspector
+                *ngSwitchCase="'tracks'"
+                [unit]="item.unit"
+              >
                 <ugly-tracks
                   [colour]="getNextColour()"
                   [timeline]="timeline"
@@ -49,7 +53,10 @@
                   [tracks]="item.collected"
                 ></ugly-tracks>
               </ugly-cross-hair-inspector>
-              <ugly-cross-hair-inspector *ngSwitchCase="'notes'">
+              <ugly-cross-hair-inspector
+                *ngSwitchCase="'notes'"
+                [unit]="item.unit"
+              >
                 <ugly-notes
                   [colour]="getNextColour()"
                   [timeline]="timeline"

@@ -32,6 +32,7 @@ export interface Progress {
 export interface ExtractionResult {
   id: RequestId;
   result: KnownShapedFeature;
+  unit?: string;
 }
 
 @Injectable()
@@ -93,7 +94,12 @@ export class FeatureExtractionService {
         features: features,
         outputDescriptor: config.outputDescriptor
       });
-      const result = {
+      const result = config.outputDescriptor.configured.unit ? {
+        id: analysisItemId,
+        result: shaped,
+        unit: shaped.shape === 'notes' ?
+          'MIDI note' : config.outputDescriptor.configured.unit
+      } : {
         id: analysisItemId,
         result: shaped
       };
