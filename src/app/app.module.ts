@@ -36,6 +36,7 @@ import {TracksComponent} from './visualisations/tracks/tracks.components';
 import {NotesComponent} from './visualisations/notes/notes.component';
 import {InstantsComponent} from './visualisations/instants/instants.component';
 import {GridComponent} from './visualisations/grid/grid.component';
+import {VerticalScaleComponent} from "./visualisations/vertical-scale.component";
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -128,7 +129,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     TracksComponent,
     NotesComponent,
     InstantsComponent,
-    GridComponent
+    GridComponent,
+    VerticalScaleComponent
   ],
   imports: [
     BrowserModule,
