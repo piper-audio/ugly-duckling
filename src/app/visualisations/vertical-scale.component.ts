@@ -1,14 +1,14 @@
 /**
  * Created by lucas on 01/06/2017.
  */
-import {VerticallyBounded} from "./waves-base.component";
+import {VerticalScaleRenderer} from './waves-base.component';
 import {
   ChangeDetectionStrategy,
   Component,
   ContentChildren,
   QueryList,
   AfterViewInit
-} from "@angular/core";
+} from '@angular/core';
 
 @Component({
   selector: 'ugly-vertical-scale',
@@ -17,13 +17,16 @@ import {
 })
 export class VerticalScaleComponent implements AfterViewInit {
 
-  @ContentChildren(VerticallyBounded) bounded: QueryList<VerticallyBounded>;
+  @ContentChildren(
+    VerticalScaleRenderer
+  ) bounded: QueryList<VerticalScaleRenderer>;
+  protected cachedRanged: [number, number];
 
   ngAfterViewInit(): void {
     this.bounded.forEach(component => {
-      const range = component.range;
-      if (range) {
-        component.renderScale(range);
+      this.cachedRanged = component.range;
+      if (this.cachedRanged) {
+        component.renderScale(this.cachedRanged);
       }
     });
   }

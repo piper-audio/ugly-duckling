@@ -36,7 +36,8 @@ import {TracksComponent} from './visualisations/tracks/tracks.components';
 import {NotesComponent} from './visualisations/notes/notes.component';
 import {InstantsComponent} from './visualisations/instants/instants.component';
 import {GridComponent} from './visualisations/grid/grid.component';
-import {VerticalScaleComponent} from "./visualisations/vertical-scale.component";
+import {VerticalScaleComponent} from './visualisations/vertical-scale.component';
+import {CrossHairInspectorComponent} from './visualisations/cross-hair-inspector.component';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -130,7 +131,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     NotesComponent,
     InstantsComponent,
     GridComponent,
-    VerticalScaleComponent
+    VerticalScaleComponent,
+    CrossHairInspectorComponent
   ],
   imports: [
     BrowserModule,

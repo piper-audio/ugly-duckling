@@ -11,7 +11,7 @@ import {VectorFeature} from 'piper/HigherLevelUtilities';
 
 @Component({
   selector: 'ugly-curve',
-  template: `<ugly-vertical-scale>
+  template: `<ugly-cross-hair-inspector>
     <ugly-tracks
       [timeline]="timeline"
       [width]="width"
@@ -19,7 +19,7 @@ import {VectorFeature} from 'piper/HigherLevelUtilities';
       [colour]="colour"
       [tracks]="[curve]"
     ></ugly-tracks>
-  </ugly-vertical-scale>`,
+  </ugly-cross-hair-inspector>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CurveComponent {
