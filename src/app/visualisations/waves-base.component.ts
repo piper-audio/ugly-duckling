@@ -22,7 +22,7 @@ export abstract class VerticalScaleRenderer extends VerticallyBounded {
 export abstract class VerticalValueInspectorRenderer
   extends VerticalScaleRenderer {
   // TODO how do I know these layers are actually 'describable'?
-  abstract renderInspector(range: [number, number]): void;
+  abstract renderInspector(range: [number, number], unit?: string): void;
 }
 
 export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
@@ -209,8 +209,10 @@ export abstract class InspectableVerticallyBoundedComponent
   @Input() set onSeek(handler: OnSeekHandler) {
     this.wrappedSeekHandler = (x: number) => {
       handler(x);
-      this.highlight.currentPosition = x;
-      this.highlight.update();
+      if (this.highlight) {
+        this.highlight.currentPosition = x;
+        this.highlight.update();
+      }
     };
   }
 
@@ -219,18 +221,20 @@ export abstract class InspectableVerticallyBoundedComponent
   }
 
 
-  renderInspector(range: [number, number]): void {
-    this.highlight = new Waves.helpers.HighlightLayer(
-      this.cachedFeatureLayers,
-      {
-        opacity: 0.7,
-        height: this.height,
-        color: '#c33c54', // TODO pass in?
-        labelOffset: 38,
-        yDomain: range,
-        unit: ''// TODO
-      }
-    );
-    this.addLayer(this.highlight);
+  renderInspector(range: [number, number], unit?: string): void {
+    if (range) {
+      this.highlight = new Waves.helpers.HighlightLayer(
+        this.cachedFeatureLayers,
+        {
+          opacity: 0.7,
+          height: this.height,
+          color: '#c33c54', // TODO pass in?
+          labelOffset: 38,
+          yDomain: range,
+          unit: unit || this.feature.unit || ''
+        }
+      );
+      this.addLayer(this.highlight);
+    }
   }
 }

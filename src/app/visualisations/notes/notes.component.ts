@@ -2,9 +2,10 @@
  * Created by lucast on 31/05/2017.
  */
 import {
+  InspectableVerticallyBoundedComponent,
   VerticallyBounded,
-  VerticallyBoundedWavesComponent,
-  VerticalScaleRenderer
+  VerticalScaleRenderer,
+  VerticalValueInspectorRenderer
 } from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
@@ -21,10 +22,11 @@ import Waves from 'waves-ui-piper';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     { provide: VerticallyBounded, useExisting: NotesComponent },
-    { provide: VerticalScaleRenderer, useExisting: NotesComponent }
+    { provide: VerticalScaleRenderer, useExisting: NotesComponent },
+    {provide: VerticalValueInspectorRenderer, useExisting: NotesComponent }
   ]
 })
-export class NotesComponent extends VerticallyBoundedWavesComponent<Note[]> {
+export class NotesComponent extends InspectableVerticallyBoundedComponent<Note[]> {
   private currentVerticalRange: [number, number];
 
   get range(): [number, number] {

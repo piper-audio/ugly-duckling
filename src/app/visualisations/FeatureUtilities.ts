@@ -74,17 +74,19 @@ type CollectedShape = 'vector' | 'matrix' | 'tracks';
 type ShapeDeducedFromList = 'instants' | 'notes';
 export type HigherLevelFeatureShape = CollectedShape | ShapeDeducedFromList;
 
-export type ShapedFeatureData = VectorFeature
+export type ShapedFeatureData = {unit?: string} & (
+  VectorFeature
   | MatrixFeature
   | TracksFeature
   | Note[]
-  | Instant[];
+  | Instant[]
+  );
 
 // These needn't be classes (could just be interfaces), just experimenting
 export abstract class ShapedFeature<Shape extends HigherLevelFeatureShape,
-  Data extends ShapedFeatureData> {
+  Data extends ShapedFeatureData & {unit?: string}> {
   shape: Shape;
-  collected: Data;
+  collected: Data & {unit?: string};
 }
 
 export class Vector extends ShapedFeature<'vector', VectorFeature> {}
@@ -143,32 +145,46 @@ function deduceHigherLevelFeatureShape(response: SimpleResponse)
 
 export function toKnownShape(response: SimpleResponse): KnownShapedFeature {
   const deducedShape = deduceHigherLevelFeatureShape(response);
-  switch (deducedShape) {
-    case 'vector':
-      return response.features as Vector;
-    case 'matrix':
-      return response.features as Matrix;
-    case 'tracks':
-      return response.features as Tracks;
-    case 'notes':
-      return {
-        shape: deducedShape,
-        collected: mapFeaturesToNotes(
+  const shaped: KnownShapedFeature | null = (() => {
+    switch (deducedShape) {
+      case 'vector':
+        return response.features as Vector;
+      case 'matrix':
+        return response.features as Matrix;
+      case 'tracks':
+        return response.features as Tracks;
+      case 'notes':
+        // TODO refactor
+        const notes: Note[] & {unit?: string} = mapFeaturesToNotes(
           response.features.collected as FeatureList,
           response.outputDescriptor
-        )
-      };
-    case 'instants':
-      const featureData = response.features.collected as FeatureList;
-      return {
-        shape: deducedShape,
-        collected: featureData.map(feature => ({
-          time: toSeconds(feature.timestamp),
-          label: feature.label
-        }))
-      };
+        );
+        notes.unit = 'MIDI';
+        return {
+          shape: deducedShape,
+          collected: notes,
+        };
+      case 'instants':
+        const featureData = response.features.collected as FeatureList;
+        return {
+          shape: deducedShape,
+          collected: featureData.map(feature => ({
+            time: toSeconds(feature.timestamp),
+            label: feature.label
+          }))
+        };
+    }
+  })();
+  const unit = response.outputDescriptor.configured.unit;
+  if (shaped) {
+    const bodgeUnit = (shaped: KnownShapedFeature) => {
+      (shaped.collected as any).unit = unit;
+      return shaped;
+    };
+    return unit && !shaped.collected.unit ? bodgeUnit(shaped) : shaped;
+  } else {
+    throwShapeError();
   }
-  throwShapeError();
 }
 
 export interface PlotData {

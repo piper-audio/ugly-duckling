@@ -7,7 +7,7 @@ import {
   Input
 } from '@angular/core';
 import {OnSeekHandler} from '../../playhead/PlayHeadHelpers';
-import {VectorFeature} from 'piper/HigherLevelUtilities';
+import {TracksFeature, VectorFeature} from 'piper/HigherLevelUtilities';
 
 @Component({
   selector: 'ugly-curve',
@@ -17,7 +17,7 @@ import {VectorFeature} from 'piper/HigherLevelUtilities';
       [width]="width"
       [onSeek]="onSeek"
       [colour]="colour"
-      [tracks]="[curve]"
+      [tracks]="tracks"
     ></ugly-tracks>
   </ugly-cross-hair-inspector>`,
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -26,6 +26,13 @@ export class CurveComponent {
   @Input() timeline: Timeline; // TODO refactor WaveComponents to have own Timeline, sharing a TimeContext
   @Input() onSeek: OnSeekHandler;
   @Input() width: number;
-  @Input() curve: VectorFeature;
+  @Input() set curve(curve: VectorFeature & {unit?: string}) {
+    const tempTracks: TracksFeature & {unit?: string} = [curve];
+    tempTracks.unit = curve.unit;
+    this.tracks = tempTracks;
+  }
+
+  private tracks: TracksFeature & {unit?: string};
+
   @Input() colour: string;
 }
