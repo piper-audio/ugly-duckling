@@ -92,12 +92,12 @@ export class AnalysisItemComponent implements OnInit {
   private hasProgressOnInit = false;
 
 
-  // TODO move
-  private DOES_NOT_BELONG_HERE: TimePixelMapper;
+  // TODO move / re-think - naivePagingMapper feels like a big ol' bodge
+  private timeToPixel: TimePixelMapper;
 
   ngOnInit(): void {
     this.hasProgressOnInit = this.item.progress != null;
-    this.DOES_NOT_BELONG_HERE = naivePagingMapper(this.timeline);
+    this.timeToPixel = naivePagingMapper(this.timeline);
   }
 
   isLoading(): boolean {
