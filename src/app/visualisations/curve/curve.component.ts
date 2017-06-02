@@ -4,29 +4,56 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input
+  Input,
+  ViewChild
 } from '@angular/core';
 import {OnSeekHandler} from '../../playhead/PlayHeadHelpers';
 import {VectorFeature} from 'piper/HigherLevelUtilities';
+import {
+  VerticallyBounded,
+  VerticalScaleRenderer,
+  VerticalValueInspectorRenderer
+} from '../waves-base.component';
+import {TracksComponent} from '../tracks/tracks.components';
 
 @Component({
   selector: 'ugly-curve',
-  template: `<ugly-cross-hair-inspector [unit]="unit">
+  template: `
     <ugly-tracks
       [timeline]="timeline"
       [width]="width"
       [onSeek]="onSeek"
       [colour]="colour"
       [tracks]="[curve]"
-    ></ugly-tracks>
-  </ugly-cross-hair-inspector>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+    ></ugly-tracks>`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {provide: VerticallyBounded, useExisting: CurveComponent },
+    {provide: VerticalScaleRenderer, useExisting: CurveComponent},
+    {provide: VerticalValueInspectorRenderer, useExisting: CurveComponent}
+  ]
 })
-export class CurveComponent {
+export class CurveComponent implements VerticalValueInspectorRenderer {
   @Input() timeline: Timeline; // TODO refactor WaveComponents to have own Timeline, sharing a TimeContext
   @Input() onSeek: OnSeekHandler;
   @Input() width: number;
   @Input() curve: VectorFeature;
   @Input() colour: string;
-  @Input() unit: string;
+  @ViewChild(TracksComponent) tracksComponent: TracksComponent;
+
+  renderInspector(range: [number, number], unit?: string): void {
+    this.tracksComponent.renderInspector(range, unit);
+  }
+
+  get updatePosition(): OnSeekHandler {
+    return this.tracksComponent.updatePosition;
+  }
+
+  renderScale(range: [number, number]): void {
+    this.tracksComponent.renderScale(range);
+  }
+
+  get range(): [number, number] {
+    return this.tracksComponent.range;
+  }
 }
