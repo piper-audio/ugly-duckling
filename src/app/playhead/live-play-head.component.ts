@@ -6,10 +6,13 @@ import {
   Component,
   Input,
   AfterViewInit,
-  ChangeDetectorRef
+  ChangeDetectorRef, OnDestroy
 } from '@angular/core';
 import {TimePixelMapper} from './PlayHeadHelpers';
-import {RenderLoopService} from '../services/render-loop/render-loop.service';
+import {
+  RenderLoopService,
+  TaskRemover
+} from '../services/render-loop/render-loop.service';
 
 @Component({
   selector: 'ugly-live-play-head',
@@ -19,18 +22,22 @@ import {RenderLoopService} from '../services/render-loop/render-loop.service';
     [colour]="colour"></ugly-play-head>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LivePlayHeadComponent implements AfterViewInit {
+export class LivePlayHeadComponent implements AfterViewInit, OnDestroy {
   @Input() timeToPixel: TimePixelMapper;
   @Input() colour: string;
   private currentTime = 0;
+  private remover: TaskRemover;
 
   constructor(private renderLoop: RenderLoopService,
               private ref: ChangeDetectorRef) {}
 
   ngAfterViewInit(): void {
-    this.renderLoop.addPlayingTask((currentTime) => {
+    this.remover = this.renderLoop.addPlayingTask((currentTime) => {
       this.currentTime = currentTime;
       this.ref.markForCheck();
     });
+  }
+  ngOnDestroy(): void {
+    this.remover();
   }
 }
