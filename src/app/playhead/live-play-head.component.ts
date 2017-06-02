@@ -5,16 +5,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnDestroy,
   AfterViewInit,
-  ChangeDetectorRef,
-  NgZone
+  ChangeDetectorRef
 } from '@angular/core';
-import {
-  AudioPlayerService
-} from '../services/audio-player/audio-player.service';
 import {TimePixelMapper} from './PlayHeadHelpers';
-import {Subscription} from 'rxjs/Subscription';
+import {RenderLoopService} from '../services/render-loop/render-loop.service';
 
 @Component({
   selector: 'ugly-live-play-head',
@@ -24,46 +19,18 @@ import {Subscription} from 'rxjs/Subscription';
     [colour]="colour"></ugly-play-head>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LivePlayHeadComponent implements AfterViewInit, OnDestroy {
+export class LivePlayHeadComponent implements AfterViewInit {
   @Input() timeToPixel: TimePixelMapper;
   @Input() colour: string;
-  private playingStateSubscription: Subscription;
-  private seekedSubscription: Subscription;
   private currentTime = 0;
 
-  constructor(private player: AudioPlayerService,
-              private ref: ChangeDetectorRef,
-              private zone: NgZone) {}
+  constructor(private renderLoop: RenderLoopService,
+              private ref: ChangeDetectorRef) {}
 
   ngAfterViewInit(): void {
-    this.seekedSubscription = this.player.seeked$.subscribe(() => {
-      if (!this.player.isPlaying()) {
-        this.animate();
-      }
+    this.renderLoop.addPlayingTask((currentTime) => {
+      this.currentTime = currentTime;
+      this.ref.markForCheck();
     });
-    this.playingStateSubscription = this.player.playingStateChange$.subscribe(
-      isPlaying => {
-        if (isPlaying) {
-          this.animate();
-        }
-      });
-  }
-
-  animate(): void {
-    this.zone.runOutsideAngular(() => {
-      const animateNextFrame = () => {
-        this.currentTime = this.player.getCurrentTime();
-        this.ref.markForCheck();
-        if (this.player.isPlaying()) {
-          requestAnimationFrame(animateNextFrame);
-        }
-      };
-      requestAnimationFrame(animateNextFrame);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.playingStateSubscription.unsubscribe();
-    this.seekedSubscription.unsubscribe();
   }
 }
