@@ -6,15 +6,20 @@ import {AudioPlayerService} from '../audio-player/audio-player.service';
 import {Subscription} from 'rxjs/Subscription';
 import {OnSeekHandler} from '../../playhead/PlayHeadHelpers';
 
+export type TaskRemover = () => void;
+type TaskId = number;
+
 @Injectable()
 export class RenderLoopService {
   private playingStateSubscription: Subscription;
   private seekedSubscription: Subscription;
-  private tasks: OnSeekHandler[];
+  private tasks: Map<TaskId, OnSeekHandler>;
+  private countingId: TaskId;
 
   constructor(private player: AudioPlayerService,
               private zone: NgZone) {
-    this.tasks = [];
+    this.countingId = 0;
+    this.tasks = new Map();
     this.seekedSubscription = this.player.seeked$.subscribe(() => {
       if (!this.player.isPlaying()) {
         this.zone.runOutsideAngular(() => {
@@ -30,8 +35,12 @@ export class RenderLoopService {
       });
   }
 
-  addPlayingTask(task: OnSeekHandler): void {
-    this.tasks.push(task);
+  addPlayingTask(task: OnSeekHandler): TaskRemover {
+    const id = this.countingId++;
+    this.tasks.set(id, task);
+    return () => {
+      this.tasks.delete(id);
+    };
   }
 
   private animate(): void {
@@ -48,7 +57,7 @@ export class RenderLoopService {
 
   private runTasks(): void {
     const currentTime = this.player.getCurrentTime();
-    for (const task of this.tasks) {
+    for (const task of this.tasks.values()) {
       task(currentTime);
     }
   }
