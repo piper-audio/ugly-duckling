@@ -23,6 +23,7 @@ export abstract class VerticalValueInspectorRenderer
   extends VerticalScaleRenderer {
   // TODO how do I know these layers are actually 'describable'?
   abstract renderInspector(range: [number, number], unit?: string): void;
+  abstract get updatePosition(): OnSeekHandler;
 }
 
 export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
@@ -209,8 +210,14 @@ export abstract class InspectableVerticallyBoundedComponent
   @Input() set onSeek(handler: OnSeekHandler) {
     this.wrappedSeekHandler = (x: number) => {
       handler(x);
+      this.updatePosition(x);
+    };
+  }
+
+  get updatePosition() {
+    return (currentTime: number): void => {
       if (this.highlight) {
-        this.highlight.currentPosition = x;
+        this.highlight.currentPosition = currentTime;
         this.highlight.update();
       }
     };

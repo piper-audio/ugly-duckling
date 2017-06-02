@@ -13,6 +13,7 @@ import {
   VerticalValueInspectorRenderer
 } from './waves-base.component';
 import {VerticalScaleComponent} from './vertical-scale.component';
+import {RenderLoopService} from '../services/render-loop/render-loop.service';
 
 @Component({
   selector: 'ugly-cross-hair-inspector',
@@ -26,9 +27,14 @@ export class CrossHairInspectorComponent extends VerticalScaleComponent
   ) inspectorRenderers: QueryList<VerticalValueInspectorRenderer>;
   @Input() unit: string;
 
+  constructor(private renderLoop: RenderLoopService) {
+    super();
+  }
+
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
     this.inspectorRenderers.forEach(renderer => {
+      this.renderLoop.addPlayingTask(renderer.updatePosition);
       renderer.renderInspector(this.cachedRanged, this.unit);
     });
   }

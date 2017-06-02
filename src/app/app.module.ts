@@ -38,6 +38,7 @@ import {InstantsComponent} from './visualisations/instants/instants.component';
 import {GridComponent} from './visualisations/grid/grid.component';
 import {VerticalScaleComponent} from './visualisations/vertical-scale.component';
 import {CrossHairInspectorComponent} from './visualisations/cross-hair-inspector.component';
+import {RenderLoopService} from './services/render-loop/render-loop.service';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -151,7 +152,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     {provide: 'PiperRepoUri', useValue: 'assets/remote-extractors.json'},
     {provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager},
     {provide: 'ResourceReader', useFactory: createResourceReader},
-    {provide: 'DimensionObservable', useFactory: createWindowDimensionObservable}
+    {provide: 'DimensionObservable', useFactory: createWindowDimensionObservable},
+    RenderLoopService
   ],
   bootstrap: [AppComponent]
 })
