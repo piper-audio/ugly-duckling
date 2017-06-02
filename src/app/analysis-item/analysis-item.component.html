@@ -32,18 +32,23 @@
           <div class="content"
             *ngIf="getFeatureShape() as shape; else showSpinner">
             <div [ngSwitch]="shape" class="content">
-              <ugly-curve
+              <ugly-cross-hair-inspector
                 *ngSwitchCase="'vector'"
-                [colour]="getNextColour()"
-                [timeline]="timeline"
-                [width]="contentWidth"
-                [onSeek]="onSeek"
-                [curve]="item.collected"
                 [unit]="item.unit"
-              ></ugly-curve>
+                [isAnimated]="isActive"
+              >
+                <ugly-curve
+                  [colour]="getNextColour()"
+                  [timeline]="timeline"
+                  [width]="contentWidth"
+                  [onSeek]="onSeek"
+                  [curve]="item.collected"
+                ></ugly-curve>
+              </ugly-cross-hair-inspector>
               <ugly-cross-hair-inspector
                 *ngSwitchCase="'tracks'"
                 [unit]="item.unit"
+                [isAnimated]="isActive"
               >
                 <ugly-tracks
                   [colour]="getNextColour()"
@@ -56,6 +61,7 @@
               <ugly-cross-hair-inspector
                 *ngSwitchCase="'notes'"
                 [unit]="item.unit"
+                [isAnimated]="isActive"
               >
                 <ugly-notes
                   [colour]="getNextColour()"

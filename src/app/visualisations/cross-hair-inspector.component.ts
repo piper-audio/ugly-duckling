@@ -13,7 +13,10 @@ import {
   VerticalValueInspectorRenderer
 } from './waves-base.component';
 import {VerticalScaleComponent} from './vertical-scale.component';
-import {RenderLoopService} from '../services/render-loop/render-loop.service';
+import {
+  RenderLoopService,
+  TaskRemover
+} from '../services/render-loop/render-loop.service';
 
 @Component({
   selector: 'ugly-cross-hair-inspector',
@@ -26,16 +29,40 @@ export class CrossHairInspectorComponent extends VerticalScaleComponent
     VerticalValueInspectorRenderer
   ) inspectorRenderers: QueryList<VerticalValueInspectorRenderer>;
   @Input() unit: string;
+  @Input() set isAnimated(isAnimated: boolean) {
+    this.mIsAnimated = isAnimated;
+    if (this.removers.length) {
+      this.removers.forEach(remove => remove());
+      this.removers = [];
+    }
+    if (isAnimated) {
+      this.addTasks();
+    }
+  }
+
+  private removers: TaskRemover[];
+  private mIsAnimated: boolean;
 
   constructor(private renderLoop: RenderLoopService) {
     super();
+    this.removers = [];
   }
 
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
     this.inspectorRenderers.forEach(renderer => {
-      this.renderLoop.addPlayingTask(renderer.updatePosition);
-      renderer.renderInspector(this.cachedRanged, this.unit);
+      renderer.renderInspector(this.cachedRange, this.unit);
     });
+    this.addTasks();
+  }
+
+  private addTasks(): void {
+    if (this.inspectorRenderers && this.mIsAnimated) {
+      this.inspectorRenderers.forEach(renderer => {
+        this.removers.push(
+          this.renderLoop.addPlayingTask(renderer.updatePosition)
+        );
+      });
+    }
   }
 }

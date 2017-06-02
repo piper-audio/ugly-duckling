@@ -20,13 +20,13 @@ export class VerticalScaleComponent implements AfterViewInit {
   @ContentChildren(
     VerticalScaleRenderer
   ) bounded: QueryList<VerticalScaleRenderer>;
-  protected cachedRanged: [number, number];
+  protected cachedRange: [number, number];
 
   ngAfterViewInit(): void {
     this.bounded.forEach(component => {
-      this.cachedRanged = component.range;
-      if (this.cachedRanged) {
-        component.renderScale(this.cachedRanged);
+      this.cachedRange = component.range;
+      if (this.cachedRange) {
+        component.renderScale(this.cachedRange);
       }
     });
   }
