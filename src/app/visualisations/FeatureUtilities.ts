@@ -172,19 +172,23 @@ export function toKnownShape(response: SimpleResponse): KnownShapedFeature {
   throwShapeError();
 }
 
-export interface PlotData {
+export interface PlotDataPoint {
   cx: number;
   cy: number;
+}
+
+export interface PlotData {
+  points: PlotDataPoint[];
+  startTime: number;
+  duration;
 }
 
 export interface PlotLayerData {
   data: PlotData[];
   yDomain: [number, number];
-  startTime: number;
-  duration: number;
 }
 
-export function generatePlotData(features: VectorFeature[]): PlotLayerData[] {
+export function generatePlotData(features: VectorFeature[]): PlotLayerData {
 
   const winnowed = features.filter(feature => feature.data.length > 0);
 
@@ -207,28 +211,30 @@ export function generatePlotData(features: VectorFeature[]): PlotLayerData[] {
     max = 1;
   }
 
-  return winnowed.map(feature => {
-    let duration = 0;
+  return {
+    data: winnowed.map(feature => {
+      let duration = 0;
 
-    // Give the plot items positions relative to the start of the
-    // line, rather than relative to absolute time 0. This is
-    // because we'll be setting the layer timeline start property
-    // later on and these will be positioned relative to that
+      // Give the plot items positions relative to the start of the
+      // line, rather than relative to absolute time 0. This is
+      // because we'll be setting the layer timeline start property
+      // later on and these will be positioned relative to that
 
-    const plotData = [...feature.data].map((val, i) => {
-      const t = i * feature.stepDuration;
-      duration = t + feature.stepDuration;
+      const plotData = [...feature.data].map((val, i) => {
+        const t = i * feature.stepDuration;
+        duration = t + feature.stepDuration;
+        return {
+          cx: t,
+          cy: val
+        };
+      });
+
       return {
-        cx: t,
-        cy: val
+        points: plotData,
+        startTime: feature.startTime,
+        duration: duration
       };
-    });
-
-    return {
-      data: plotData,
-      yDomain: [min, max] as [number, number],
-      startTime: feature.startTime,
-      duration: duration
-    };
-  });
+    }),
+    yDomain: [min, max]
+  };
 }

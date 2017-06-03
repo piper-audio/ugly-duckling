@@ -30,32 +30,32 @@ import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
 export class TracksComponent
   extends InspectableVerticallyBoundedComponent<TracksFeature> {
 
-  private currentState: PlotLayerData[];
+  private currentState: PlotLayerData;
 
   @Input() set tracks(input: TracksFeature) {
     this.feature = input;
   }
 
   get range(): [number, number] {
-    return this.currentState && this.currentState.length > 0 ?
-      this.currentState[0].yDomain : null;
+    return this.currentState && this.currentState.data.length > 0 ?
+      this.currentState.yDomain : null;
   }
 
   protected get featureLayers(): Layer[] {
     this.currentState = generatePlotData(this.feature);
-    return this.currentState.map(feature => new Waves.helpers.LineLayer(
-      feature.data, {
+    return this.currentState.data.map(feature => new Waves.helpers.LineLayer(
+      feature.points, {
         color: this.colour,
         height: this.height,
-        yDomain: feature.yDomain
+        yDomain: this.currentState.yDomain
       })
     );
   }
 
   protected get postAddMap() {
     return (layer, index) => {
-      layer.start = this.currentState[index].startTime;
-      layer.duration = this.currentState[index].duration;
+      layer.start = this.currentState.data[index].startTime;
+      layer.duration = this.currentState.data[index].duration;
       layer.update();
     };
   }
