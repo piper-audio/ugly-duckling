@@ -39,6 +39,7 @@ import {GridComponent} from './visualisations/grid/grid.component';
 import {VerticalScaleComponent} from './visualisations/vertical-scale.component';
 import {CrossHairInspectorComponent} from './visualisations/cross-hair-inspector.component';
 import {RenderLoopService} from './services/render-loop/render-loop.service';
+import {WavesPlayHeadComponent} from "./playhead/waves-ui-play-head.component";
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -133,7 +134,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     InstantsComponent,
     GridComponent,
     VerticalScaleComponent,
-    CrossHairInspectorComponent
+    CrossHairInspectorComponent,
+    WavesPlayHeadComponent
   ],
   imports: [
     BrowserModule,
