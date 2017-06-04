@@ -5,15 +5,20 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnDestroy,
   OnInit
 } from '@angular/core';
 import {naivePagingMapper} from '../visualisations/WavesJunk';
-import {OnSeekHandler, TimePixelMapper} from '../playhead/PlayHeadHelpers';
+import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
 import {
   defaultColourGenerator,
   HigherLevelFeatureShape,
   KnownShapedFeature
 } from '../visualisations/FeatureUtilities';
+import {
+  RenderLoopService,
+  TaskRemover
+} from '../services/render-loop/render-loop.service';
 
 export interface Item {
   id: string;
@@ -82,22 +87,44 @@ export function getRootUri(item: Item): string {
   styleUrls: ['./analysis-item.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnalysisItemComponent implements OnInit {
+export class AnalysisItemComponent implements OnInit, OnDestroy {
 
-  @Input() timeline: Timeline; // TODO should be TimelineTimeContext?
-  @Input() isActive: boolean;
+  // TODO should be TimelineTimeContext?
+  @Input() set timeline(timeline: Timeline) {
+    this.mTimeline = timeline;
+    this.resetRemoveAnimation();
+  }
+
+  get timeline(): Timeline {
+    return this.mTimeline;
+  }
+
+  @Input() set isActive(isActive: boolean) {
+    this.removeAnimation();
+    this.mIsActive = isActive;
+    if (isActive) {
+      this.resetRemoveAnimation();
+    }
+  }
+
+  get isActive() {
+    return this.mIsActive;
+  }
+
   @Input() item: Item;
   @Input() contentWidth: number;
   @Input() onSeek: OnSeekHandler;
-  private hasProgressOnInit = false;
-
-
   // TODO move / re-think - naivePagingMapper feels like a big ol' bodge
-  private timeToPixel: TimePixelMapper;
+  private removeAnimation: TaskRemover;
+  private hasProgressOnInit = false;
+  private mIsActive: boolean;
+  private mTimeline: Timeline;
+
+  constructor(private renderLoop: RenderLoopService) {}
 
   ngOnInit(): void {
+    this.resetRemoveAnimation();
     this.hasProgressOnInit = this.item.progress != null;
-    this.timeToPixel = naivePagingMapper(this.timeline);
   }
 
   isLoading(): boolean {
@@ -105,7 +132,7 @@ export class AnalysisItemComponent implements OnInit {
   }
 
   isAudioItem(): boolean {
-    return isRootAudioItem(this.item);
+    return this.item && isRootAudioItem(this.item);
   }
 
   getFeatureShape(): HigherLevelFeatureShape | null {
@@ -115,5 +142,28 @@ export class AnalysisItemComponent implements OnInit {
 
   getNextColour(): string {
     return defaultColourGenerator.next().value;
+  }
+
+  ngOnDestroy(): void {
+    this.removeAnimation();
+  }
+
+  private resetRemoveAnimation(): void {
+    if (this.removeAnimation) {
+      this.removeAnimation();
+    }
+    const createPagingTask = () => {
+      const pagingMapper = naivePagingMapper(this.timeline);
+      return this.renderLoop.addPlayingTask(currentTime => {
+        pagingMapper(currentTime);
+      });
+    };
+    // only add a pager to audio items, it can drive the feature items
+    const remover = this.timeline && this.isAudioItem() ?
+      createPagingTask() : () => {};
+    this.removeAnimation = () => {
+      remover();
+      this.removeAnimation = () => {};
+    };
   }
 }
