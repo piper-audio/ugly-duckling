@@ -53,7 +53,7 @@ export function isPendingRootAudioItem(item: Item): item is PendingRootAudioItem
 }
 
 export function isRootAudioItem(item: Item): item is RootAudioItem {
-  return isPendingRootAudioItem(item) &&
+  return item && isPendingRootAudioItem(item) &&
     (item as RootAudioItem).audioData instanceof AudioBuffer;
 }
 
@@ -133,6 +133,12 @@ export class AnalysisItemComponent implements OnInit, OnDestroy {
 
   isAudioItem(): boolean {
     return this.item && isRootAudioItem(this.item);
+  }
+
+  isPending(): boolean {
+    return this.item &&
+      !isRootAudioItem(this.item) && !isAnalysisItem(this.item) &&
+      (isPendingAnalysisItem(this.item) || isPendingRootAudioItem(this.item));
   }
 
   getFeatureShape(): HigherLevelFeatureShape | null {

@@ -12,6 +12,7 @@
         ></ugly-progress-bar>
       </ng-template>
       <ng-template [ngIf]="!isLoading()">
+        <ugly-progress-spinner *ngIf="isPending()"></ugly-progress-spinner>
         <ugly-waves-play-head
           [colour]="'#c33c54'"
           [isActive]="isActive"
