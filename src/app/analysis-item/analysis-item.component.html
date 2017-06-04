@@ -4,97 +4,93 @@
     <md-card-subtitle>{{item.description}}</md-card-subtitle>
   </md-card-header>
   <md-card-content>
-    <ng-template [ngIf]="isLoading()">
-      <ugly-progress-bar
-        [isDeterminate]="true"
-        [progress]="item.progress"
-      ></ugly-progress-bar>
-    </ng-template>
     <div class="content">
+      <ng-template [ngIf]="isLoading()">
+        <ugly-progress-bar
+          [isDeterminate]="true"
+          [progress]="item.progress"
+        ></ugly-progress-bar>
+      </ng-template>
       <ng-template [ngIf]="!isLoading()">
-        <ng-template [ngIf]="isActive && isAudioItem()">
-          <ugly-live-play-head
-            [timeToPixel]="timeToPixel"
-            [colour]="'#c33c54'"
+        <ugly-waves-play-head
+          [colour]="'#c33c54'"
+          [isActive]="isActive"
+        >
+          <ugly-waveform
+            *ngIf="isAudioItem(); else notAudio"
+            [timeline]="timeline"
+            [width]="contentWidth"
+            [audioBuffer]="item.audioData"
+            [onSeek]="onSeek"
+            [colour]="'#0868ac'"
+          ></ugly-waveform>
+        </ugly-waves-play-head>
+
+
+        <ugly-waves-play-head
+          #notAudio
+          *ngIf="getFeatureShape() as shape"
+          [ngSwitch]="shape"
+          [colour]="'#c33c54'"
+          [isActive]="isActive"
+        >
+          <ugly-cross-hair-inspector
+            *ngSwitchCase="'vector'"
+            [unit]="item.unit"
+            [isAnimated]="isActive"
           >
-          </ugly-live-play-head>
-        </ng-template>
-        <ugly-waveform
-          *ngIf="isAudioItem(); else notAudio"
-          [timeline]="timeline"
-          [width]="contentWidth"
-          [audioBuffer]="item.audioData"
-          [onSeek]="onSeek"
-          [colour]="'#0868ac'"
-        ></ugly-waveform>
+            <ugly-curve
+              [colour]="getNextColour()"
+              [timeline]="timeline"
+              [width]="contentWidth"
+              [onSeek]="onSeek"
+              [curve]="item.collected"
+            ></ugly-curve>
+          </ugly-cross-hair-inspector>
+          <ugly-cross-hair-inspector
+            *ngSwitchCase="'tracks'"
+            [unit]="item.unit"
+            [isAnimated]="isActive"
+          >
+            <ugly-tracks
+              [colour]="getNextColour()"
+              [timeline]="timeline"
+              [width]="contentWidth"
+              [onSeek]="onSeek"
+              [tracks]="item.collected"
+            ></ugly-tracks>
+          </ugly-cross-hair-inspector>
+          <ugly-cross-hair-inspector
+            *ngSwitchCase="'notes'"
+            [unit]="item.unit"
+            [isAnimated]="isActive"
+          >
+            <ugly-notes
+              [colour]="getNextColour()"
+              [timeline]="timeline"
+              [width]="contentWidth"
+              [onSeek]="onSeek"
+              [notes]="item.collected"
+            ></ugly-notes>
+          </ugly-cross-hair-inspector>
+          <ugly-instants
+            *ngSwitchCase="'instants'"
+            [colour]="getNextColour()"
+            [timeline]="timeline"
+            [width]="contentWidth"
+            [onSeek]="onSeek"
+            [instants]="item.collected"
+          ></ugly-instants>
+          <ugly-grid
+            *ngSwitchCase="'matrix'"
+            [timeline]="timeline"
+            [width]="contentWidth"
+            [onSeek]="onSeek"
+            [grid]="item.collected"
+          ></ugly-grid>
 
-        <ng-template #notAudio>
-          <div class="content"
-            *ngIf="getFeatureShape() as shape; else showSpinner">
-            <div [ngSwitch]="shape" class="content">
-              <ugly-cross-hair-inspector
-                *ngSwitchCase="'vector'"
-                [unit]="item.unit"
-                [isAnimated]="isActive"
-              >
-                <ugly-curve
-                  [colour]="getNextColour()"
-                  [timeline]="timeline"
-                  [width]="contentWidth"
-                  [onSeek]="onSeek"
-                  [curve]="item.collected"
-                ></ugly-curve>
-              </ugly-cross-hair-inspector>
-              <ugly-cross-hair-inspector
-                *ngSwitchCase="'tracks'"
-                [unit]="item.unit"
-                [isAnimated]="isActive"
-              >
-                <ugly-tracks
-                  [colour]="getNextColour()"
-                  [timeline]="timeline"
-                  [width]="contentWidth"
-                  [onSeek]="onSeek"
-                  [tracks]="item.collected"
-                ></ugly-tracks>
-              </ugly-cross-hair-inspector>
-              <ugly-cross-hair-inspector
-                *ngSwitchCase="'notes'"
-                [unit]="item.unit"
-                [isAnimated]="isActive"
-              >
-                <ugly-notes
-                  [colour]="getNextColour()"
-                  [timeline]="timeline"
-                  [width]="contentWidth"
-                  [onSeek]="onSeek"
-                  [notes]="item.collected"
-                ></ugly-notes>
-              </ugly-cross-hair-inspector>
-              <ugly-instants
-                *ngSwitchCase="'instants'"
-                [colour]="getNextColour()"
-                [timeline]="timeline"
-                [width]="contentWidth"
-                [onSeek]="onSeek"
-                [instants]="item.collected"
-              ></ugly-instants>
-              <ugly-grid
-                *ngSwitchCase="'matrix'"
-                [timeline]="timeline"
-                [width]="contentWidth"
-                [onSeek]="onSeek"
-                [grid]="item.collected"
-              ></ugly-grid>
-
-              <div *ngSwitchDefault>Feature cannot be visualised.</div>
-            </div>
-          </div>
-          <ng-template #showSpinner>
-            <ugly-progress-spinner></ugly-progress-spinner>
-          </ng-template>
-        </ng-template>
-
+          <div *ngSwitchDefault>Feature cannot be visualised.</div>
+        </ugly-waves-play-head>
       </ng-template>
     </div>
   </md-card-content>
