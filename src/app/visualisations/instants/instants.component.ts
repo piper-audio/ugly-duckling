@@ -14,7 +14,10 @@ import Waves from 'waves-ui-piper';
   selector: 'ugly-instants',
   templateUrl: '../waves-template.html',
   styleUrls: ['../waves-template.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {provide: WavesComponent, useExisting: InstantsComponent}
+  ]
 })
 export class InstantsComponent extends WavesComponent<Instant[]> {
   @Input() set instants(instants: Instant[]) {

@@ -12,7 +12,8 @@ import {VectorFeature} from 'piper/HigherLevelUtilities';
 import {
   VerticallyBounded,
   VerticalScaleRenderer,
-  VerticalValueInspectorRenderer
+  VerticalValueInspectorRenderer,
+  WavesComponent
 } from '../waves-base.component';
 import {TracksComponent} from '../tracks/tracks.components';
 
@@ -30,7 +31,8 @@ import {TracksComponent} from '../tracks/tracks.components';
   providers: [
     {provide: VerticallyBounded, useExisting: CurveComponent },
     {provide: VerticalScaleRenderer, useExisting: CurveComponent},
-    {provide: VerticalValueInspectorRenderer, useExisting: CurveComponent}
+    {provide: VerticalValueInspectorRenderer, useExisting: CurveComponent},
+    {provide: WavesComponent, useExisting: CurveComponent}
   ]
 })
 export class CurveComponent implements VerticalValueInspectorRenderer {

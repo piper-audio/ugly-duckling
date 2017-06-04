@@ -16,7 +16,10 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
   selector: 'ugly-grid',
   templateUrl: '../waves-template.html',
   styleUrls: ['../waves-template.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {provide: WavesComponent, useExisting: GridComponent}
+  ]
 })
 export class GridComponent extends WavesComponent<MatrixFeature> {
 

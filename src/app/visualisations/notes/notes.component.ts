@@ -5,7 +5,8 @@ import {
   InspectableVerticallyBoundedComponent,
   VerticallyBounded,
   VerticalScaleRenderer,
-  VerticalValueInspectorRenderer
+  VerticalValueInspectorRenderer,
+  WavesComponent
 } from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
@@ -23,7 +24,8 @@ import Waves from 'waves-ui-piper';
   providers: [
     { provide: VerticallyBounded, useExisting: NotesComponent },
     { provide: VerticalScaleRenderer, useExisting: NotesComponent },
-    {provide: VerticalValueInspectorRenderer, useExisting: NotesComponent }
+    {provide: VerticalValueInspectorRenderer, useExisting: NotesComponent },
+    {provide: WavesComponent, useExisting: NotesComponent}
   ]
 })
 export class NotesComponent extends InspectableVerticallyBoundedComponent<Note[]> {

@@ -11,7 +11,10 @@ import {WavesComponent} from '../waves-base.component';
   selector: 'ugly-waveform',
   templateUrl: '../waves-template.html',
   styleUrls: ['../waves-template.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {provide: WavesComponent, useExisting: WaveformComponent}
+  ]
 })
 export class WaveformComponent extends WavesComponent<AudioBuffer> {
   @Input() set audioBuffer(buffer: AudioBuffer) {
