@@ -26,6 +26,8 @@ export abstract class VerticalValueInspectorRenderer
   abstract get updatePosition(): OnSeekHandler;
 }
 
+export type LayerRemover = () => void;
+
 export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   implements AfterViewInit {
   @ViewChild('track') trackContainer: ElementRef;
@@ -58,8 +60,8 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   protected abstract get featureLayers(): Layer[];
   protected cachedFeatureLayers: Layer[];
   protected postAddMap: (value: Layer, index: number, array: Layer[]) => void;
-  protected height: number;
   protected duration: number;
+  height: number;
 
   constructor() {
     this.layers = [];
@@ -114,24 +116,26 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   // TODO can likely be removed, or use waves-ui methods
   private clearTimeline(): void {
     // loop through layers and remove them, waves-ui provides methods for this but it seems to not work properly
-    const timeContextChildren = this.timeline.timeContext._children;
-    for (const track of this.timeline.tracks) {
-      if (track.layers.length === 0) { continue; }
-      const trackLayers: Layer[] = Array.from(track.layers as Layer[]);
-      while (trackLayers.length) {
-        const layer: Layer = trackLayers.pop();
-        if (this.layers.includes(layer)) {
-          track.remove(layer);
-          this.layers.splice(this.layers.indexOf(layer), 1);
-          const index = timeContextChildren.indexOf(layer.timeContext);
-          if (index >= 0) {
-            timeContextChildren.splice(index, 1);
-          }
-          layer.destroy();
-        }
-      }
+    const track = this.waveTrack;
+    if (track.layers.length === 0) { return; }
+    const trackLayers: Layer[] = Array.from(track.layers as Layer[]);
+    while (trackLayers.length) {
+      this.removeLayer(trackLayers.pop());
     }
     this.resetTimelineState();
+  }
+
+  private removeLayer(layer: Layer) {
+    if (this.layers.includes(layer) && this.waveTrack) {
+      const timeContextChildren = this.timeline.timeContext._children;
+      this.waveTrack.remove(layer);
+      this.layers.splice(this.layers.indexOf(layer), 1);
+      const index = timeContextChildren.indexOf(layer.timeContext);
+      if (index >= 0) {
+        timeContextChildren.splice(index, 1);
+      }
+      layer.destroy();
+    }
   }
 
   private resetTimelineState(): void {
@@ -147,8 +151,8 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
 
 
   // TODO can likely use methods in waves-ui directly
-  protected addLayer(layer: Layer,
-                     isAxis: boolean = false): void {
+  addLayer(layer: Layer,
+           isAxis: boolean = false): LayerRemover {
     const timeContext = this.timeline.timeContext;
     if (!layer.timeContext) {
       layer.setTimeContext(isAxis ?
@@ -158,6 +162,7 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
     this.layers.push(layer);
     layer.render();
     layer.update();
+    return () => this.removeLayer(layer);
   }
 
   seekStart(): void {
