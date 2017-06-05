@@ -18,6 +18,7 @@ import {WavesComponent} from '../waves-base.component';
 })
 export class WaveformComponent extends WavesComponent<AudioBuffer> {
   @Input() set audioBuffer(buffer: AudioBuffer) {
+    this.duration = buffer.duration;
     this.timeline.pixelsPerSecond = this.timeline.visibleWidth / buffer.duration;
     this.feature = buffer;
   }
