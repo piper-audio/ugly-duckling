@@ -74,7 +74,7 @@ export class WavesPlayHeadComponent implements AfterViewInit, OnDestroy {
             cursor.currentPosition = currentTime;
             cursor.update();
           })
-        )
+        );
       });
     }
   }
