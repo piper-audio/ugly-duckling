@@ -17,6 +17,7 @@ import {
   RenderLoopService,
   TaskRemover
 } from '../services/render-loop/render-loop.service';
+import {AudioPlayerService} from '../services/audio-player/audio-player.service';
 
 @Component({
   selector: 'ugly-cross-hair-inspector',
@@ -43,7 +44,8 @@ export class CrossHairInspectorComponent extends VerticalScaleComponent
   private removers: TaskRemover[];
   private mIsAnimated: boolean;
 
-  constructor(private renderLoop: RenderLoopService) {
+  constructor(private renderLoop: RenderLoopService,
+              private player: AudioPlayerService) {
     super();
     this.removers = [];
   }
@@ -52,6 +54,7 @@ export class CrossHairInspectorComponent extends VerticalScaleComponent
     super.ngAfterViewInit();
     this.inspectorRenderers.forEach(renderer => {
       renderer.renderInspector(this.cachedRange, this.unit);
+      renderer.updatePosition(this.player.getCurrentTime());
     });
     this.addTasks();
   }
