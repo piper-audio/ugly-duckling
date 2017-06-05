@@ -24,6 +24,7 @@
             [audioBuffer]="item.audioData"
             [onSeek]="onSeek"
             [colour]="'#0868ac'"
+            [duration]="getDuration()"
           ></ugly-waveform>
         </ugly-waves-play-head>
 
@@ -46,6 +47,7 @@
               [width]="contentWidth"
               [onSeek]="onSeek"
               [curve]="item.collected"
+              [duration]="getDuration()"
             ></ugly-curve>
           </ugly-cross-hair-inspector>
           <ugly-cross-hair-inspector
@@ -59,6 +61,7 @@
               [width]="contentWidth"
               [onSeek]="onSeek"
               [tracks]="item.collected"
+              [duration]="getDuration()"
             ></ugly-tracks>
           </ugly-cross-hair-inspector>
           <ugly-cross-hair-inspector
@@ -72,6 +75,7 @@
               [width]="contentWidth"
               [onSeek]="onSeek"
               [notes]="item.collected"
+              [duration]="getDuration()"
             ></ugly-notes>
           </ugly-cross-hair-inspector>
           <ugly-instants
@@ -81,6 +85,7 @@
             [width]="contentWidth"
             [onSeek]="onSeek"
             [instants]="item.collected"
+            [duration]="getDuration()"
           ></ugly-instants>
           <ugly-grid
             *ngSwitchCase="'matrix'"
@@ -88,6 +93,7 @@
             [width]="contentWidth"
             [onSeek]="onSeek"
             [grid]="item.collected"
+            [duration]="getDuration()"
           ></ugly-grid>
 
           <div *ngSwitchDefault>Feature cannot be visualised.</div>

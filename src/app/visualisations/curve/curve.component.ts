@@ -26,6 +26,7 @@ import {TracksComponent} from '../tracks/tracks.components';
       [onSeek]="onSeek"
       [colour]="colour"
       [tracks]="[curve]"
+      [duration]="duration"
     ></ugly-tracks>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -41,6 +42,7 @@ export class CurveComponent implements VerticalValueInspectorRenderer {
   @Input() width: number;
   @Input() curve: VectorFeature;
   @Input() colour: string;
+  @Input() duration: number;
   @ViewChild(TracksComponent) tracksComponent: TracksComponent;
 
   renderInspector(range: [number, number], unit?: string): void {

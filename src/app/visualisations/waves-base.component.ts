@@ -42,6 +42,7 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   @Input() timeline: Timeline;
   @Input() onSeek: OnSeekHandler;
   @Input() colour: string;
+  @Input() duration: number;
   @Input() set feature(feature: T) {
     this.mFeature = feature;
     this.update();
@@ -60,7 +61,6 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   protected abstract get featureLayers(): Layer[];
   protected cachedFeatureLayers: Layer[];
   protected postAddMap: (value: Layer, index: number, array: Layer[]) => void;
-  protected duration: number;
   height: number;
 
   constructor() {
@@ -155,8 +155,15 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
            isAxis: boolean = false): LayerRemover {
     const timeContext = this.timeline.timeContext;
     if (!layer.timeContext) {
-      layer.setTimeContext(isAxis ?
-        timeContext : new Waves.core.LayerTimeContext(timeContext));
+      if (isAxis) {
+        layer.setTimeContext(timeContext);
+      } else {
+        const layerTimeContext = new Waves.core.LayerTimeContext(timeContext);
+        if (this.duration) {
+          layerTimeContext.duration = this.duration;
+        }
+        layer.setTimeContext(layerTimeContext);
+      }
     }
     this.waveTrack.add(layer);
     this.layers.push(layer);

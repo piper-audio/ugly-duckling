@@ -146,6 +146,15 @@ export class AnalysisItemComponent implements OnInit, OnDestroy {
     isAnalysisItem(this.item) ? this.item.shape : null;
   }
 
+  getDuration(): number | null {
+    if (isRootAudioItem(this.item)) {
+      return this.item.audioData.duration;
+    }
+    if (isAnalysisItem(this.item)) {
+      return this.item.parent.audioData.duration;
+    }
+  }
+
   getNextColour(): string {
     return defaultColourGenerator.next().value;
   }
