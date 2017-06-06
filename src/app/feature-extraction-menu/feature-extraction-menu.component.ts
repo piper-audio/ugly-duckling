@@ -40,6 +40,7 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   get disabled() {
     return this.isDisabled;
   }
+  @Input() onRequestOutput: () => void;
 
   @Output() requestOutput: EventEmitter<ExtractorOutputInfo>;
 
@@ -86,9 +87,10 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   }
 
   extract(info: ExtractorOutputInfo): void {
-    console.warn('extract?', info);
+    if (this.onRequestOutput) {
+      this.onRequestOutput();
+    }
     if (info) {
-      console.warn('emit');
       this.requestOutput.emit(info);
     }
   }
