@@ -20,18 +20,18 @@ import {
       width: 100%;
       position: absolute;
       z-index: 100;
-      overflow-y: hidden;
+      overflow: hidden;
     }`
   ],
   animations: [
     trigger('visibility', [
       state('show', style({
         height: '100%',
-        'overflow-y': 'scroll'
+        overflow: 'scroll'
       })),
       state('hide', style({
         height: 0,
-        'overflow-y': 'hidden',
+        overflow: 'hidden',
       })),
       transition('hide => show', [
         animate(300, keyframes([
