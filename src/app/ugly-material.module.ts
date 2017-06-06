@@ -3,7 +3,7 @@
  */
 import {
   MdButtonModule, MdCardModule,
-  MdIconModule, MdProgressBarModule, MdProgressSpinnerModule,
+  MdIconModule, MdListModule, MdProgressBarModule, MdProgressSpinnerModule,
   MdSelectModule,
   MdSidenavModule,
   MdToolbarModule
@@ -20,7 +20,8 @@ const importExports = [
   MdSelectModule,
   MdProgressSpinnerModule,
   MdProgressBarModule,
-  MdCardModule
+  MdCardModule,
+  MdListModule
 ];
 
 @NgModule({
