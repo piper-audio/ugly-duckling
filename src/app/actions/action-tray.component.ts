@@ -16,7 +16,7 @@ import {
   styles: [
     `.tray {
       background: white;
-      height: 100%;
+      height: calc(100vh - 64px);
       width: 100%;
       position: absolute;
       z-index: 100;
@@ -26,7 +26,7 @@ import {
   animations: [
     trigger('visibility', [
       state('show', style({
-        height: '100%',
+        height: 'calc(100vh - 64px)',
         overflow: 'scroll'
       })),
       state('hide', style({
@@ -36,12 +36,12 @@ import {
       transition('hide => show', [
         animate(300, keyframes([
           style({height: 0, offset: 0}),
-          style({height: '100%',  offset: 1.0}),
+          style({height: 'calc(100vh - 64px)',  offset: 1.0}),
         ]))
       ]),
       transition('show => hide', [
         animate(300, keyframes([
-          style({height: '100%', offset: 0.0}),
+          style({height: 'calc(100vh - 64px)', offset: 0.0}),
           style({height: 0, offset: 1.0}),
         ]))
       ]),
