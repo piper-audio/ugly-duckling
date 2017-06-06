@@ -24,13 +24,15 @@
     </md-toolbar>
   </div>
 
+  <ugly-action-tray #tray>
+    <ugly-feature-extraction-menu
+      (requestOutput)="extractFeatures($event)"
+      [onRequestOutput]="closeTray"
+      [disabled]="!canExtract"
+    >
+    </ugly-feature-extraction-menu>
+  </ugly-action-tray>
   <div class="ugly-content">
-    <ugly-action-tray #tray>
-      <ugly-feature-extraction-menu
-        (requestOutput)="extractFeatures($event)"
-        [disabled]="!canExtract">
-      </ugly-feature-extraction-menu>
-    </ugly-action-tray>
     <ugly-notebook-feed
       [analyses]="analyses.toIterable()"
       [rootAudioUri]="rootAudioItem.uri"

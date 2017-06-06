@@ -1,4 +1,4 @@
-import {Component, OnDestroy} from '@angular/core';
+import {Component, OnDestroy, ViewChild} from '@angular/core';
 import {
   AudioPlayerService,
   AudioResourceError, AudioResource
@@ -14,6 +14,7 @@ import {
   Item, PendingAnalysisItem, PendingRootAudioItem, RootAudioItem
 } from './analysis-item/analysis-item.component';
 import {OnSeekHandler} from './playhead/PlayHeadHelpers';
+import {ActionTrayComponent} from "./actions/action-tray.component";
 
 class PersistentStack<T> {
   private stack: T[];
@@ -71,6 +72,7 @@ class PersistentStack<T> {
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnDestroy {
+  @ViewChild(ActionTrayComponent) tray: ActionTrayComponent;
   audioBuffer: AudioBuffer; // TODO consider revising
   canExtract: boolean;
   private onAudioDataSubscription: Subscription;
@@ -80,6 +82,7 @@ export class AppComponent implements OnDestroy {
   private countingId: number; // TODO improve uniquely identifying items
   private rootAudioItem: RootAudioItem;
   private onSeek: OnSeekHandler;
+  private closeTray: () => void;
 
   constructor(private audioService: AudioPlayerService,
               private featureService: FeatureExtractionService,
@@ -142,6 +145,9 @@ export class AppComponent implements OnDestroy {
         );
       }
     );
+    this.closeTray = () => {
+      this.tray.toggle();
+    };
   }
 
   onFileOpened(file: File | Blob) {
