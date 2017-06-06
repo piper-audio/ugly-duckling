@@ -3,6 +3,7 @@ md-card {
   padding-right: 0;
   width: 100%;
   padding-bottom: 0;
+  user-select: none;
 }
 
 md-card-actions {
@@ -24,3 +25,4 @@ ugly-live-play-head {
   height: 160px;
   width: 100%;
 }
+
