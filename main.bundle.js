@@ -1166,6 +1166,7 @@ ActionTrayComponent = __decorate([
       position: absolute;
       z-index: 100;
       overflow: hidden;
+      -webkit-overflow-scrolling: touch;
     }`
         ],
         animations: [
