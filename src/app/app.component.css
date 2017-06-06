@@ -23,7 +23,7 @@ md-sidenav {
 }
 
 .ugly-content {
-  flex: 1 1 auto;
+  flex: 1;
   overflow-y: auto;
   position: relative;
 }
