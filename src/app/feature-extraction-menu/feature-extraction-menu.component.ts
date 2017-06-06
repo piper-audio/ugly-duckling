@@ -20,6 +20,11 @@ export interface ExtractorOutputInfo {
   name: string;
 }
 
+interface ExtractorInfo {
+  name: string;
+  outputs: ExtractorOutputInfo[];
+}
+
 @Component({
   selector: 'ugly-feature-extraction-menu',
   templateUrl: './feature-extraction-menu.component.html',
@@ -39,35 +44,30 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   @Output() requestOutput: EventEmitter<ExtractorOutputInfo>;
 
   private isDisabled: boolean;
-  private extractorsMap: Map<string, ExtractorOutputInfo>;
   private populateExtractors: (available: ListResponse) => void;
-  extractors: Iterable<ExtractorOutputInfo>;
+  extractors: Iterable<ExtractorInfo>;
   private librariesUpdatedSubscription: Subscription;
 
   constructor(private piperService: FeatureExtractionService) {
-    this.extractorsMap = new Map();
     this.extractors = [];
     this.requestOutput = new EventEmitter<ExtractorOutputInfo>();
     this.isDisabled = true;
     this.populateExtractors = available => {
-      const maxCharacterLimit = 50;
-      available.available.forEach(staticData => {
-        const isSingleOutputExtractor = staticData.basicOutputInfo.length === 1;
-        staticData.basicOutputInfo.forEach(output => {
-          const combinedKey = `${staticData.key}:${output.identifier}`;
-          this.extractorsMap.set(combinedKey, {
-            extractorKey: staticData.key,
-            combinedKey: combinedKey,
-            name: (
-              isSingleOutputExtractor
-                ? staticData.basic.name
-                : `${staticData.basic.name}: ${output.name}`
-            ).substr(0, maxCharacterLimit) + '...',
-            outputId: output.identifier
+      this.extractors = available.available.reduce((acc, staticData) => {
+        const name = staticData.basic.name;
+        const outputs: ExtractorOutputInfo[] =
+          staticData.basicOutputInfo.map(output => {
+            const combinedKey = `${staticData.key}:${output.identifier}`;
+            return {
+              extractorKey: staticData.key,
+              combinedKey: combinedKey,
+              name: output.name,
+              outputId: output.identifier
+            };
           });
-        });
-      });
-      this.extractors = [...this.extractorsMap.values()];
+        acc.push({name, outputs});
+        return acc;
+      }, [] as ExtractorInfo[]);
     };
   }
 
@@ -85,10 +85,10 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
     this.piperService.list().then(this.populateExtractors);
   }
 
-  extract(combinedKey: string): void {
-    const info: ExtractorOutputInfo =
-      this.extractorsMap.get(combinedKey);
+  extract(info: ExtractorOutputInfo): void {
+    console.warn('extract?', info);
     if (info) {
+      console.warn('emit');
       this.requestOutput.emit(info);
     }
   }

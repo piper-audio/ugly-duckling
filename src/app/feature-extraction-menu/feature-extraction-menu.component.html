@@ -1,21 +1,18 @@
 <div class="container">
-  <md-select #extractorSelect
-    placeholder="Extractors">
-    <md-option
+  <md-list dense>
+    <ng-container
       *ngFor="let extractor of extractors"
-      [value]="extractor.combinedKey"
     >
-      {{extractor.name}}
-    </md-option>
-  </md-select>
-  <p>
-    <button md-raised-button
-            color="primary"
-            (click)="extract(getFirstSelectedItemOrEmpty(extractorSelect))"
-            [disabled]="disabled">Extract</button>
-  </p>
-  <p>
-    <button md-raised-button
-            (click)="load()">Load Remote Plugins</button>
-  </p>
+      <h3 md-subheader>{{extractor.name}}</h3>
+      <md-list-item *ngFor="let output of extractor.outputs">
+        <md-icon md-list-icon>extension</md-icon>
+        <h4 md-line>{{output.name}}</h4>
+        <p md-line>{{output.combinedKey}}</p>
+        <button md-icon-button (click)="extract(output)" [disabled]="disabled">
+          <md-icon>add</md-icon>
+        </button>
+      </md-list-item>
+      <md-divider></md-divider>
+    </ng-container>
+  </md-list>
 </div>
