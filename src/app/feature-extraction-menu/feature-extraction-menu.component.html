@@ -10,7 +10,9 @@
         <md-icon md-list-icon>extension</md-icon>
         <h4 md-line>{{output.name}}</h4>
         <p md-line>{{output.combinedKey}}</p>
-        <button md-icon-button (click)="extract(output)" [disabled]="disabled">
+        <button md-icon-button
+                (click)="extract(output); $event.stopPropagation()"
+                [disabled]="disabled">
           <md-icon>add</md-icon>
         </button>
       </md-list-item>
