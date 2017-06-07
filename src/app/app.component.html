@@ -26,8 +26,7 @@
 
   <ugly-action-tray #tray>
     <ugly-feature-extraction-menu
-      (requestOutput)="extractFeatures($event)"
-      [onRequestOutput]="closeTray"
+      (requestOutput)="tray.close(); extractFeatures($event)"
       [disabled]="!canExtract"
     >
     </ugly-feature-extraction-menu>
