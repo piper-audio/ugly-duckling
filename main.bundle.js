@@ -299,7 +299,7 @@ exports = module.exports = __webpack_require__("FZ+f")(false);
 
 
 // module
-exports.push([module.i, "#extractor-outputs{max-width:80%;display:block;margin:0 auto}.container{margin-top:10pt;padding:10pt}", ""]);
+exports.push([module.i, "#extractor-outputs{max-width:80%;display:block;margin:0 auto}.container{margin-top:10pt;padding:10pt}.container button,.container md-spinner{margin:0 auto;display:block}.container md-spinner{height:20px;width:20px}md-list-item{cursor:pointer}", ""]);
 
 // exports
 
@@ -527,7 +527,7 @@ module.exports = "<input #open type=\"file\" accept=\"audio/*\" (change)=\"decod
 /***/ "5xMp":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event)\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event)\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"tray.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <ugly-action-tray #tray>\n    <ugly-feature-extraction-menu\n      (requestOutput)=\"extractFeatures($event)\"\n      [onRequestOutput]=\"closeTray\"\n      [disabled]=\"!canExtract\"\n    >\n    </ugly-feature-extraction-menu>\n  </ugly-action-tray>\n  <div class=\"ugly-content\">\n    <ugly-notebook-feed\n      [analyses]=\"analyses.toIterable()\"\n      [rootAudioUri]=\"rootAudioItem.uri\"\n      [onSeek]=\"onSeek\"></ugly-notebook-feed>\n  </div>\n</div>\n"
+module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event); tray.close()\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event); tray.close()\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"tray.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <ugly-action-tray #tray>\n    <ugly-feature-extraction-menu\n      (requestOutput)=\"tray.close(); extractFeatures($event)\"\n      [disabled]=\"!canExtract\"\n    >\n    </ugly-feature-extraction-menu>\n  </ugly-action-tray>\n  <div class=\"ugly-content\">\n    <ugly-notebook-feed\n      [analyses]=\"analyses.toIterable()\"\n      [rootAudioUri]=\"rootAudioItem.uri\"\n      [onSeek]=\"onSeek\"></ugly-notebook-feed>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -1145,6 +1145,9 @@ let ActionTrayComponent = class ActionTrayComponent {
     }
     toggle() {
         this.visibility = this.visibility === 'show' ? 'hide' : 'show';
+    }
+    close() {
+        this.visibility = 'hide';
     }
 };
 __decorate([
@@ -1907,7 +1910,7 @@ UglyMaterialModule = __decorate([
 /***/ "W1+o":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <md-list dense>\n    <ng-container\n      *ngFor=\"let extractor of extractors\"\n    >\n      <h3 md-subheader>{{extractor.name}}</h3>\n      <md-list-item\n        *ngFor=\"let output of extractor.outputs\"\n        (click)=\"extract(output)\">\n        <md-icon md-list-icon>extension</md-icon>\n        <h4 md-line>{{output.name}}</h4>\n        <p md-line>{{output.combinedKey}}</p>\n        <button md-icon-button\n                (click)=\"extract(output); $event.stopPropagation()\"\n                [disabled]=\"disabled\">\n          <md-icon>add</md-icon>\n        </button>\n      </md-list-item>\n      <md-divider></md-divider>\n    </ng-container>\n  </md-list>\n</div>\n"
+module.exports = "<div class=\"container\">\n  <md-list dense>\n    <ng-container\n      *ngFor=\"let extractor of extractors\"\n    >\n      <h3 md-subheader>{{extractor.name}}</h3>\n      <md-list-item\n        *ngFor=\"let output of extractor.outputs\"\n        (click)=\"extract(output)\">\n        <md-icon md-list-icon>extension</md-icon>\n        <h4 md-line>{{output.name}}</h4>\n        <p md-line>{{output.combinedKey}}</p>\n        <button md-icon-button\n                (click)=\"extract(output); $event.stopPropagation()\"\n                [disabled]=\"disabled\">\n          <md-icon>add</md-icon>\n        </button>\n      </md-list-item>\n      <md-divider></md-divider>\n    </ng-container>\n  </md-list>\n  <md-spinner *ngIf=\"isLoading\"></md-spinner>\n  <button\n    md-button\n    (click)=\"load()\"\n    [disabled]=\"isLoading\"\n  ><md-icon>cloud_download</md-icon> Load more</button>\n</div>\n"
 
 /***/ }),
 
@@ -2019,7 +2022,6 @@ module.exports = "<div class=\"container\">\n  <md-list dense>\n    <ng-containe
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__("Qbdm");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_material__ = __webpack_require__("fYnu");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__ = __webpack_require__("jat4");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__actions_action_tray_component__ = __webpack_require__("HlfC");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2030,7 +2032,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-
 
 
 
@@ -2114,9 +2115,6 @@ let AppComponent = class AppComponent {
             }
             this.analyses.set(index, Object.assign({}, this.analyses.get(index), { progress: progress.value }));
         });
-        this.closeTray = () => {
-            this.tray.toggle();
-        };
     }
     onFileOpened(file) {
         this.canExtract = false;
@@ -2185,20 +2183,16 @@ let AppComponent = class AppComponent {
         this.onProgressUpdated.unsubscribe();
     }
 };
-__decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_6" /* ViewChild */])(__WEBPACK_IMPORTED_MODULE_6__actions_action_tray_component__["a" /* ActionTrayComponent */]),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_6__actions_action_tray_component__["a" /* ActionTrayComponent */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__actions_action_tray_component__["a" /* ActionTrayComponent */]) === "function" && _a || Object)
-], AppComponent.prototype, "tray", void 0);
 AppComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
         selector: 'ugly-root',
         template: __webpack_require__("5xMp"),
         styles: [__webpack_require__("okgc")]
     }),
-    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _e || Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _d || Object])
 ], AppComponent);
 
-var _a, _b, _c, _d, _e;
+var _a, _b, _c, _d;
 //# sourceMappingURL=app.component.js.map
 
 /***/ }),
@@ -3247,6 +3241,7 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
                 acc.push({ name, outputs });
                 return acc;
             }, []);
+            this.isLoading = false;
         };
     }
     set disabled(isDisabled) {
@@ -3254,13 +3249,6 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     }
     get disabled() {
         return this.isDisabled;
-    }
-    getFirstSelectedItemOrEmpty(select) {
-        const selected = select.selected;
-        if (selected) {
-            return selected instanceof Array ? selected[0].value : selected.value;
-        }
-        return '';
     }
     ngOnInit() {
         this.librariesUpdatedSubscription =
@@ -3276,6 +3264,7 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
         }
     }
     load() {
+        this.isLoading = true;
         this.piperService.updateAvailableLibraries();
     }
     ngOnDestroy() {
