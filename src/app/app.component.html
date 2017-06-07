@@ -7,7 +7,7 @@
 
       <ugly-playback-control></ugly-playback-control>
       <ugly-recording-control
-        (finishedRecording)="onFileOpened($event)"
+        (finishedRecording)="onFileOpened($event); tray.close()"
       ></ugly-recording-control>
 
       <!-- This fills the remaining space of the current row -->
@@ -15,7 +15,7 @@
 
 
       <ugly-audio-file-open
-        (fileOpened)="onFileOpened($event)"
+        (fileOpened)="onFileOpened($event); tray.close()"
       ></ugly-audio-file-open>
       <!-- menu opens when trigger button is clicked -->
       <button md-icon-button (click)="tray.toggle()">

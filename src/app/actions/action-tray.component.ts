@@ -55,4 +55,8 @@ export class ActionTrayComponent {
   toggle() {
     this.visibility = this.visibility === 'show' ? 'hide' : 'show';
   }
+
+  close() {
+    this.visibility = 'hide';
+  }
 }
