@@ -11,7 +11,6 @@ import {
 } from '../services/feature-extraction/feature-extraction.service';
 import {ListResponse} from 'piper';
 import {Subscription} from 'rxjs/Subscription';
-import {MdSelect} from '@angular/material';
 
 export interface ExtractorOutputInfo {
   extractorKey: string;
@@ -48,6 +47,7 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   private populateExtractors: (available: ListResponse) => void;
   extractors: Iterable<ExtractorInfo>;
   private librariesUpdatedSubscription: Subscription;
+  private isLoading: boolean;
 
   constructor(private piperService: FeatureExtractionService) {
     this.extractors = [];
@@ -69,15 +69,8 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
         acc.push({name, outputs});
         return acc;
       }, [] as ExtractorInfo[]);
+      this.isLoading = false;
     };
-  }
-
-  private getFirstSelectedItemOrEmpty(select: MdSelect): string {
-    const selected = select.selected;
-    if (selected) {
-      return selected instanceof Array ? selected[0].value : selected.value;
-    }
-    return '';
   }
 
   ngOnInit() {
@@ -96,6 +89,7 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   }
 
   load(): void {
+    this.isLoading = true;
     this.piperService.updateAvailableLibraries();
   }
 

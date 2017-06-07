@@ -19,4 +19,9 @@
       <md-divider></md-divider>
     </ng-container>
   </md-list>
+  <md-spinner *ngIf="isLoading"></md-spinner>
+  <button
+    md-button
+    (click)="load()"
+  ><md-icon>cloud_download</md-icon> Load more</button>
 </div>
