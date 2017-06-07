@@ -24,8 +24,9 @@ md-sidenav {
 
 .ugly-content {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ugly-footer {
