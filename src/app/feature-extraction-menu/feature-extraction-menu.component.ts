@@ -90,7 +90,7 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
     if (this.onRequestOutput) {
       this.onRequestOutput();
     }
-    if (info) {
+    if (info && !this.disabled) {
       this.requestOutput.emit(info);
     }
   }
