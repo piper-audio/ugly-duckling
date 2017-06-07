@@ -1907,7 +1907,7 @@ UglyMaterialModule = __decorate([
 /***/ "W1+o":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <md-list dense>\n    <ng-container\n      *ngFor=\"let extractor of extractors\"\n    >\n      <h3 md-subheader>{{extractor.name}}</h3>\n      <md-list-item *ngFor=\"let output of extractor.outputs\">\n        <md-icon md-list-icon>extension</md-icon>\n        <h4 md-line>{{output.name}}</h4>\n        <p md-line>{{output.combinedKey}}</p>\n        <button md-icon-button (click)=\"extract(output)\" [disabled]=\"disabled\">\n          <md-icon>add</md-icon>\n        </button>\n      </md-list-item>\n      <md-divider></md-divider>\n    </ng-container>\n  </md-list>\n</div>\n"
+module.exports = "<div class=\"container\">\n  <md-list dense>\n    <ng-container\n      *ngFor=\"let extractor of extractors\"\n    >\n      <h3 md-subheader>{{extractor.name}}</h3>\n      <md-list-item\n        *ngFor=\"let output of extractor.outputs\"\n        (click)=\"extract(output)\">\n        <md-icon md-list-icon>extension</md-icon>\n        <h4 md-line>{{output.name}}</h4>\n        <p md-line>{{output.combinedKey}}</p>\n        <button md-icon-button (click)=\"extract(output)\" [disabled]=\"disabled\">\n          <md-icon>add</md-icon>\n        </button>\n      </md-list-item>\n      <md-divider></md-divider>\n    </ng-container>\n  </md-list>\n</div>\n"
 
 /***/ }),
 
@@ -3065,7 +3065,7 @@ exports = module.exports = __webpack_require__("FZ+f")(false);
 
 
 // module
-exports.push([module.i, ".ugly-toolbar-filler{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto}md-sidenav-container{height:100%;width:100%;position:absolute}md-sidenav{text-align:center}.ugly-container{height:100%;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;-ms-flex-direction:column;flex-direction:column}.ugly-header{-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto}.ugly-content{-webkit-box-flex:1;-ms-flex:1;flex:1;overflow-y:auto;position:relative}.ugly-footer{-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto}", ""]);
+exports.push([module.i, ".ugly-toolbar-filler{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto}md-sidenav-container{height:100%;width:100%;position:absolute}md-sidenav{text-align:center}.ugly-container{height:100%;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;-ms-flex-direction:column;flex-direction:column}.ugly-header{-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto}.ugly-content{-webkit-box-flex:1;-ms-flex:1;flex:1;overflow-y:scroll;position:relative;-webkit-overflow-scrolling:touch}.ugly-footer{-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto}", ""]);
 
 // exports
 
@@ -3271,7 +3271,7 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
         if (this.onRequestOutput) {
             this.onRequestOutput();
         }
-        if (info) {
+        if (info && !this.disabled) {
             this.requestOutput.emit(info);
         }
     }
