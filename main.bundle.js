@@ -405,7 +405,7 @@ var GridComponent_1, _a, _b;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__ = __webpack_require__("rlar");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return AudioRecorderService; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AudioRecorderService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -441,7 +441,7 @@ class ThrowingMediaRecorder {
     stop() {
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = ThrowingMediaRecorder;
+/* unused harmony export ThrowingMediaRecorder */
 
 let AudioRecorderService = class AudioRecorderService {
     constructor(requestProvider, recorderImpl, ngZone) {
@@ -1238,7 +1238,7 @@ module.exports = "<div class=\"feed\">\n  <ng-template ngFor let-item [ngForOf]=
 /***/ "J4P9":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <md-list dense>\n    <ng-container\n      *ngFor=\"let extractor of extractors\"\n    >\n      <h3 md-subheader>{{extractor.name}}</h3>\n      <md-list-item\n        *ngFor=\"let output of extractor.outputs\"\n        (click)=\"extract(output)\">\n        <md-icon md-list-icon>\n          {{output.iconName ? output.iconName : 'extension'}}\n        </md-icon>\n        <h4 md-line>{{output.name}}</h4>\n        <p md-line>{{output.combinedKey}}</p>\n        <button md-icon-button\n                (click)=\"extract(output); $event.stopPropagation()\"\n                [disabled]=\"disabled\">\n          <md-icon>add</md-icon>\n        </button>\n      </md-list-item>\n      <md-divider></md-divider>\n    </ng-container>\n  </md-list>\n  <md-spinner *ngIf=\"isLoading\"></md-spinner>\n  <button\n    md-button\n    (click)=\"load()\"\n    [disabled]=\"isLoading\"\n  >Load more</button>\n</div>\n"
+module.exports = "<div class=\"container\">\n  <md-list dense>\n    <ng-container\n      *ngFor=\"let extractor of extractors\"\n    >\n      <h3 md-subheader>{{extractor.name}}</h3>\n      <md-list-item\n        *ngFor=\"let output of extractor.outputs\"\n        (click)=\"extract(output)\">\n        <md-icon md-list-icon>{{getFeatureIconName(output)}}</md-icon>\n        <h4 md-line>{{output.name}}</h4>\n        <p md-line>{{output.combinedKey}}</p>\n        <button md-icon-button\n                (click)=\"extract(output); $event.stopPropagation()\"\n                [disabled]=\"disabled\">\n          <md-icon>add</md-icon>\n        </button>\n      </md-list-item>\n      <md-divider></md-divider>\n    </ng-container>\n  </md-list>\n  <md-spinner *ngIf=\"isLoading\"></md-spinner>\n  <button\n    md-button\n    (click)=\"load()\"\n    [disabled]=\"isLoading\"\n  >Load more</button>\n</div>\n"
 
 /***/ }),
 
@@ -1819,13 +1819,6 @@ const crudeTypeUriMap = {
     'http://purl.org/ontology/af/MusicSegment': 'instants',
     'http://purl.org/ontology/af/Pitch': 'tracks'
 };
-const featureIconMap = {
-    vector: 'show_chart',
-    matrix: 'grid_on',
-    tracks: 'multiline_chart',
-    instants: 'view_week',
-    notes: 'audiotrack',
-};
 let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     constructor(piperService) {
         this.piperService = piperService;
@@ -1837,17 +1830,15 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
                 const name = staticData.basic.name;
                 const outputs = staticData.basicOutputInfo.map(output => {
                     const combinedKey = `${staticData.key}:${output.identifier}`;
-                    const hasTypeInfo = staticData.staticOutputInfo &&
+                    const maybeTypeInfo = staticData.staticOutputInfo &&
                         staticData.staticOutputInfo.get(output.identifier) &&
                         staticData.staticOutputInfo.get(output.identifier).typeURI;
-                    const getIcon = () => featureIconMap[crudeTypeUriMap[staticData.staticOutputInfo.get(output.identifier).typeURI]];
-                    const hasIcon = hasTypeInfo && getIcon();
                     return Object.assign({
                         extractorKey: staticData.key,
                         combinedKey: combinedKey,
                         name: output.name,
                         outputId: output.identifier
-                    }, hasIcon ? { iconName: getIcon() } : {});
+                    }, maybeTypeInfo ? { typeUri: maybeTypeInfo } : {});
                 });
                 acc.push({ name, outputs });
                 return acc;
@@ -1877,6 +1868,15 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     load() {
         this.isLoading = true;
         this.piperService.updateAvailableLibraries();
+    }
+    getFeatureIconName(outputInfo) {
+        return {
+            vector: 'show_chart',
+            matrix: 'grid_on',
+            tracks: 'multiline_chart',
+            instants: 'view_week',
+            notes: 'audiotrack',
+        }[crudeTypeUriMap[outputInfo.typeUri]] || 'extension';
     }
     ngOnDestroy() {
         this.librariesUpdatedSubscription.unsubscribe();
@@ -1993,6 +1993,7 @@ var _a, _b;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__services_render_loop_render_loop_service__ = __webpack_require__("EWzO");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__playhead_waves_ui_play_head_component__ = __webpack_require__("LbIP");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__actions_action_tray_component__ = __webpack_require__("MaDt");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_31__services_audio_recorder_RecordRtcMediaRecorder__ = __webpack_require__("jYsx");
 /* unused harmony export createAudioContext */
 /* unused harmony export createAudioElement */
 /* unused harmony export createAudioInputProvider */
@@ -2007,6 +2008,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -2059,7 +2061,7 @@ function createMediaRecorderFactory() {
         return MediaRecorder;
     }
     else {
-        return __WEBPACK_IMPORTED_MODULE_12__services_audio_recorder_audio_recorder_service__["a" /* ThrowingMediaRecorder */];
+        return __WEBPACK_IMPORTED_MODULE_31__services_audio_recorder_RecordRtcMediaRecorder__["a" /* RecordRtcMediaRecorder */];
     }
 }
 function createUrlResourceManager() {
@@ -2130,7 +2132,7 @@ AppModule = __decorate([
             { provide: 'AudioContext', useFactory: createAudioContext },
             __WEBPACK_IMPORTED_MODULE_8__services_audio_player_audio_player_service__["a" /* AudioPlayerService */],
             { provide: 'AudioInputProvider', useFactory: createAudioInputProvider },
-            __WEBPACK_IMPORTED_MODULE_12__services_audio_recorder_audio_recorder_service__["b" /* AudioRecorderService */],
+            __WEBPACK_IMPORTED_MODULE_12__services_audio_recorder_audio_recorder_service__["a" /* AudioRecorderService */],
             __WEBPACK_IMPORTED_MODULE_9__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */],
             { provide: 'MediaRecorderFactory', useFactory: createMediaRecorderFactory },
             { provide: 'PiperRepoUri', useValue: 'assets/remote-extractors.json' },
@@ -2405,6 +2407,69 @@ module.exports = module.exports.toString();
 
 /***/ }),
 
+/***/ "jYsx":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_recordrtc__ = __webpack_require__("+SkV");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_recordrtc___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_recordrtc__);
+
+// safari doesn't implement BlobEvent... this should do
+class BlobEvent extends Event {
+    constructor(data) {
+        super('blob');
+        this.data = data;
+    }
+}
+class RecordRtcMediaRecorder {
+    // TODO RecordRTC typings?
+    static isTypeSupported(mimeType) {
+        return mimeType === 'audio/wav';
+    }
+    constructor(stream) {
+        this.state = 'inactive';
+        this.stream = stream;
+        this.recorder = __WEBPACK_IMPORTED_MODULE_0_recordrtc__(stream, {
+            type: 'audio',
+            recorderType: __WEBPACK_IMPORTED_MODULE_0_recordrtc__["StereoAudioRecorder"]
+        });
+    }
+    pause() {
+        this.state = 'paused';
+        this.recorder.pauseRecording();
+    }
+    requestData() {
+        // could probably implement this, but it isn't actually used in the app
+        throw new Error('Not implemented');
+    }
+    resume() {
+        this.state = 'recording';
+        this.recorder.resumeRecording();
+    }
+    start(timeslice) {
+        this.state = 'recording';
+        this.recorder.startRecording();
+    }
+    stop() {
+        this.state = 'inactive';
+        this.recorder.stopRecording(() => {
+            if (this.ondataavailable) {
+                const blob = this.recorder.getBlob();
+                this.mimeType = blob.type;
+                this.ondataavailable(new BlobEvent(blob));
+            }
+            if (this.onstop) {
+                this.onstop(new Event('stop'));
+            }
+        });
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = RecordRtcMediaRecorder;
+
+//# sourceMappingURL=RecordRtcMediaRecorder.js.map
+
+/***/ }),
+
 /***/ "kdy0":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2658,7 +2723,7 @@ RecordingControlComponent = __decorate([
         selector: 'ugly-recording-control',
         template: __webpack_require__("Eemu")
     }),
-    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_recorder_audio_recorder_service__["b" /* AudioRecorderService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_recorder_audio_recorder_service__["b" /* AudioRecorderService */]) === "function" && _b || Object])
+    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_recorder_audio_recorder_service__["a" /* AudioRecorderService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_recorder_audio_recorder_service__["a" /* AudioRecorderService */]) === "function" && _b || Object])
 ], RecordingControlComponent);
 
 var _a, _b;
