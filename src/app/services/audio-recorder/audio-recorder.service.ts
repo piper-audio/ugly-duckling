@@ -22,7 +22,7 @@ export type RecordingState = 'inactive' | 'recording' | 'paused';
 
 export interface BlobEvent extends Event {
   readonly data: Blob;
-  readonly timecode: number;
+  readonly timecode?: number;
 }
 
 export interface MediaRecorderErrorEvent extends Event {
