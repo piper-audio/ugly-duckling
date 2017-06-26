@@ -11,18 +11,43 @@ import {
 } from '../services/feature-extraction/feature-extraction.service';
 import {ListResponse} from 'piper';
 import {Subscription} from 'rxjs/Subscription';
+import {HigherLevelFeatureShape} from "../visualisations/FeatureUtilities";
 
 export interface ExtractorOutputInfo {
   extractorKey: string;
   combinedKey: string;
   outputId: string;
   name: string;
+  iconName?: string;
 }
 
 interface ExtractorInfo {
   name: string;
   outputs: ExtractorOutputInfo[];
 }
+
+const crudeTypeUriMap: {[key: string]: HigherLevelFeatureShape} = {
+  'http://purl.org/ontology/af/Beat': 'instants',
+  'http://purl.org/ontology/af/Chromagram': 'matrix',
+  'http://purl.org/ontology/af/Spectrogram': 'matrix',
+  'http://purl.org/ontology/af/KeyChange': 'instants',
+  'http://purl.org/ontology/af/OnsetDetectionFunction': 'vector',
+  'http://purl.org/ontology/af/Onset': 'instants',
+  'http://purl.org/ontology/af/StructuralSegment': 'instants',
+  'http://purl.org/ontology/af/TonalOnset': 'instants',
+  'http://purl.org/ontology/af/Note': 'notes',
+  'http://purl.org/ontology/af/ChordSegment': 'instants',
+  'http://purl.org/ontology/af/MusicSegment': 'instants',
+  'http://purl.org/ontology/af/Pitch': 'tracks'
+};
+
+const featureIconMap = {
+  vector: 'show_chart',
+  matrix: 'grid_on',
+  tracks: 'multiline_chart',
+  instants: 'view_week',
+  notes: 'audiotrack',
+};
 
 @Component({
   selector: 'ugly-feature-extraction-menu',
@@ -59,12 +84,21 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
         const outputs: ExtractorOutputInfo[] =
           staticData.basicOutputInfo.map(output => {
             const combinedKey = `${staticData.key}:${output.identifier}`;
-            return {
-              extractorKey: staticData.key,
-              combinedKey: combinedKey,
-              name: output.name,
-              outputId: output.identifier
-            };
+            const hasTypeInfo = staticData.staticOutputInfo &&
+              staticData.staticOutputInfo.get(output.identifier) &&
+              staticData.staticOutputInfo.get(output.identifier).typeURI;
+            const getIcon = () => featureIconMap[crudeTypeUriMap[
+              staticData.staticOutputInfo.get(output.identifier).typeURI
+              ]];
+            const hasIcon = hasTypeInfo && getIcon();
+            return Object.assign({
+                extractorKey: staticData.key,
+                combinedKey: combinedKey,
+                name: output.name,
+                outputId: output.identifier
+              },
+              hasIcon ? {iconName: getIcon()} : {}
+            );
           });
         acc.push({name, outputs});
         return acc;

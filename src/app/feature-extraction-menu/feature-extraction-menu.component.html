@@ -7,7 +7,9 @@
       <md-list-item
         *ngFor="let output of extractor.outputs"
         (click)="extract(output)">
-        <md-icon md-list-icon>extension</md-icon>
+        <md-icon md-list-icon>
+          {{output.iconName ? output.iconName : 'extension'}}
+        </md-icon>
         <h4 md-line>{{output.name}}</h4>
         <p md-line>{{output.combinedKey}}</p>
         <button md-icon-button
