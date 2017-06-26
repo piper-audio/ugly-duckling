@@ -1,9 +1,9 @@
 {
-  "vamp-test-plugin": "assets/extractors/VampTestPlugin.js",
-  "qm-vamp-plugins": "assets/extractors/QMVampPlugins.js",
-  "nnls-chroma": "assets/extractors/NNLSChroma.js",
-  "cqvamp": "assets/extractors/CQ.js",
-  "tipic": "assets/extractors/Tipic.js",
+  "vamp-test-plugin": "assets/extractors/VampTestPlugin.umd.js",
+  "qm-vamp-plugins": "assets/extractors/QMVampPlugins.umd.js",
+  "nnls-chroma": "assets/extractors/NNLSChroma.umd.js",
+  "cqvamp": "assets/extractors/CQ.umd.js",
+  "tipic": "assets/extractors/Tipic.umd.js",
   "cepstral-pitchtracker": "assets/extractors/CepstralPitchTracker.umd.js",
   "pyin": "assets/extractors/PYin.umd.js"
 }
