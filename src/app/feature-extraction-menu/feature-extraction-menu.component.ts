@@ -116,15 +116,13 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   }
 
   getFeatureIconName(outputInfo: ExtractorOutputInfo): string {
-    const featureIconMap = {
+    return {
       vector: 'show_chart',
       matrix: 'grid_on',
       tracks: 'multiline_chart',
       instants: 'view_week',
       notes: 'audiotrack',
-    };
-    const maybeIcon = featureIconMap[crudeTypeUriMap[outputInfo.typeUri]];
-    return maybeIcon ? maybeIcon : 'extension';
+    }[crudeTypeUriMap[outputInfo.typeUri]] || 'extension';
   }
 
   ngOnDestroy(): void {
