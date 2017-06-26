@@ -11,14 +11,14 @@ import {
 } from '../services/feature-extraction/feature-extraction.service';
 import {ListResponse} from 'piper';
 import {Subscription} from 'rxjs/Subscription';
-import {HigherLevelFeatureShape} from "../visualisations/FeatureUtilities";
+import {HigherLevelFeatureShape} from '../visualisations/FeatureUtilities';
 
 export interface ExtractorOutputInfo {
   extractorKey: string;
   combinedKey: string;
   outputId: string;
   name: string;
-  iconName?: string;
+  typeUri?: string;
 }
 
 interface ExtractorInfo {
@@ -39,14 +39,6 @@ const crudeTypeUriMap: {[key: string]: HigherLevelFeatureShape} = {
   'http://purl.org/ontology/af/ChordSegment': 'instants',
   'http://purl.org/ontology/af/MusicSegment': 'instants',
   'http://purl.org/ontology/af/Pitch': 'tracks'
-};
-
-const featureIconMap = {
-  vector: 'show_chart',
-  matrix: 'grid_on',
-  tracks: 'multiline_chart',
-  instants: 'view_week',
-  notes: 'audiotrack',
 };
 
 @Component({
@@ -84,20 +76,16 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
         const outputs: ExtractorOutputInfo[] =
           staticData.basicOutputInfo.map(output => {
             const combinedKey = `${staticData.key}:${output.identifier}`;
-            const hasTypeInfo = staticData.staticOutputInfo &&
+            const maybeTypeInfo = staticData.staticOutputInfo &&
               staticData.staticOutputInfo.get(output.identifier) &&
               staticData.staticOutputInfo.get(output.identifier).typeURI;
-            const getIcon = () => featureIconMap[crudeTypeUriMap[
-              staticData.staticOutputInfo.get(output.identifier).typeURI
-              ]];
-            const hasIcon = hasTypeInfo && getIcon();
             return Object.assign({
                 extractorKey: staticData.key,
                 combinedKey: combinedKey,
                 name: output.name,
                 outputId: output.identifier
               },
-              hasIcon ? {iconName: getIcon()} : {}
+              maybeTypeInfo ? {typeUri: maybeTypeInfo} : {}
             );
           });
         acc.push({name, outputs});
@@ -125,6 +113,18 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   load(): void {
     this.isLoading = true;
     this.piperService.updateAvailableLibraries();
+  }
+
+  getFeatureIconName(outputInfo: ExtractorOutputInfo): string {
+    const featureIconMap = {
+      vector: 'show_chart',
+      matrix: 'grid_on',
+      tracks: 'multiline_chart',
+      instants: 'view_week',
+      notes: 'audiotrack',
+    };
+    const maybeIcon = featureIconMap[crudeTypeUriMap[outputInfo.typeUri]];
+    return maybeIcon ? maybeIcon : 'extension';
   }
 
   ngOnDestroy(): void {
