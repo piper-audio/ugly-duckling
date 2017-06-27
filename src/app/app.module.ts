@@ -20,8 +20,7 @@ import {
   AudioInputProvider,
   MediaRecorderConstructor,
   MediaRecorder as IMediaRecorder,
-  MediaRecorderOptions,
-  ThrowingMediaRecorder,
+  MediaRecorderOptions
 } from './services/audio-recorder/audio-recorder.service';
 import {RecordingControlComponent} from './recording-control/recording-control.component';
 import {NotebookFeedComponent} from './notebook-feed/notebook-feed.component';
@@ -43,6 +42,7 @@ import {WavesPlayHeadComponent} from './playhead/waves-ui-play-head.component';
 import {
   ActionTrayComponent
 } from './actions/action-tray.component';
+import {RecordRtcMediaRecorder} from './services/audio-recorder/RecordRtcMediaRecorder';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -77,7 +77,7 @@ export function createMediaRecorderFactory(): MediaRecorderConstructor {
   if (typeof MediaRecorder !== 'undefined') {
     return MediaRecorder;
   } else {
-    return ThrowingMediaRecorder;
+    return RecordRtcMediaRecorder;
   }
 }
 
