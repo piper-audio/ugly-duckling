@@ -266,7 +266,11 @@ export class AppComponent implements OnDestroy {
         return toRemove;
       }, []);
     if (isPendingRootAudioItem(item)) {
-      this.resourceManager.revokeUrlToResource(item.uri);
+      if (this.rootAudioItem.uri === item.uri) {
+        this.audioService.unload();
+      } else {
+        this.resourceManager.revokeUrlToResource(item.uri);
+      }
     }
     this.analyses.remove(...indicesToRemove);
   }

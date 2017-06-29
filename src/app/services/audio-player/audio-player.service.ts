@@ -97,6 +97,16 @@ export class AudioPlayerService {
     return url;
   }
 
+  unload(): void {
+    this.audioElement.pause();
+    this.audioElement.src = '';
+    this.audioElement.load();
+    if (this.currentObjectUrl) {
+      this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
+      this.currentObjectUrl = '';
+    }
+  }
+
   togglePlaying(): void {
     if (this.audioElement.readyState >= 2) {
       this.isPlaying() ? this.audioElement.pause() : this.audioElement.play();
