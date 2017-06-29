@@ -60,13 +60,16 @@ export class AudioPlayerService {
     return !this.audioElement.paused;
   }
 
+  loadAudioFromUri(uri: string): void {
+    this.currentObjectUrl = uri;
+    this.audioElement.pause();
+    this.audioElement.src = uri;
+    this.audioElement.load();
+  }
 
   loadAudio(resource: File | Blob): string {
     const url: string = this.resourceManager.createUrlToResource(resource);
-    this.currentObjectUrl = url;
-    this.audioElement.pause();
-    this.audioElement.src = url;
-    this.audioElement.load();
+    this.loadAudioFromUri(url);
 
     const decode: (buffer: ArrayBuffer) => Promise<AudioBuffer> = buffer => {
       try {
@@ -98,12 +101,10 @@ export class AudioPlayerService {
   }
 
   unload(): void {
-    this.audioElement.pause();
-    this.audioElement.src = '';
-    this.audioElement.load();
-    if (this.currentObjectUrl) {
-      this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
-      this.currentObjectUrl = '';
+    const previousUri = this.currentObjectUrl;
+    this.loadAudioFromUri('');
+    if (previousUri) {
+      this.resourceManager.revokeUrlToResource(previousUri);
     }
   }
 
