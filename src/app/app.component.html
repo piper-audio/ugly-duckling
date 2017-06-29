@@ -7,7 +7,7 @@
 
       <ugly-playback-control></ugly-playback-control>
       <ugly-recording-control
-        (finishedRecording)="onFileOpened($event); tray.close()"
+        (finishedRecording)="onFileOpened($event, true); tray.close()"
       ></ugly-recording-control>
 
       <!-- This fills the remaining space of the current row -->
@@ -33,6 +33,7 @@
   </ugly-action-tray>
   <div class="ugly-content">
     <ugly-notebook-feed
+      (removeItem)="removeItem($event)"
       [analyses]="analyses.toIterable()"
       [rootAudioUri]="rootAudioItem.uri"
       [onSeek]="onSeek"></ugly-notebook-feed>

@@ -1,7 +1,7 @@
 <div class="feed">
   <ng-template ngFor let-item [ngForOf]="analyses">
     <div [class.break]="isAudioItem(item)">
-      <ugly-analysis-item
+      <ugly-analysis-item (remove)="removeItem.emit($event)"
         [timeline]="getOrCreateTimeline(item)"
         [isActive]="isActiveItem(item)"
         [item]="item"

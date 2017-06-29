@@ -101,4 +101,15 @@
       </ng-template>
     </div>
   </md-card-content>
+  <md-card-actions
+    *ngIf="isAudioItem()">
+    <a md-icon-button
+       *ngIf="isAudioItem() && item.isExportable"
+      [href]="sanitize(item.uri)"
+      [download]="generateFilename(item)"
+    ><md-icon>file_download</md-icon></a>
+    <button md-icon-button (click)="remove.emit(item)">
+      <md-icon>delete_forever</md-icon>
+    </button>
+  </md-card-actions>
 </md-card>

@@ -1,7 +1,8 @@
-import {Component, OnDestroy} from '@angular/core';
+import {Component, Inject, OnDestroy} from '@angular/core';
 import {
   AudioPlayerService,
-  AudioResourceError, AudioResource
+  AudioResourceError,
+  AudioResource
 } from './services/audio-player/audio-player.service';
 import {FeatureExtractionService} from './services/feature-extraction/feature-extraction.service';
 import {ExtractorOutputInfo} from './feature-extraction-menu/feature-extraction-menu.component';
@@ -10,10 +11,15 @@ import {MdIconRegistry} from '@angular/material';
 import {Subscription} from 'rxjs/Subscription';
 import {
   AnalysisItem,
+  isPendingAnalysisItem, isPendingRootAudioItem,
   isRootAudioItem,
-  Item, PendingAnalysisItem, PendingRootAudioItem, RootAudioItem
+  Item,
+  PendingAnalysisItem,
+  PendingRootAudioItem,
+  RootAudioItem
 } from './analysis-item/analysis-item.component';
 import {OnSeekHandler} from './playhead/PlayHeadHelpers';
+import {UrlResourceLifetimeManager} from './app.module';
 
 class PersistentStack<T> {
   private stack: T[];
@@ -60,6 +66,28 @@ class PersistentStack<T> {
     ];
   }
 
+  map<U>(transform: (value: T, index: number, array: T[]) => U): U[] {
+    return this.stack.map(transform);
+  }
+
+  reduce<U>(reducer: (previousValue: U,
+                      currentValue: T,
+                      currentIndex: number,
+                      array: T[]) => U,
+            initialValue: U): U {
+    return this.stack.reduce(reducer, initialValue);
+  }
+
+  remove(...indices: number[]) {
+    this.history.push([...this.stack]);
+    this.stack = this.stack.reduce((acc, item, i) => {
+      if (!indices.includes(i)) {
+        acc.push(item);
+      }
+      return acc;
+    }, [] as T[]);
+  }
+
   toIterable(): Iterable<T> {
     return this.stack;
   }
@@ -84,7 +112,10 @@ export class AppComponent implements OnDestroy {
   constructor(private audioService: AudioPlayerService,
               private featureService: FeatureExtractionService,
               private iconRegistry: MdIconRegistry,
-              private sanitizer: DomSanitizer) {
+              private sanitizer: DomSanitizer,
+              @Inject(
+                'UrlResourceLifetimeManager'
+              ) private resourceManager: UrlResourceLifetimeManager) {
     this.analyses = new PersistentStack<AnalysisItem>();
     this.canExtract = false;
     this.nRecordings = 0;
@@ -144,7 +175,7 @@ export class AppComponent implements OnDestroy {
     );
   }
 
-  onFileOpened(file: File | Blob) {
+  onFileOpened(file: File | Blob, createExportableItem = false) {
     this.canExtract = false;
     const url = this.audioService.loadAudio(file);
     // TODO is it safe to assume it is a recording?
@@ -165,7 +196,8 @@ export class AppComponent implements OnDestroy {
       title: title,
       description: new Date().toLocaleString(),
       id: `${++this.countingId}`,
-      mimeType: file.type
+      mimeType: file.type,
+      isExportable: createExportableItem
     } as PendingRootAudioItem;
     this.rootAudioItem = pending as RootAudioItem; // TODO this is silly
 
@@ -221,6 +253,22 @@ export class AppComponent implements OnDestroy {
       this.analyses.shift();
       console.error(`Error whilst extracting: ${err}`);
     });
+  }
+
+  removeItem(item: Item): void {
+    const indicesToRemove: number[] = this.analyses.reduce(
+      (toRemove, current, index) => {
+        if (isPendingAnalysisItem(current) && current.parent.id === item.id) {
+          toRemove.push(index);
+        } else if (item.id === current.id) {
+          toRemove.push(index);
+        }
+        return toRemove;
+      }, []);
+    if (isPendingRootAudioItem(item)) {
+      this.resourceManager.revokeUrlToResource(item.uri);
+    }
+    this.analyses.remove(...indicesToRemove);
   }
 
   ngOnDestroy(): void {

@@ -6,7 +6,9 @@ import {
   Component,
   Input,
   OnDestroy,
-  OnInit
+  OnInit,
+  Output,
+  EventEmitter
 } from '@angular/core';
 import {naivePagingMapper} from '../visualisations/WavesJunk';
 import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
@@ -19,6 +21,7 @@ import {
   RenderLoopService,
   TaskRemover
 } from '../services/render-loop/render-loop.service';
+import {DomSanitizer} from '@angular/platform-browser';
 
 export interface Item {
   id: string;
@@ -31,6 +34,7 @@ export interface Item {
 export interface PendingRootAudioItem extends Item {
   uri: string;
   mimeType?: string;
+  isExportable?: boolean;
 }
 export interface RootAudioItem extends PendingRootAudioItem {
   audioData: AudioBuffer;
@@ -115,13 +119,17 @@ export class AnalysisItemComponent implements OnInit, OnDestroy {
   @Input() item: Item;
   @Input() contentWidth: number;
   @Input() onSeek: OnSeekHandler;
+  @Output() remove: EventEmitter<Item>;
   // TODO move / re-think - naivePagingMapper feels like a big ol' bodge
   private removeAnimation: TaskRemover;
   private hasProgressOnInit = false;
   private mIsActive: boolean;
   private mTimeline: Timeline;
 
-  constructor(private renderLoop: RenderLoopService) {}
+  constructor(private renderLoop: RenderLoopService,
+              private sanitizer: DomSanitizer) {
+    this.remove = new EventEmitter<Item>();
+  }
 
   ngOnInit(): void {
     this.resetRemoveAnimation();
@@ -162,6 +170,18 @@ export class AnalysisItemComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.removeAnimation();
+  }
+
+  private sanitize(url: string) {
+    return this.sanitizer.bypassSecurityTrustUrl(url);
+  }
+
+  private generateFilename(item: PendingRootAudioItem): string {
+    // TODO this is too brittle, and will often produce the wrong result
+    // i.e. audio/mpeg results in .mpeg, when .mp3 is likely desired
+    const mimeParts = item.mimeType ? item.mimeType.split('/') : [];
+    const extension = mimeParts.length === 2 ? mimeParts[1] : '';
+    return `${item.title}.${extension}`;
   }
 
   private resetRemoveAnimation(): void {

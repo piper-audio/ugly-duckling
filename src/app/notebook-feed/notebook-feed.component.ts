@@ -4,10 +4,10 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component,
+  Component, EventEmitter,
   Inject,
   Input,
-  OnDestroy
+  OnDestroy, Output
 } from '@angular/core';
 import Waves from 'waves-ui-piper';
 import {
@@ -32,6 +32,7 @@ export class NotebookFeedComponent implements OnDestroy {
     this._rootAudioUri = uri;
   }
   @Input() onSeek: OnSeekHandler;
+  @Output() removeItem: EventEmitter<Item>;
 
   get rootAudioUri(): string {
     return this._rootAudioUri;
@@ -46,6 +47,7 @@ export class NotebookFeedComponent implements OnDestroy {
     private ref: ChangeDetectorRef,
     @Inject('DimensionObservable') private onResize: Observable<Dimension>
   ) {
+    this.removeItem = new EventEmitter<Item>();
     this.timelines = new Map();
     this.onResize.subscribe(dim => {
       this.lastWidth = this.width;
