@@ -30,6 +30,7 @@ export interface Item {
 
 export interface PendingRootAudioItem extends Item {
   uri: string;
+  mimeType?: string;
 }
 export interface RootAudioItem extends PendingRootAudioItem {
   audioData: AudioBuffer;

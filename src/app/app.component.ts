@@ -164,7 +164,8 @@ export class AppComponent implements OnDestroy {
       hasSharedTimeline: true,
       title: title,
       description: new Date().toLocaleString(),
-      id: `${++this.countingId}`
+      id: `${++this.countingId}`,
+      mimeType: file.type
     } as PendingRootAudioItem;
     this.rootAudioItem = pending as RootAudioItem; // TODO this is silly
 
