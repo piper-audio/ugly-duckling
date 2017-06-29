@@ -15,6 +15,14 @@ md-card-header {
   margin-bottom: 8px;
 }
 
+md-card-content {
+  margin-bottom: 0;
+}
+
+md-card-actions {
+  text-align: right;
+}
+
 ugly-live-play-head {
   position: absolute;
   z-index: 99;
