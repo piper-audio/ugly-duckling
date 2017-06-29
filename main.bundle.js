@@ -130,6 +130,7 @@ ProgressBarComponent = __decorate([
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_ReplaySubject__ = __webpack_require__("0imh");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_ReplaySubject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_ReplaySubject__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_module__ = __webpack_require__("aR8+");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AudioPlayerService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -143,6 +144,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+
 
 
 
@@ -174,9 +176,6 @@ let AudioPlayerService = class AudioPlayerService {
         return !this.audioElement.paused;
     }
     loadAudio(resource) {
-        if (this.currentObjectUrl) {
-            this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
-        }
         const url = this.resourceManager.createUrlToResource(resource);
         this.currentObjectUrl = url;
         this.audioElement.pause();
@@ -207,6 +206,15 @@ let AudioPlayerService = class AudioPlayerService {
             });
         });
         return url;
+    }
+    unload() {
+        this.audioElement.pause();
+        this.audioElement.src = '';
+        this.audioElement.load();
+        if (this.currentObjectUrl) {
+            this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
+            this.currentObjectUrl = '';
+        }
     }
     togglePlaying() {
         if (this.audioElement.readyState >= 2) {
@@ -248,9 +256,10 @@ AudioPlayerService = __decorate([
     __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('AudioContext')),
     __param(2, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('ResourceReader')),
     __param(3, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('UrlResourceLifetimeManager')),
-    __metadata("design:paramtypes", [Object, Object, Function, Object])
+    __metadata("design:paramtypes", [Object, Object, Function, typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__app_module__["b" /* UrlResourceLifetimeManager */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__app_module__["b" /* UrlResourceLifetimeManager */]) === "function" && _a || Object])
 ], AudioPlayerService);
 
+var _a;
 //# sourceMappingURL=audio-player.service.js.map
 
 /***/ }),
@@ -446,6 +455,11 @@ class ThrowingMediaRecorder {
 let AudioRecorderService = class AudioRecorderService {
     constructor(requestProvider, recorderImpl, ngZone) {
         this.ngZone = ngZone;
+        this.knownTypes = [
+            { mimeType: 'audio/ogg', extension: 'ogg' },
+            { mimeType: 'audio/webm', extension: 'webm' },
+            { mimeType: 'audio/wav', extension: 'wav' }
+        ];
         this.requestProvider = requestProvider;
         this.recorderImpl = recorderImpl;
         this.recordingStateChange = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__["Subject"]();
@@ -457,10 +471,15 @@ let AudioRecorderService = class AudioRecorderService {
     }
     getRecorderInstance() {
         return this.requestProvider().then(stream => {
-            const recorder = new this.recorderImpl(stream);
+            const supported = this.knownTypes.find(({ mimeType, extension }) => this.recorderImpl.isTypeSupported(mimeType));
+            const recorder = new this.recorderImpl(stream, supported ? {
+                mimeType: supported.mimeType
+            } : {});
             recorder.ondataavailable = e => this.chunks.push(e.data);
             recorder.onstop = () => {
-                const blob = new Blob(this.chunks, { 'type': recorder.mimeType });
+                const blob = new Blob(this.chunks, {
+                    'type': recorder.mimeType || supported.mimeType
+                });
                 this.chunks.length = 0;
                 this.ngZone.run(() => {
                     this.newRecording.next(blob);
@@ -599,7 +618,7 @@ var NotesComponent_1;
 /***/ "9jta":
 /***/ (function(module, exports) {
 
-module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{item.title}}</md-card-title>\n    <md-card-subtitle>{{item.description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <div class=\"content\">\n      <ng-template [ngIf]=\"isLoading()\">\n        <ugly-progress-bar\n          [isDeterminate]=\"true\"\n          [progress]=\"item.progress\"\n        ></ugly-progress-bar>\n      </ng-template>\n      <ng-template [ngIf]=\"!isLoading()\">\n        <ugly-progress-spinner *ngIf=\"isPending()\"></ugly-progress-spinner>\n        <ugly-waves-play-head\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-waveform\n            *ngIf=\"isAudioItem(); else notAudio\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [audioBuffer]=\"item.audioData\"\n            [onSeek]=\"onSeek\"\n            [colour]=\"'#0868ac'\"\n            [duration]=\"getDuration()\"\n          ></ugly-waveform>\n        </ugly-waves-play-head>\n\n\n        <ugly-waves-play-head\n          #notAudio\n          *ngIf=\"getFeatureShape() as shape\"\n          [ngSwitch]=\"shape\"\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'vector'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-curve\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [curve]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-curve>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'tracks'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-tracks\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [tracks]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-tracks>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'notes'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-notes\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [notes]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-notes>\n          </ugly-cross-hair-inspector>\n          <ugly-instants\n            *ngSwitchCase=\"'instants'\"\n            [colour]=\"getNextColour()\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [onSeek]=\"onSeek\"\n            [instants]=\"item.collected\"\n            [duration]=\"getDuration()\"\n          ></ugly-instants>\n          <ugly-grid\n            *ngSwitchCase=\"'matrix'\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [onSeek]=\"onSeek\"\n            [grid]=\"item.collected\"\n            [duration]=\"getDuration()\"\n          ></ugly-grid>\n\n          <div *ngSwitchDefault>Feature cannot be visualised.</div>\n        </ugly-waves-play-head>\n      </ng-template>\n    </div>\n  </md-card-content>\n</md-card>\n"
+module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{item.title}}</md-card-title>\n    <md-card-subtitle>{{item.description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <div class=\"content\">\n      <ng-template [ngIf]=\"isLoading()\">\n        <ugly-progress-bar\n          [isDeterminate]=\"true\"\n          [progress]=\"item.progress\"\n        ></ugly-progress-bar>\n      </ng-template>\n      <ng-template [ngIf]=\"!isLoading()\">\n        <ugly-progress-spinner *ngIf=\"isPending()\"></ugly-progress-spinner>\n        <ugly-waves-play-head\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-waveform\n            *ngIf=\"isAudioItem(); else notAudio\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [audioBuffer]=\"item.audioData\"\n            [onSeek]=\"onSeek\"\n            [colour]=\"'#0868ac'\"\n            [duration]=\"getDuration()\"\n          ></ugly-waveform>\n        </ugly-waves-play-head>\n\n\n        <ugly-waves-play-head\n          #notAudio\n          *ngIf=\"getFeatureShape() as shape\"\n          [ngSwitch]=\"shape\"\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'vector'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-curve\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [curve]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-curve>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'tracks'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-tracks\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [tracks]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-tracks>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'notes'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-notes\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [notes]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-notes>\n          </ugly-cross-hair-inspector>\n          <ugly-instants\n            *ngSwitchCase=\"'instants'\"\n            [colour]=\"getNextColour()\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [onSeek]=\"onSeek\"\n            [instants]=\"item.collected\"\n            [duration]=\"getDuration()\"\n          ></ugly-instants>\n          <ugly-grid\n            *ngSwitchCase=\"'matrix'\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [onSeek]=\"onSeek\"\n            [grid]=\"item.collected\"\n            [duration]=\"getDuration()\"\n          ></ugly-grid>\n\n          <div *ngSwitchDefault>Feature cannot be visualised.</div>\n        </ugly-waves-play-head>\n      </ng-template>\n    </div>\n  </md-card-content>\n  <md-card-actions\n    *ngIf=\"isAudioItem()\">\n    <a md-icon-button\n       *ngIf=\"isAudioItem() && item.isExportable\"\n      [href]=\"sanitize(item.uri)\"\n      [download]=\"generateFilename(item)\"\n    ><md-icon>file_download</md-icon></a>\n    <button md-icon-button (click)=\"remove.emit(item)\">\n      <md-icon>delete_forever</md-icon>\n    </button>\n  </md-card-actions>\n</md-card>\n"
 
 /***/ }),
 
@@ -1061,10 +1080,11 @@ var InstantsComponent_1;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__visualisations_FeatureUtilities__ = __webpack_require__("kdy0");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__ = __webpack_require__("EWzO");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__ = __webpack_require__("fc+i");
 /* unused harmony export isItem */
-/* unused harmony export isPendingRootAudioItem */
+/* harmony export (immutable) */ __webpack_exports__["e"] = isPendingRootAudioItem;
 /* harmony export (immutable) */ __webpack_exports__["c"] = isRootAudioItem;
-/* unused harmony export isPendingAnalysisItem */
+/* harmony export (immutable) */ __webpack_exports__["d"] = isPendingAnalysisItem;
 /* unused harmony export isAnalysisItem */
 /* harmony export (immutable) */ __webpack_exports__["b"] = getRootUri;
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AnalysisItemComponent; });
@@ -1080,6 +1100,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 /**
  * Created by lucast on 21/03/2017.
  */
+
 
 
 
@@ -1117,9 +1138,11 @@ function getRootUri(item) {
     throw new Error('Invalid item: No URI property set.');
 }
 let AnalysisItemComponent = class AnalysisItemComponent {
-    constructor(renderLoop) {
+    constructor(renderLoop, sanitizer) {
         this.renderLoop = renderLoop;
+        this.sanitizer = sanitizer;
         this.hasProgressOnInit = false;
+        this.remove = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]();
     }
     // TODO should be TimelineTimeContext?
     set timeline(timeline) {
@@ -1172,6 +1195,16 @@ let AnalysisItemComponent = class AnalysisItemComponent {
     ngOnDestroy() {
         this.removeAnimation();
     }
+    sanitize(url) {
+        return this.sanitizer.bypassSecurityTrustUrl(url);
+    }
+    generateFilename(item) {
+        // TODO this is too brittle, and will often produce the wrong result
+        // i.e. audio/mpeg results in .mpeg, when .mp3 is likely desired
+        const mimeParts = item.mimeType ? item.mimeType.split('/') : [];
+        const extension = mimeParts.length === 2 ? mimeParts[1] : '';
+        return `${item.title}.${extension}`;
+    }
     resetRemoveAnimation() {
         if (this.removeAnimation) {
             this.removeAnimation();
@@ -1213,6 +1246,10 @@ __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _a || Object)
 ], AnalysisItemComponent.prototype, "onSeek", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_0" /* Output */])(),
+    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]) === "function" && _b || Object)
+], AnalysisItemComponent.prototype, "remove", void 0);
 AnalysisItemComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
         selector: 'ugly-analysis-item',
@@ -1220,10 +1257,10 @@ AnalysisItemComponent = __decorate([
         styles: [__webpack_require__("hth3")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
     }),
-    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _b || Object])
+    __metadata("design:paramtypes", [typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _d || Object])
 ], AnalysisItemComponent);
 
-var _a, _b;
+var _a, _b, _c, _d;
 //# sourceMappingURL=analysis-item.component.js.map
 
 /***/ }),
@@ -1231,7 +1268,7 @@ var _a, _b;
 /***/ "IXBa":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"feed\">\n  <ng-template ngFor let-item [ngForOf]=\"analyses\">\n    <div [class.break]=\"isAudioItem(item)\">\n      <ugly-analysis-item\n        [timeline]=\"getOrCreateTimeline(item)\"\n        [isActive]=\"isActiveItem(item)\"\n        [item]=\"item\"\n        [contentWidth]=\"width\"\n        [onSeek]=\"getOnSeekForItem(item)\"\n      ></ugly-analysis-item>\n    </div>\n  </ng-template>\n</div>\n"
+module.exports = "<div class=\"feed\">\n  <ng-template ngFor let-item [ngForOf]=\"analyses\">\n    <div [class.break]=\"isAudioItem(item)\">\n      <ugly-analysis-item (remove)=\"removeItem.emit($event)\"\n        [timeline]=\"getOrCreateTimeline(item)\"\n        [isActive]=\"isActiveItem(item)\"\n        [item]=\"item\"\n        [contentWidth]=\"width\"\n        [onSeek]=\"getOnSeekForItem(item)\"\n      ></ugly-analysis-item>\n    </div>\n  </ng-template>\n</div>\n"
 
 /***/ }),
 
@@ -2074,6 +2111,10 @@ function createUrlResourceManager() {
         }
     };
 }
+class UrlResourceLifetimeManager {
+}
+/* harmony export (immutable) */ __webpack_exports__["b"] = UrlResourceLifetimeManager;
+
 function createResourceReader() {
     return (resource) => {
         return new Promise((res, rej) => {
@@ -2182,7 +2223,7 @@ __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_dyna
 /***/ "efyd":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event); tray.close()\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event); tray.close()\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"tray.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <ugly-action-tray #tray>\n    <ugly-feature-extraction-menu\n      (requestOutput)=\"tray.close(); extractFeatures($event)\"\n      [disabled]=\"!canExtract\"\n    >\n    </ugly-feature-extraction-menu>\n  </ugly-action-tray>\n  <div class=\"ugly-content\">\n    <ugly-notebook-feed\n      [analyses]=\"analyses.toIterable()\"\n      [rootAudioUri]=\"rootAudioItem.uri\"\n      [onSeek]=\"onSeek\"></ugly-notebook-feed>\n  </div>\n</div>\n"
+module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event, true); tray.close()\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event); tray.close()\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"tray.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <ugly-action-tray #tray>\n    <ugly-feature-extraction-menu\n      (requestOutput)=\"tray.close(); extractFeatures($event)\"\n      [disabled]=\"!canExtract\"\n    >\n    </ugly-feature-extraction-menu>\n  </ugly-action-tray>\n  <div class=\"ugly-content\">\n    <ugly-notebook-feed\n      (removeItem)=\"removeItem($event)\"\n      [analyses]=\"analyses.toIterable()\"\n      [rootAudioUri]=\"rootAudioItem.uri\"\n      [onSeek]=\"onSeek\"></ugly-notebook-feed>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -2379,7 +2420,7 @@ exports = module.exports = __webpack_require__("rP7Y")(false);
 
 
 // module
-exports.push([module.i, "md-card{padding-left:0;padding-right:0;width:100%;padding-bottom:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}md-card-actions{width:calc(100% - 16px);padding-left:16px}md-card-header{margin-bottom:8px}ugly-live-play-head{position:absolute;z-index:99;height:160px}.content{height:160px;width:100%;cursor:pointer}", ""]);
+exports.push([module.i, "md-card{padding-left:0;padding-right:0;width:100%;padding-bottom:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}md-card-actions{width:calc(100% - 16px);padding-left:16px}md-card-header{margin-bottom:8px}md-card-content{margin-bottom:0}md-card-actions{text-align:right}ugly-live-play-head{position:absolute;z-index:99;height:160px}.content{height:160px;width:100%;cursor:pointer}", ""]);
 
 // exports
 
@@ -2781,6 +2822,7 @@ let NotebookFeedComponent = class NotebookFeedComponent {
     constructor(ref, onResize) {
         this.ref = ref;
         this.onResize = onResize;
+        this.removeItem = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]();
         this.timelines = new Map();
         this.onResize.subscribe(dim => {
             this.lastWidth = this.width;
@@ -2846,6 +2888,10 @@ __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _a || Object)
 ], NotebookFeedComponent.prototype, "onSeek", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_0" /* Output */])(),
+    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]) === "function" && _b || Object)
+], NotebookFeedComponent.prototype, "removeItem", void 0);
 NotebookFeedComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
         selector: 'ugly-notebook-feed',
@@ -2854,10 +2900,10 @@ NotebookFeedComponent = __decorate([
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
     }),
     __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('DimensionObservable')),
-    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"]) === "function" && _c || Object])
+    __metadata("design:paramtypes", [typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"]) === "function" && _d || Object])
 ], NotebookFeedComponent);
 
-var _a, _b, _c;
+var _a, _b, _c, _d;
 //# sourceMappingURL=notebook-feed.component.js.map
 
 /***/ }),
@@ -3217,6 +3263,7 @@ var _a;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__("fc+i");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_material__ = __webpack_require__("Z04r");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__ = __webpack_require__("I5sL");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__app_module__ = __webpack_require__("aR8+");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3227,6 +3274,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+
 
 
 
@@ -3266,16 +3317,32 @@ class PersistentStack {
             ...this.stack.slice(index + 1)
         ];
     }
+    map(transform) {
+        return this.stack.map(transform);
+    }
+    reduce(reducer, initialValue) {
+        return this.stack.reduce(reducer, initialValue);
+    }
+    remove(...indices) {
+        this.history.push([...this.stack]);
+        this.stack = this.stack.reduce((acc, item, i) => {
+            if (!indices.includes(i)) {
+                acc.push(item);
+            }
+            return acc;
+        }, []);
+    }
     toIterable() {
         return this.stack;
     }
 }
 let AppComponent = class AppComponent {
-    constructor(audioService, featureService, iconRegistry, sanitizer) {
+    constructor(audioService, featureService, iconRegistry, sanitizer, resourceManager) {
         this.audioService = audioService;
         this.featureService = featureService;
         this.iconRegistry = iconRegistry;
         this.sanitizer = sanitizer;
+        this.resourceManager = resourceManager;
         this.analyses = new PersistentStack();
         this.canExtract = false;
         this.nRecordings = 0;
@@ -3311,7 +3378,7 @@ let AppComponent = class AppComponent {
             this.analyses.set(index, Object.assign({}, this.analyses.get(index), { progress: progress.value }));
         });
     }
-    onFileOpened(file) {
+    onFileOpened(file, createExportableItem = false) {
         this.canExtract = false;
         const url = this.audioService.loadAudio(file);
         // TODO is it safe to assume it is a recording?
@@ -3329,7 +3396,9 @@ let AppComponent = class AppComponent {
             hasSharedTimeline: true,
             title: title,
             description: new Date().toLocaleString(),
-            id: `${++this.countingId}`
+            id: `${++this.countingId}`,
+            mimeType: file.type,
+            isExportable: createExportableItem
         };
         this.rootAudioItem = pending; // TODO this is silly
         // TODO re-ordering of items for display
@@ -3373,6 +3442,26 @@ let AppComponent = class AppComponent {
             console.error(`Error whilst extracting: ${err}`);
         });
     }
+    removeItem(item) {
+        const indicesToRemove = this.analyses.reduce((toRemove, current, index) => {
+            if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["d" /* isPendingAnalysisItem */])(current) && current.parent.id === item.id) {
+                toRemove.push(index);
+            }
+            else if (item.id === current.id) {
+                toRemove.push(index);
+            }
+            return toRemove;
+        }, []);
+        if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["e" /* isPendingRootAudioItem */])(item)) {
+            if (this.rootAudioItem.uri === item.uri) {
+                this.audioService.unload();
+            }
+            else {
+                this.resourceManager.revokeUrlToResource(item.uri);
+            }
+        }
+        this.analyses.remove(...indicesToRemove);
+    }
     ngOnDestroy() {
         this.onAudioDataSubscription.unsubscribe();
         this.onProgressUpdated.unsubscribe();
@@ -3384,10 +3473,11 @@ AppComponent = __decorate([
         template: __webpack_require__("efyd"),
         styles: [__webpack_require__("hxJY")]
     }),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _d || Object])
+    __param(4, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('UrlResourceLifetimeManager')),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_6__app_module__["b" /* UrlResourceLifetimeManager */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__app_module__["b" /* UrlResourceLifetimeManager */]) === "function" && _e || Object])
 ], AppComponent);
 
-var _a, _b, _c, _d;
+var _a, _b, _c, _d, _e;
 //# sourceMappingURL=app.component.js.map
 
 /***/ }),
