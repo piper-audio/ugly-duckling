@@ -2,11 +2,7 @@ import {Injectable, Inject} from '@angular/core';
 import {Subject} from 'rxjs/Subject';
 import {Observable} from 'rxjs/Observable';
 import {ReplaySubject} from 'rxjs/ReplaySubject';
-
-export interface UrlResourceLifetimeManager {
-  createUrlToResource(resource: File | Blob): string;
-  revokeUrlToResource(url: string): void;
-}
+import {UrlResourceLifetimeManager} from '../../app.module';
 
 export type ResourceReader = (resource: File | Blob) => Promise<ArrayBuffer>;
 
@@ -66,9 +62,6 @@ export class AudioPlayerService {
 
 
   loadAudio(resource: File | Blob): string {
-    if (this.currentObjectUrl) {
-      this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
-    }
     const url: string = this.resourceManager.createUrlToResource(resource);
     this.currentObjectUrl = url;
     this.audioElement.pause();

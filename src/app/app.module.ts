@@ -9,7 +9,6 @@ import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.compon
 import { PlaybackControlComponent } from './playback-control/playback-control.component';
 import {
   AudioPlayerService,
-  UrlResourceLifetimeManager,
   ResourceReader
 } from './services/audio-player/audio-player.service';
 import { FeatureExtractionService } from './services/feature-extraction/feature-extraction.service';
@@ -90,6 +89,11 @@ export function createUrlResourceManager(): UrlResourceLifetimeManager {
       URL.revokeObjectURL(url);
     }
   };
+}
+
+export abstract class UrlResourceLifetimeManager {
+  abstract createUrlToResource(resource: File | Blob): string;
+  abstract revokeUrlToResource(url: string): void;
 }
 
 export function createResourceReader(): ResourceReader {
