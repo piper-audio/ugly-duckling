@@ -99,7 +99,6 @@ class PersistentStack<T> {
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnDestroy {
-  audioBuffer: AudioBuffer; // TODO consider revising
   canExtract: boolean;
   private onAudioDataSubscription: Subscription;
   private onProgressUpdated: Subscription;
@@ -135,9 +134,8 @@ export class AppComponent implements OnDestroy {
           this.analyses.shift();
           this.canExtract = false;
         } else {
-          this.audioBuffer = (resource as AudioResource).samples;
-          this.rootAudioItem.audioData = this.audioBuffer;
-          if (this.audioBuffer) {
+          this.rootAudioItem.audioData = (resource as AudioResource).samples;
+          if (this.rootAudioItem.audioData) {
             this.canExtract = true;
             const currentRootIndex = this.analyses.findIndex(val => {
               return isRootAudioItem(val) && val.uri === this.rootAudioItem.uri;
@@ -148,7 +146,7 @@ export class AppComponent implements OnDestroy {
                 Object.assign(
                   {},
                   this.analyses.get(currentRootIndex),
-                  {audioData: this.audioBuffer}
+                  {audioData: this.rootAudioItem.audioData}
                 )
               );
             }
@@ -224,13 +222,15 @@ export class AppComponent implements OnDestroy {
     };
     this.analyses.unshift(placeholderCard);
 
+    const audioBuffer = this.rootAudioItem.audioData;
+
     this.featureService.extract(`${this.countingId}`, {
-      audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
-        .map(i => this.audioBuffer.getChannelData(i)),
+      audioData: [...Array(audioBuffer.numberOfChannels).keys()]
+        .map(i => audioBuffer.getChannelData(i)),
       audioFormat: {
-        sampleRate: this.audioBuffer.sampleRate,
-        channelCount: this.audioBuffer.numberOfChannels,
-        length: this.audioBuffer.length
+        sampleRate: audioBuffer.sampleRate,
+        channelCount: audioBuffer.numberOfChannels,
+        length: audioBuffer.length
       },
       key: outputInfo.extractorKey,
       outputId: outputInfo.outputId
@@ -265,14 +265,31 @@ export class AppComponent implements OnDestroy {
         }
         return toRemove;
       }, []);
+    this.analyses.remove(...indicesToRemove);
     if (isPendingRootAudioItem(item)) {
       if (this.rootAudioItem.uri === item.uri) {
         this.audioService.unload();
+        const topItem = this.analyses.get(0);
+        const nullRootAudio: RootAudioItem = {uri: ''} as any; // TODO eugh
+
+        if (topItem) {
+          if (isPendingAnalysisItem(topItem)) {
+            this.rootAudioItem = topItem.parent as RootAudioItem;
+          } else if(isPendingRootAudioItem(topItem)) {
+            this.rootAudioItem = topItem as RootAudioItem
+          } else {
+           this.rootAudioItem = nullRootAudio;
+          }
+        } else {
+          this.rootAudioItem = nullRootAudio;
+        }
+        if (this.rootAudioItem) {
+          this.audioService.loadAudioFromUri(this.rootAudioItem.uri);
+        }
       } else {
         this.resourceManager.revokeUrlToResource(item.uri);
       }
     }
-    this.analyses.remove(...indicesToRemove);
   }
 
   ngOnDestroy(): void {
