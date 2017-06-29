@@ -1,7 +1,14 @@
 /**
  * Created by lucast on 31/05/2017.
  */
-import {WavesComponent} from '../waves-base.component';
+import {
+  InspectableVerticallyBoundedComponent,
+  VerticallyBounded,
+  VerticallyBoundedWavesComponent,
+  VerticalScaleRenderer,
+  VerticalValueInspectorRenderer,
+  WavesComponent
+} from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -18,17 +25,20 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
+    {provide: VerticallyBounded, useExisting: GridComponent },
+    {provide: VerticalScaleRenderer, useExisting: GridComponent },
+    {provide: VerticalValueInspectorRenderer, useExisting: GridComponent },
     {provide: WavesComponent, useExisting: GridComponent}
   ]
 })
-export class GridComponent extends WavesComponent<MatrixFeature> {
+export class GridComponent extends VerticallyBoundedWavesComponent<MatrixFeature> {
 
   @Input() set grid(grid: MatrixFeature) {
     this.feature = grid;
   }
 
   protected get featureLayers(): Layer[] {
-    const startTime = this.feature.startTime; // !!! + make use of
+    const startTime = this.feature.startTime;
     const stepDuration = this.feature.stepDuration;
     const matrixData = this.feature.data;
 
@@ -40,7 +50,7 @@ export class GridComponent extends WavesComponent<MatrixFeature> {
     const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
     const matrixEntity = new Waves.utils.PrefilledMatrixEntity(
       matrixData,
-      0, // startTime
+      startTime,
       stepDuration
     );
 
@@ -55,5 +65,9 @@ export class GridComponent extends WavesComponent<MatrixFeature> {
         }
       )
     ];
+  }
+    
+  get range(): [number, number] {
+    return [0, this.feature.data.length > 0 ? this.feature.data[0].length : 0];
   }
 }
