@@ -72,17 +72,27 @@ export class PersistentStack<T> {
     this.historyOffset = 0;
   }
 
-  shift(): T {
+  shiftMutating(): T {
     const item = this.stack[0];
     this.stack = this.stack.slice(1);
+    return item;
+  }
+
+  shift(): T {
+    const item = this.shiftMutating();
     this.history.push([...this.stack]);
     return item;
   }
 
-  unshift(item: T): number {
+  unshiftMutating(item: T): number {
     this.stack = [item, ...this.stack];
-    this.history.push([...this.stack]);
     return this.stack.length;
+  }
+
+  unshift(item: T): number {
+    const newLength = this.unshift(item);
+    this.history.push([...this.stack]);
+    return newLength;
   }
 
   findIndex(predicate: (value: T,
@@ -100,12 +110,16 @@ export class PersistentStack<T> {
   }
 
   set(index: number, value: T) {
+    this.setMutating(index, value);
+    this.history.push([...this.stack]);
+  }
+
+  setMutating(index: number, value: T) {
     this.stack = [
       ...this.stack.slice(0, index),
       value,
       ...this.stack.slice(index + 1)
     ];
-    this.history.push([...this.stack]);
   }
 
   map<U>(transform: (value: T, index: number, array: T[]) => U): U[] {
