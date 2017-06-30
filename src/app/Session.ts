@@ -64,22 +64,24 @@ export const downloadResource: ResourceRetriever = async (url) => {
 export class PersistentStack<T> {
   private stack: T[];
   private history: T[][];
+  private historyOffset: number;
 
   constructor() {
     this.stack = [];
-    this.history = [];
+    this.history = [[]];
+    this.historyOffset = 0;
   }
 
   shift(): T {
-    this.history.push([...this.stack]);
     const item = this.stack[0];
     this.stack = this.stack.slice(1);
+    this.history.push([...this.stack]);
     return item;
   }
 
   unshift(item: T): number {
-    this.history.push([...this.stack]);
     this.stack = [item, ...this.stack];
+    this.history.push([...this.stack]);
     return this.stack.length;
   }
 
@@ -98,12 +100,12 @@ export class PersistentStack<T> {
   }
 
   set(index: number, value: T) {
-    this.history.push([...this.stack]);
     this.stack = [
       ...this.stack.slice(0, index),
       value,
       ...this.stack.slice(index + 1)
     ];
+    this.history.push([...this.stack]);
   }
 
   map<U>(transform: (value: T, index: number, array: T[]) => U): U[] {
@@ -119,13 +121,31 @@ export class PersistentStack<T> {
   }
 
   remove(...indices: number[]) {
-    this.history.push([...this.stack]);
     this.stack = this.stack.reduce((acc, item, i) => {
       if (!indices.includes(i)) {
         acc.push(item);
       }
       return acc;
     }, [] as T[]);
+    this.history.push([...this.stack]);
+  }
+
+  stepBack(): void {
+    const latest = this.history.length - 1;
+    if (++this.historyOffset <= latest) {
+      this.stack = this.history[latest - this.historyOffset];
+    } else {
+      this.historyOffset = latest;
+    }
+  }
+
+  stepForward(): void {
+    const latest = this.history.length - 1;
+    if (--this.historyOffset >= 0) {
+      this.stack = this.history[latest - this.historyOffset];
+    } else {
+      this.historyOffset = 0;
+    }
   }
 
   toIterable(): Iterable<T> {
