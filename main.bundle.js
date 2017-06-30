@@ -175,12 +175,15 @@ let AudioPlayerService = class AudioPlayerService {
     isPlaying() {
         return !this.audioElement.paused;
     }
+    loadAudioFromUri(uri) {
+        this.currentObjectUrl = uri;
+        this.audioElement.pause();
+        this.audioElement.src = uri;
+        this.audioElement.load();
+    }
     loadAudio(resource) {
         const url = this.resourceManager.createUrlToResource(resource);
-        this.currentObjectUrl = url;
-        this.audioElement.pause();
-        this.audioElement.src = url;
-        this.audioElement.load();
+        this.loadAudioFromUri(url);
         const decode = buffer => {
             try {
                 return this.audioContext.decodeAudioData(buffer);
@@ -208,12 +211,10 @@ let AudioPlayerService = class AudioPlayerService {
         return url;
     }
     unload() {
-        this.audioElement.pause();
-        this.audioElement.src = '';
-        this.audioElement.load();
-        if (this.currentObjectUrl) {
-            this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
-            this.currentObjectUrl = '';
+        const previousUri = this.currentObjectUrl;
+        this.loadAudioFromUri('');
+        if (previousUri) {
+            this.resourceManager.revokeUrlToResource(previousUri);
         }
     }
     togglePlaying() {
@@ -3357,15 +3358,14 @@ let AppComponent = class AppComponent {
                 this.canExtract = false;
             }
             else {
-                this.audioBuffer = resource.samples;
-                this.rootAudioItem.audioData = this.audioBuffer;
-                if (this.audioBuffer) {
+                this.rootAudioItem.audioData = resource.samples;
+                if (this.rootAudioItem.audioData) {
                     this.canExtract = true;
                     const currentRootIndex = this.analyses.findIndex(val => {
                         return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["c" /* isRootAudioItem */])(val) && val.uri === this.rootAudioItem.uri;
                     });
                     if (currentRootIndex !== -1) {
-                        this.analyses.set(currentRootIndex, Object.assign({}, this.analyses.get(currentRootIndex), { audioData: this.audioBuffer }));
+                        this.analyses.set(currentRootIndex, Object.assign({}, this.analyses.get(currentRootIndex), { audioData: this.rootAudioItem.audioData }));
                     }
                 }
             }
@@ -3420,13 +3420,14 @@ let AppComponent = class AppComponent {
             progress: 0
         };
         this.analyses.unshift(placeholderCard);
+        const audioBuffer = this.rootAudioItem.audioData;
         this.featureService.extract(`${this.countingId}`, {
-            audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
-                .map(i => this.audioBuffer.getChannelData(i)),
+            audioData: [...Array(audioBuffer.numberOfChannels).keys()]
+                .map(i => audioBuffer.getChannelData(i)),
             audioFormat: {
-                sampleRate: this.audioBuffer.sampleRate,
-                channelCount: this.audioBuffer.numberOfChannels,
-                length: this.audioBuffer.length
+                sampleRate: audioBuffer.sampleRate,
+                channelCount: audioBuffer.numberOfChannels,
+                length: audioBuffer.length
             },
             key: outputInfo.extractorKey,
             outputId: outputInfo.outputId
@@ -3452,15 +3453,34 @@ let AppComponent = class AppComponent {
             }
             return toRemove;
         }, []);
+        this.analyses.remove(...indicesToRemove);
         if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["e" /* isPendingRootAudioItem */])(item)) {
             if (this.rootAudioItem.uri === item.uri) {
                 this.audioService.unload();
+                const topItem = this.analyses.get(0);
+                const nullRootAudio = { uri: '' }; // TODO eugh
+                if (topItem) {
+                    if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["d" /* isPendingAnalysisItem */])(topItem)) {
+                        this.rootAudioItem = topItem.parent;
+                    }
+                    else if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["e" /* isPendingRootAudioItem */])(topItem)) {
+                        this.rootAudioItem = topItem;
+                    }
+                    else {
+                        this.rootAudioItem = nullRootAudio;
+                    }
+                }
+                else {
+                    this.rootAudioItem = nullRootAudio;
+                }
+                if (this.rootAudioItem) {
+                    this.audioService.loadAudioFromUri(this.rootAudioItem.uri);
+                }
             }
             else {
                 this.resourceManager.revokeUrlToResource(item.uri);
             }
         }
-        this.analyses.remove(...indicesToRemove);
     }
     ngOnDestroy() {
         this.onAudioDataSubscription.unsubscribe();
