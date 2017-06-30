@@ -93,7 +93,7 @@ export class AppComponent implements OnDestroy {
           return;
         }
 
-        this.analyses.set(
+        this.analyses.setMutating(
           index,
           Object.assign(
             {},
@@ -132,7 +132,7 @@ export class AppComponent implements OnDestroy {
 
     // TODO re-ordering of items for display
     // , one alternative is a Angular Pipe / Filter for use in the Template
-    this.analyses.unshift(pending);
+    this.analyses.unshiftMutating(pending);
   }
 
   extractFeatures(outputInfo: ExtractorOutputInfo): string {
@@ -155,7 +155,7 @@ export class AppComponent implements OnDestroy {
         id: `${++this.countingId}`,
         progress: 0
       };
-      this.analyses.unshift(placeholderCard);
+      this.analyses.unshiftMutating(placeholderCard);
       this.sendExtractionRequest(placeholderCard);
       return placeholderCard.id;
     }
