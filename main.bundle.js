@@ -211,11 +211,7 @@ let AudioPlayerService = class AudioPlayerService {
         return url;
     }
     unload() {
-        const previousUri = this.currentObjectUrl;
         this.loadAudioFromUri('');
-        if (previousUri) {
-            this.resourceManager.revokeUrlToResource(previousUri);
-        }
     }
     togglePlaying() {
         if (this.audioElement.readyState >= 2) {
@@ -338,8 +334,7 @@ var WaveformComponent_1;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__ = __webpack_require__("9yQI");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_piper_HigherLevelUtilities__ = __webpack_require__("9pB1");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_piper_HigherLevelUtilities___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_piper_HigherLevelUtilities__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__FeatureUtilities__ = __webpack_require__("kdy0");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__spectrogram_ColourMap__ = __webpack_require__("OmGI");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__spectrogram_MatrixUtils__ = __webpack_require__("aLEs");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return GridComponent; });
@@ -361,12 +356,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-let GridComponent = GridComponent_1 = class GridComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* WavesComponent */] {
+let GridComponent = GridComponent_1 = class GridComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyBinnedWavesComponent */] {
     set grid(grid) {
         this.feature = grid;
     }
     get featureLayers() {
-        const startTime = this.feature.startTime; // !!! + make use of
+        const startTime = this.feature.startTime;
         const stepDuration = this.feature.stepDuration;
         const matrixData = this.feature.data;
         if (matrixData.length === 0) {
@@ -374,8 +369,7 @@ let GridComponent = GridComponent_1 = class GridComponent extends __WEBPACK_IMPO
         }
         const targetValue = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__spectrogram_MatrixUtils__["a" /* estimatePercentile */])(matrixData, 95);
         const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
-        const matrixEntity = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.utils.PrefilledMatrixEntity(matrixData, 0, // startTime
-        stepDuration);
+        const matrixEntity = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.utils.PrefilledMatrixEntity(matrixData, startTime, stepDuration);
         return [
             new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.MatrixLayer(matrixEntity, {
                 gain: gain,
@@ -385,11 +379,21 @@ let GridComponent = GridComponent_1 = class GridComponent extends __WEBPACK_IMPO
             })
         ];
     }
+    get binNames() {
+        if (!this.feature.binNames || this.feature.binNames.length === 0) {
+            const binCount = (this.feature.data.length > 0 ?
+                this.feature.data[0].length : 0);
+            for (let i = 0; i < binCount; ++i) {
+                this.feature.binNames.push(`${i + 1}`);
+            }
+        }
+        return this.feature.binNames;
+    }
 };
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["O" /* Input */])(),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3_piper_HigherLevelUtilities__["MatrixFeature"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_piper_HigherLevelUtilities__["MatrixFeature"]) === "function" && _a || Object),
-    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3_piper_HigherLevelUtilities__["MatrixFeature"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_piper_HigherLevelUtilities__["MatrixFeature"]) === "function" && _b || Object])
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__FeatureUtilities__["b" /* Grid */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__FeatureUtilities__["b" /* Grid */]) === "function" && _a || Object),
+    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__FeatureUtilities__["b" /* Grid */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__FeatureUtilities__["b" /* Grid */]) === "function" && _b || Object])
 ], GridComponent.prototype, "grid", null);
 GridComponent = GridComponent_1 = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_3" /* Component */])({
@@ -398,6 +402,8 @@ GridComponent = GridComponent_1 = __decorate([
         styles: [__webpack_require__("1B76")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["f" /* VerticallyBinned */], useExisting: GridComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalBinNameRenderer */], useExisting: GridComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* WavesComponent */], useExisting: GridComponent_1 }
         ]
     })
@@ -557,7 +563,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-let NotesComponent = NotesComponent_1 = class NotesComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["d" /* InspectableVerticallyBoundedComponent */] {
+let NotesComponent = NotesComponent_1 = class NotesComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["g" /* InspectableVerticallyBoundedComponent */] {
     get range() {
         return this.currentVerticalRange;
     }
@@ -587,8 +593,8 @@ NotesComponent = NotesComponent_1 = __decorate([
         styles: [__webpack_require__("1B76")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyBounded */], useExisting: NotesComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: NotesComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["h" /* VerticallyBounded */], useExisting: NotesComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["d" /* VerticalScaleRenderer */], useExisting: NotesComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["b" /* VerticalValueInspectorRenderer */], useExisting: NotesComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* WavesComponent */], useExisting: NotesComponent_1 }
         ]
@@ -619,7 +625,7 @@ var NotesComponent_1;
 /***/ "9jta":
 /***/ (function(module, exports) {
 
-module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{item.title}}</md-card-title>\n    <md-card-subtitle>{{item.description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <div class=\"content\">\n      <ng-template [ngIf]=\"isLoading()\">\n        <ugly-progress-bar\n          [isDeterminate]=\"true\"\n          [progress]=\"item.progress\"\n        ></ugly-progress-bar>\n      </ng-template>\n      <ng-template [ngIf]=\"!isLoading()\">\n        <ugly-progress-spinner *ngIf=\"isPending()\"></ugly-progress-spinner>\n        <ugly-waves-play-head\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-waveform\n            *ngIf=\"isAudioItem(); else notAudio\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [audioBuffer]=\"item.audioData\"\n            [onSeek]=\"onSeek\"\n            [colour]=\"'#0868ac'\"\n            [duration]=\"getDuration()\"\n          ></ugly-waveform>\n        </ugly-waves-play-head>\n\n\n        <ugly-waves-play-head\n          #notAudio\n          *ngIf=\"getFeatureShape() as shape\"\n          [ngSwitch]=\"shape\"\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'vector'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-curve\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [curve]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-curve>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'tracks'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-tracks\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [tracks]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-tracks>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'notes'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-notes\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [notes]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-notes>\n          </ugly-cross-hair-inspector>\n          <ugly-instants\n            *ngSwitchCase=\"'instants'\"\n            [colour]=\"getNextColour()\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [onSeek]=\"onSeek\"\n            [instants]=\"item.collected\"\n            [duration]=\"getDuration()\"\n          ></ugly-instants>\n          <ugly-grid\n            *ngSwitchCase=\"'matrix'\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [onSeek]=\"onSeek\"\n            [grid]=\"item.collected\"\n            [duration]=\"getDuration()\"\n          ></ugly-grid>\n\n          <div *ngSwitchDefault>Feature cannot be visualised.</div>\n        </ugly-waves-play-head>\n      </ng-template>\n    </div>\n  </md-card-content>\n  <md-card-actions\n    *ngIf=\"isAudioItem()\">\n    <a md-icon-button\n       *ngIf=\"isAudioItem() && item.isExportable\"\n      [href]=\"sanitize(item.uri)\"\n      [download]=\"generateFilename(item)\"\n    ><md-icon>file_download</md-icon></a>\n    <button md-icon-button (click)=\"remove.emit(item)\">\n      <md-icon>delete_forever</md-icon>\n    </button>\n  </md-card-actions>\n</md-card>\n"
+module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{item.title}}</md-card-title>\n    <md-card-subtitle>{{item.description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <div class=\"content\">\n      <ng-template [ngIf]=\"isLoading()\">\n        <ugly-progress-bar\n          [isDeterminate]=\"true\"\n          [progress]=\"item.progress\"\n        ></ugly-progress-bar>\n      </ng-template>\n      <ng-template [ngIf]=\"!isLoading()\">\n        <ugly-progress-spinner *ngIf=\"isPending()\"></ugly-progress-spinner>\n        <ugly-waves-play-head\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-waveform\n            *ngIf=\"isAudioItem(); else notAudio\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [audioBuffer]=\"item.audioData\"\n            [onSeek]=\"onSeek\"\n            [colour]=\"'#0868ac'\"\n            [duration]=\"getDuration()\"\n          ></ugly-waveform>\n        </ugly-waves-play-head>\n\n\n        <ugly-waves-play-head\n          #notAudio\n          *ngIf=\"getFeatureShape() as shape\"\n          [ngSwitch]=\"shape\"\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'vector'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-curve\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [curve]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-curve>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'tracks'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-tracks\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [tracks]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-tracks>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'notes'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-notes\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [notes]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-notes>\n          </ugly-cross-hair-inspector>\n          <ugly-vertical-binned\n            *ngSwitchCase=\"'matrix'\"\n          >\n            <ugly-grid\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [grid]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-grid>\n          </ugly-vertical-binned>\n          <ugly-instants\n            *ngSwitchCase=\"'instants'\"\n            [colour]=\"getNextColour()\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [onSeek]=\"onSeek\"\n            [instants]=\"item.collected\"\n            [duration]=\"getDuration()\"\n          ></ugly-instants>\n\n          <div *ngSwitchDefault>Feature cannot be visualised.</div>\n        </ugly-waves-play-head>\n      </ng-template>\n    </div>\n  </md-card-content>\n  <md-card-actions\n    *ngIf=\"isAudioItem()\">\n    <a md-icon-button\n       *ngIf=\"isAudioItem() && item.isExportable\"\n      [href]=\"sanitize(item.uri)\"\n      [download]=\"generateFilename(item)\"\n    ><md-icon>file_download</md-icon></a>\n    <button md-icon-button (click)=\"remove.emit(item)\">\n      <md-icon>delete_forever</md-icon>\n    </button>\n  </md-card-actions>\n</md-card>\n"
 
 /***/ }),
 
@@ -681,11 +687,19 @@ const trackIdGenerator = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper
 // has to be an abstract class vs as interface for Angular's DI
 class VerticallyBounded {
 }
-/* harmony export (immutable) */ __webpack_exports__["e"] = VerticallyBounded;
+/* harmony export (immutable) */ __webpack_exports__["h"] = VerticallyBounded;
 
 class VerticalScaleRenderer extends VerticallyBounded {
 }
-/* harmony export (immutable) */ __webpack_exports__["c"] = VerticalScaleRenderer;
+/* harmony export (immutable) */ __webpack_exports__["d"] = VerticalScaleRenderer;
+
+class VerticallyBinned {
+}
+/* harmony export (immutable) */ __webpack_exports__["f"] = VerticallyBinned;
+
+class VerticalBinNameRenderer extends VerticallyBinned {
+}
+/* harmony export (immutable) */ __webpack_exports__["c"] = VerticalBinNameRenderer;
 
 class VerticalValueInspectorRenderer extends VerticalScaleRenderer {
 }
@@ -866,6 +880,18 @@ class VerticallyBoundedWavesComponent extends WavesComponent {
 }
 /* unused harmony export VerticallyBoundedWavesComponent */
 
+class VerticallyBinnedWavesComponent extends WavesComponent {
+    renderNames(binNames) {
+        this.addLayer(new __WEBPACK_IMPORTED_MODULE_3_waves_ui_piper___default.a.helpers.DiscreteScaleLayer({
+            tickColor: this.colour,
+            textColor: this.colour,
+            height: this.height,
+            binNames
+        }));
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["e"] = VerticallyBinnedWavesComponent;
+
 class InspectableVerticallyBoundedComponent extends VerticallyBoundedWavesComponent {
     set onSeek(handler) {
         this.wrappedSeekHandler = (x) => {
@@ -898,7 +924,7 @@ class InspectableVerticallyBoundedComponent extends VerticallyBoundedWavesCompon
         }
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["d"] = InspectableVerticallyBoundedComponent;
+/* harmony export (immutable) */ __webpack_exports__["g"] = InspectableVerticallyBoundedComponent;
 
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
@@ -1082,12 +1108,7 @@ var InstantsComponent_1;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__visualisations_FeatureUtilities__ = __webpack_require__("kdy0");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__ = __webpack_require__("EWzO");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__ = __webpack_require__("fc+i");
-/* unused harmony export isItem */
-/* harmony export (immutable) */ __webpack_exports__["e"] = isPendingRootAudioItem;
-/* harmony export (immutable) */ __webpack_exports__["c"] = isRootAudioItem;
-/* harmony export (immutable) */ __webpack_exports__["d"] = isPendingAnalysisItem;
-/* unused harmony export isAnalysisItem */
-/* harmony export (immutable) */ __webpack_exports__["b"] = getRootUri;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__AnalysisItem__ = __webpack_require__("O5jy");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AnalysisItemComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1107,37 +1128,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-function isItem(item) {
-    return item.id != null && item.hasSharedTimeline != null;
-}
-function isPendingRootAudioItem(item) {
-    return isItem(item) && typeof item.uri === 'string';
-}
-function isRootAudioItem(item) {
-    return item && isPendingRootAudioItem(item) &&
-        item.audioData instanceof AudioBuffer;
-}
-function isPendingAnalysisItem(item) {
-    const downcast = item;
-    return isRootAudioItem(downcast.parent)
-        && typeof downcast.extractorKey === 'string';
-}
-function isAnalysisItem(item) {
-    const downcast = item;
-    return isPendingAnalysisItem(item) &&
-        downcast.shape != null &&
-        downcast.collected != null;
-}
-// these should probably be actual concrete types with their own getUri methods
-function getRootUri(item) {
-    if (isPendingRootAudioItem(item)) {
-        return item.uri;
-    }
-    if (isPendingAnalysisItem(item)) {
-        return item.parent.uri;
-    }
-    throw new Error('Invalid item: No URI property set.');
-}
+
 let AnalysisItemComponent = class AnalysisItemComponent {
     constructor(renderLoop, sanitizer) {
         this.renderLoop = renderLoop;
@@ -1171,27 +1162,27 @@ let AnalysisItemComponent = class AnalysisItemComponent {
         return this.hasProgressOnInit && this.item.progress < 100;
     }
     isAudioItem() {
-        return this.item && isRootAudioItem(this.item);
+        return this.item && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["b" /* isLoadedRootAudioItem */])(this.item);
     }
     isPending() {
         return this.item &&
-            !isRootAudioItem(this.item) && !isAnalysisItem(this.item) &&
-            (isPendingAnalysisItem(this.item) || isPendingRootAudioItem(this.item));
+            !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["b" /* isLoadedRootAudioItem */])(this.item) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["c" /* isExtractedAnalysisItem */])(this.item) &&
+            (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["d" /* isPendingAnalysisItem */])(this.item) || __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["e" /* isPendingRootAudioItem */])(this.item));
     }
     getFeatureShape() {
-        return !isPendingRootAudioItem(this.item) &&
-            isAnalysisItem(this.item) ? this.item.shape : null;
+        return !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["e" /* isPendingRootAudioItem */])(this.item) &&
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["c" /* isExtractedAnalysisItem */])(this.item) ? this.item.shape : null;
     }
     getDuration() {
-        if (isRootAudioItem(this.item)) {
+        if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["b" /* isLoadedRootAudioItem */])(this.item)) {
             return this.item.audioData.duration;
         }
-        if (isAnalysisItem(this.item)) {
+        if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["c" /* isExtractedAnalysisItem */])(this.item)) {
             return this.item.parent.audioData.duration;
         }
     }
     getNextColour() {
-        return __WEBPACK_IMPORTED_MODULE_3__visualisations_FeatureUtilities__["c" /* defaultColourGenerator */].next().value;
+        return __WEBPACK_IMPORTED_MODULE_3__visualisations_FeatureUtilities__["d" /* defaultColourGenerator */].next().value;
     }
     ngOnDestroy() {
         this.removeAnimation();
@@ -1237,7 +1228,7 @@ __decorate([
 ], AnalysisItemComponent.prototype, "isActive", null);
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
-    __metadata("design:type", Object)
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["f" /* Item */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["f" /* Item */]) === "function" && _a || Object)
 ], AnalysisItemComponent.prototype, "item", void 0);
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
@@ -1245,11 +1236,11 @@ __decorate([
 ], AnalysisItemComponent.prototype, "contentWidth", void 0);
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _a || Object)
+    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _b || Object)
 ], AnalysisItemComponent.prototype, "onSeek", void 0);
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_0" /* Output */])(),
-    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]) === "function" && _b || Object)
+    __metadata("design:type", typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]) === "function" && _c || Object)
 ], AnalysisItemComponent.prototype, "remove", void 0);
 AnalysisItemComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
@@ -1258,10 +1249,10 @@ AnalysisItemComponent = __decorate([
         styles: [__webpack_require__("hth3")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
     }),
-    __metadata("design:paramtypes", [typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _d || Object])
+    __metadata("design:paramtypes", [typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _e || Object])
 ], AnalysisItemComponent);
 
-var _a, _b, _c, _d;
+var _a, _b, _c, _d, _e;
 //# sourceMappingURL=analysis-item.component.js.map
 
 /***/ }),
@@ -1464,6 +1455,73 @@ ActionTrayComponent = __decorate([
 /***/ (function(module, exports) {
 
 //# sourceMappingURL=PlayHeadHelpers.js.map
+
+/***/ }),
+
+/***/ "O5jy":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export isItem */
+/* harmony export (immutable) */ __webpack_exports__["e"] = isPendingRootAudioItem;
+/* harmony export (immutable) */ __webpack_exports__["b"] = isLoadedRootAudioItem;
+/* harmony export (immutable) */ __webpack_exports__["d"] = isPendingAnalysisItem;
+/* harmony export (immutable) */ __webpack_exports__["c"] = isExtractedAnalysisItem;
+/* harmony export (immutable) */ __webpack_exports__["g"] = getRootAudioItem;
+/* harmony export (immutable) */ __webpack_exports__["a"] = getRootUri;
+/* harmony export (immutable) */ __webpack_exports__["h"] = createExtractionRequest;
+class Item {
+}
+/* harmony export (immutable) */ __webpack_exports__["f"] = Item;
+
+function isItem(item) {
+    return item.id != null && item.hasSharedTimeline != null;
+}
+function isPendingRootAudioItem(item) {
+    return isItem(item) && typeof item.uri === 'string';
+}
+function isLoadedRootAudioItem(item) {
+    return item && isPendingRootAudioItem(item) &&
+        item.audioData instanceof AudioBuffer;
+}
+function isPendingAnalysisItem(item) {
+    const downcast = item;
+    return isLoadedRootAudioItem(downcast.parent)
+        && typeof downcast.extractorKey === 'string';
+}
+function isExtractedAnalysisItem(it) {
+    const downcast = it;
+    return isPendingAnalysisItem(it) &&
+        downcast.shape != null &&
+        downcast.collected != null;
+}
+function getRootAudioItem(item) {
+    if (isPendingRootAudioItem(item)) {
+        return item;
+    }
+    if (isPendingAnalysisItem(item)) {
+        return item.parent;
+    }
+    throw new Error('Invalid item.');
+}
+// these should probably be actual concrete types with their own getUri methods
+function getRootUri(item) {
+    return getRootAudioItem(item).uri;
+}
+function createExtractionRequest(item) {
+    return {
+        audioData: [...Array(item.parent.audioData.numberOfChannels).keys()]
+            .map(i => item.parent.audioData.getChannelData(i)),
+        audioFormat: {
+            sampleRate: item.parent.audioData.sampleRate,
+            channelCount: item.parent.audioData.numberOfChannels,
+            length: item.parent.audioData.length
+        },
+        key: item.extractorKey,
+        outputId: item.outputId
+    };
+}
+//# sourceMappingURL=AnalysisItem.js.map
 
 /***/ }),
 
@@ -1678,7 +1736,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-let TracksComponent = TracksComponent_1 = class TracksComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["d" /* InspectableVerticallyBoundedComponent */] {
+let TracksComponent = TracksComponent_1 = class TracksComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["g" /* InspectableVerticallyBoundedComponent */] {
     set tracks(input) {
         this.feature = input;
     }
@@ -1687,7 +1745,7 @@ let TracksComponent = TracksComponent_1 = class TracksComponent extends __WEBPAC
             this.currentState.yDomain : null;
     }
     get featureLayers() {
-        this.currentState = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__FeatureUtilities__["b" /* generatePlotData */])(this.feature);
+        this.currentState = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__FeatureUtilities__["c" /* generatePlotData */])(this.feature);
         return this.currentState.data.map(feature => new __WEBPACK_IMPORTED_MODULE_3_waves_ui_piper___default.a.helpers.LineLayer(feature.points, {
             color: this.colour,
             height: this.height,
@@ -1714,8 +1772,8 @@ TracksComponent = TracksComponent_1 = __decorate([
         styles: [__webpack_require__("1B76")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyBounded */], useExisting: TracksComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: TracksComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["h" /* VerticallyBounded */], useExisting: TracksComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["d" /* VerticalScaleRenderer */], useExisting: TracksComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["b" /* VerticalValueInspectorRenderer */], useExisting: TracksComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* WavesComponent */], useExisting: TracksComponent_1 }
         ],
@@ -1822,6 +1880,54 @@ var TracksComponent_1, _a, _b;
 // import 'intl';  // Run `npm install --save intl`.
 
 //# sourceMappingURL=polyfills.js.map
+
+/***/ }),
+
+/***/ "TsWN":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__waves_base_component__ = __webpack_require__("B96E");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return VerticalBinnedComponent; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+/**
+ * Created by lucas on 01/06/2017.
+ */
+
+
+let VerticalBinnedComponent = class VerticalBinnedComponent {
+    ngAfterViewInit() {
+        this.bounded.forEach(component => {
+            this.cachedBinNames = component.binNames;
+            if (this.cachedBinNames) {
+                component.renderNames(this.cachedBinNames);
+            }
+        });
+    }
+};
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalBinNameRenderer */]),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */]) === "function" && _a || Object)
+], VerticalBinnedComponent.prototype, "bounded", void 0);
+VerticalBinnedComponent = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_3" /* Component */])({
+        selector: 'ugly-vertical-binned',
+        template: '<ng-content></ng-content>',
+        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
+    })
+], VerticalBinnedComponent);
+
+var _a;
+//# sourceMappingURL=vertical-binned.component.js.map
 
 /***/ }),
 
@@ -2027,11 +2133,12 @@ var _a, _b;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__visualisations_instants_instants_component__ = __webpack_require__("I0f/");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__visualisations_grid_grid_component__ = __webpack_require__("6pam");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__visualisations_vertical_scale_component__ = __webpack_require__("vfMn");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__visualisations_cross_hair_inspector_component__ = __webpack_require__("rVHm");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__services_render_loop_render_loop_service__ = __webpack_require__("EWzO");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__playhead_waves_ui_play_head_component__ = __webpack_require__("LbIP");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__actions_action_tray_component__ = __webpack_require__("MaDt");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_31__services_audio_recorder_RecordRtcMediaRecorder__ = __webpack_require__("jYsx");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__visualisations_vertical_binned_component__ = __webpack_require__("TsWN");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__visualisations_cross_hair_inspector_component__ = __webpack_require__("rVHm");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__services_render_loop_render_loop_service__ = __webpack_require__("EWzO");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__playhead_waves_ui_play_head_component__ = __webpack_require__("LbIP");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_31__actions_action_tray_component__ = __webpack_require__("MaDt");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_32__services_audio_recorder_RecordRtcMediaRecorder__ = __webpack_require__("jYsx");
 /* unused harmony export createAudioContext */
 /* unused harmony export createAudioElement */
 /* unused harmony export createAudioInputProvider */
@@ -2046,6 +2153,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -2099,7 +2207,7 @@ function createMediaRecorderFactory() {
         return MediaRecorder;
     }
     else {
-        return __WEBPACK_IMPORTED_MODULE_31__services_audio_recorder_RecordRtcMediaRecorder__["a" /* RecordRtcMediaRecorder */];
+        return __WEBPACK_IMPORTED_MODULE_32__services_audio_recorder_RecordRtcMediaRecorder__["a" /* RecordRtcMediaRecorder */];
     }
 }
 function createUrlResourceManager() {
@@ -2159,9 +2267,10 @@ AppModule = __decorate([
             __WEBPACK_IMPORTED_MODULE_24__visualisations_instants_instants_component__["a" /* InstantsComponent */],
             __WEBPACK_IMPORTED_MODULE_25__visualisations_grid_grid_component__["a" /* GridComponent */],
             __WEBPACK_IMPORTED_MODULE_26__visualisations_vertical_scale_component__["a" /* VerticalScaleComponent */],
-            __WEBPACK_IMPORTED_MODULE_27__visualisations_cross_hair_inspector_component__["a" /* CrossHairInspectorComponent */],
-            __WEBPACK_IMPORTED_MODULE_29__playhead_waves_ui_play_head_component__["a" /* WavesPlayHeadComponent */],
-            __WEBPACK_IMPORTED_MODULE_30__actions_action_tray_component__["a" /* ActionTrayComponent */]
+            __WEBPACK_IMPORTED_MODULE_27__visualisations_vertical_binned_component__["a" /* VerticalBinnedComponent */],
+            __WEBPACK_IMPORTED_MODULE_28__visualisations_cross_hair_inspector_component__["a" /* CrossHairInspectorComponent */],
+            __WEBPACK_IMPORTED_MODULE_30__playhead_waves_ui_play_head_component__["a" /* WavesPlayHeadComponent */],
+            __WEBPACK_IMPORTED_MODULE_31__actions_action_tray_component__["a" /* ActionTrayComponent */]
         ],
         imports: [
             __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -2181,7 +2290,7 @@ AppModule = __decorate([
             { provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager },
             { provide: 'ResourceReader', useFactory: createResourceReader },
             { provide: 'DimensionObservable', useFactory: createWindowDimensionObservable },
-            __WEBPACK_IMPORTED_MODULE_28__services_render_loop_render_loop_service__["a" /* RenderLoopService */]
+            __WEBPACK_IMPORTED_MODULE_29__services_render_loop_render_loop_service__["a" /* RenderLoopService */]
         ],
         bootstrap: [__WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */]]
     })
@@ -2224,7 +2333,7 @@ __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_dyna
 /***/ "efyd":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event, true); tray.close()\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event); tray.close()\"\n      ></ugly-audio-file-open>\n      <!-- menu opens when trigger button is clicked -->\n      <button md-icon-button (click)=\"tray.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <ugly-action-tray #tray>\n    <ugly-feature-extraction-menu\n      (requestOutput)=\"tray.close(); extractFeatures($event)\"\n      [disabled]=\"!canExtract\"\n    >\n    </ugly-feature-extraction-menu>\n  </ugly-action-tray>\n  <div class=\"ugly-content\">\n    <ugly-notebook-feed\n      (removeItem)=\"removeItem($event)\"\n      [analyses]=\"analyses.toIterable()\"\n      [rootAudioUri]=\"rootAudioItem.uri\"\n      [onSeek]=\"onSeek\"></ugly-notebook-feed>\n  </div>\n</div>\n"
+module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event, true); tray.close()\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event); tray.close()\"\n      ></ugly-audio-file-open>\n      <button md-icon-button (click)=\"tray.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n      <button md-icon-button (click)=\"analyses.stepBack()\">\n        <md-icon>undo</md-icon>\n      </button>\n      <button md-icon-button (click)=\"analyses.stepForward()\">\n        <md-icon>redo</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <ugly-action-tray #tray>\n    <ugly-feature-extraction-menu\n      (requestOutput)=\"tray.close(); extractFeatures($event)\"\n      [disabled]=\"!canExtract\"\n    >\n    </ugly-feature-extraction-menu>\n  </ugly-action-tray>\n  <div class=\"ugly-content\">\n    <ugly-notebook-feed\n      (removeItem)=\"removeItem($event)\"\n      [analyses]=\"analyses.toIterable()\"\n      [onSeek]=\"onSeek\"></ugly-notebook-feed>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -2523,7 +2632,7 @@ class RecordRtcMediaRecorder {
 /* unused harmony export frequencyToMidiNote */
 /* unused harmony export createColourGenerator */
 /* harmony export (immutable) */ __webpack_exports__["a"] = toKnownShape;
-/* harmony export (immutable) */ __webpack_exports__["b"] = generatePlotData;
+/* harmony export (immutable) */ __webpack_exports__["c"] = generatePlotData;
 /**
  * Created by lucast on 24/05/2017.
  */
@@ -2562,7 +2671,11 @@ const defaultColourGenerator = createColourGenerator([
     '#fa8334',
     '#034748' // "deep jungle green"
 ]);
-/* harmony export (immutable) */ __webpack_exports__["c"] = defaultColourGenerator;
+/* harmony export (immutable) */ __webpack_exports__["d"] = defaultColourGenerator;
+
+class Grid {
+}
+/* harmony export (immutable) */ __webpack_exports__["b"] = Grid;
 
 // These needn't be classes (could just be interfaces), just experimenting
 class ShapedFeature {
@@ -2629,7 +2742,12 @@ function toKnownShape(response) {
         case 'vector':
             return response.features;
         case 'matrix':
-            return response.features;
+            return {
+                shape: deducedShape,
+                collected: Object.assign(response.features.collected, {
+                    binNames: response.outputDescriptor.configured.binNames || []
+                })
+            };
         case 'tracks':
             return response.features;
         case 'notes':
@@ -2793,11 +2911,12 @@ webpackEmptyContext.id = "n7du";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui_piper__ = __webpack_require__("9yQI");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_waves_ui_piper__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__analysis_item_analysis_item_component__ = __webpack_require__("I5sL");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__analysis_item_AnalysisItem__ = __webpack_require__("O5jy");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__ = __webpack_require__("bKpL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__playhead_PlayHeadHelpers__ = __webpack_require__("NXUV");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__playhead_PlayHeadHelpers___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__playhead_PlayHeadHelpers__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__services_audio_player_audio_player_service__ = __webpack_require__("5/XR");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return NotebookFeedComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2819,10 +2938,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 
 
 
+
 let NotebookFeedComponent = class NotebookFeedComponent {
-    constructor(ref, onResize) {
+    constructor(ref, onResize, audioService) {
         this.ref = ref;
         this.onResize = onResize;
+        this.audioService = audioService;
         this.removeItem = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]();
         this.timelines = new Map();
         this.onResize.subscribe(dim => {
@@ -2841,17 +2962,33 @@ let NotebookFeedComponent = class NotebookFeedComponent {
         };
         requestAnimationFrame(triggerChangeDetectionOnResize);
     }
-    set rootAudioUri(uri) {
-        this._rootAudioUri = uri;
+    set analyses(analyses) {
+        const front = analyses[0];
+        if (analyses !== this.mAnalyses) {
+            if (front && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__analysis_item_AnalysisItem__["a" /* getRootUri */])(front) !== this.currentAudioUri) {
+                this.audioService.unload();
+                this.audioService.loadAudioFromUri(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__analysis_item_AnalysisItem__["a" /* getRootUri */])(front));
+            }
+            else if (!front) {
+                this.audioService.unload();
+            }
+        }
+        this.mAnalyses = analyses;
+        if (front) {
+            this.currentAudioUri = this.getCurrentAudioUri();
+        }
+        else {
+            this.currentAudioUri = '';
+        }
     }
-    get rootAudioUri() {
-        return this._rootAudioUri;
+    get analyses() {
+        return this.mAnalyses;
     }
     getOrCreateTimeline(item) {
         if (!item.hasSharedTimeline) {
             return;
         }
-        const uri = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__analysis_item_analysis_item_component__["b" /* getRootUri */])(item);
+        const uri = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__analysis_item_AnalysisItem__["a" /* getRootUri */])(item);
         if (this.timelines.has(uri)) {
             return this.timelines.get(uri);
         }
@@ -2862,10 +2999,10 @@ let NotebookFeedComponent = class NotebookFeedComponent {
         }
     }
     isAudioItem(item) {
-        return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__analysis_item_analysis_item_component__["c" /* isRootAudioItem */])(item);
+        return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__analysis_item_AnalysisItem__["b" /* isLoadedRootAudioItem */])(item);
     }
     isActiveItem(item) {
-        return this.rootAudioUri === __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__analysis_item_analysis_item_component__["b" /* getRootUri */])(item);
+        return this.getCurrentAudioUri() === __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__analysis_item_AnalysisItem__["a" /* getRootUri */])(item);
     }
     getOnSeekForItem(item) {
         return this.isActiveItem(item) ? this.onSeek : () => { };
@@ -2875,16 +3012,23 @@ let NotebookFeedComponent = class NotebookFeedComponent {
             this.resizeSubscription.unsubscribe();
         }
     }
+    getCurrentAudioUri() {
+        if (this.analyses.length === 0) {
+            return '';
+        }
+        try {
+            return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__analysis_item_AnalysisItem__["a" /* getRootUri */])(this.analyses[0]);
+        }
+        catch (e) {
+            return '';
+        }
+    }
 };
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
-    __metadata("design:type", Array)
-], NotebookFeedComponent.prototype, "analyses", void 0);
-__decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
-    __metadata("design:type", String),
-    __metadata("design:paramtypes", [String])
-], NotebookFeedComponent.prototype, "rootAudioUri", null);
+    __metadata("design:type", Array),
+    __metadata("design:paramtypes", [Array])
+], NotebookFeedComponent.prototype, "analyses", null);
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _a || Object)
@@ -2901,10 +3045,10 @@ NotebookFeedComponent = __decorate([
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
     }),
     __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('DimensionObservable')),
-    __metadata("design:paramtypes", [typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"]) === "function" && _d || Object])
+    __metadata("design:paramtypes", [typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_5__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _e || Object])
 ], NotebookFeedComponent);
 
-var _a, _b, _c, _d;
+var _a, _b, _c, _d, _e;
 //# sourceMappingURL=notebook-feed.component.js.map
 
 /***/ }),
@@ -3238,7 +3382,7 @@ let VerticalScaleComponent = class VerticalScaleComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */]),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["d" /* VerticalScaleRenderer */]),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */]) === "function" && _a || Object)
 ], VerticalScaleComponent.prototype, "bounded", void 0);
 VerticalScaleComponent = __decorate([
@@ -3263,8 +3407,9 @@ var _a;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__ = __webpack_require__("oRLG");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__("fc+i");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_material__ = __webpack_require__("Z04r");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__ = __webpack_require__("I5sL");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__ = __webpack_require__("O5jy");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__app_module__ = __webpack_require__("aR8+");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Session__ = __webpack_require__("xunm");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3285,58 +3430,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 
 
 
-class PersistentStack {
-    constructor() {
-        this.stack = [];
-        this.history = [];
-    }
-    shift() {
-        this.history.push([...this.stack]);
-        const item = this.stack[0];
-        this.stack = this.stack.slice(1);
-        return item;
-    }
-    unshift(item) {
-        this.history.push([...this.stack]);
-        this.stack = [item, ...this.stack];
-        return this.stack.length;
-    }
-    findIndex(predicate) {
-        return this.stack.findIndex(predicate);
-    }
-    filter(predicate) {
-        return this.stack.filter(predicate);
-    }
-    get(index) {
-        return this.stack[index];
-    }
-    set(index, value) {
-        this.history.push([...this.stack]);
-        this.stack = [
-            ...this.stack.slice(0, index),
-            value,
-            ...this.stack.slice(index + 1)
-        ];
-    }
-    map(transform) {
-        return this.stack.map(transform);
-    }
-    reduce(reducer, initialValue) {
-        return this.stack.reduce(reducer, initialValue);
-    }
-    remove(...indices) {
-        this.history.push([...this.stack]);
-        this.stack = this.stack.reduce((acc, item, i) => {
-            if (!indices.includes(i)) {
-                acc.push(item);
-            }
-            return acc;
-        }, []);
-    }
-    toIterable() {
-        return this.stack;
-    }
-}
+
+
 let AppComponent = class AppComponent {
     constructor(audioService, featureService, iconRegistry, sanitizer, resourceManager) {
         this.audioService = audioService;
@@ -3344,12 +3439,11 @@ let AppComponent = class AppComponent {
         this.iconRegistry = iconRegistry;
         this.sanitizer = sanitizer;
         this.resourceManager = resourceManager;
-        this.analyses = new PersistentStack();
+        this.analyses = new __WEBPACK_IMPORTED_MODULE_7__Session__["a" /* PersistentStack */]();
         this.canExtract = false;
         this.nRecordings = 0;
         this.countingId = 0;
         this.onSeek = (time) => this.audioService.seekTo(time);
-        this.rootAudioItem = {}; // TODO eugh
         iconRegistry.addSvgIcon('duck', sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg'));
         this.onAudioDataSubscription = this.audioService.audioLoaded$.subscribe(resource => {
             const wasError = resource.message != null;
@@ -3358,14 +3452,15 @@ let AppComponent = class AppComponent {
                 this.canExtract = false;
             }
             else {
-                this.rootAudioItem.audioData = resource.samples;
-                if (this.rootAudioItem.audioData) {
+                const audioData = resource.samples;
+                if (audioData) {
+                    const rootAudio = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["g" /* getRootAudioItem */])(this.analyses.get(0));
                     this.canExtract = true;
                     const currentRootIndex = this.analyses.findIndex(val => {
-                        return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["c" /* isRootAudioItem */])(val) && val.uri === this.rootAudioItem.uri;
+                        return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["e" /* isPendingRootAudioItem */])(val) && val.uri === rootAudio.uri;
                     });
                     if (currentRootIndex !== -1) {
-                        this.analyses.set(currentRootIndex, Object.assign({}, this.analyses.get(currentRootIndex), { audioData: this.rootAudioItem.audioData }));
+                        this.analyses.set(currentRootIndex, Object.assign({}, this.analyses.get(currentRootIndex), { audioData }));
                     }
                 }
             }
@@ -3375,7 +3470,7 @@ let AppComponent = class AppComponent {
             if (index === -1) {
                 return;
             }
-            this.analyses.set(index, Object.assign({}, this.analyses.get(index), { progress: progress.value }));
+            this.analyses.setMutating(index, Object.assign({}, this.analyses.get(index), { progress: progress.value }));
         });
     }
     onFileOpened(file, createExportableItem = false) {
@@ -3400,52 +3495,36 @@ let AppComponent = class AppComponent {
             mimeType: file.type,
             isExportable: createExportableItem
         };
-        this.rootAudioItem = pending; // TODO this is silly
         // TODO re-ordering of items for display
         // , one alternative is a Angular Pipe / Filter for use in the Template
-        this.analyses.unshift(pending);
+        this.analyses.unshiftMutating(pending);
     }
     extractFeatures(outputInfo) {
         if (!this.canExtract || !outputInfo) {
             return;
         }
         this.canExtract = false;
-        const placeholderCard = {
-            parent: this.rootAudioItem,
-            hasSharedTimeline: true,
-            extractorKey: outputInfo.combinedKey,
-            title: outputInfo.name,
-            description: outputInfo.outputId,
-            id: `${++this.countingId}`,
-            progress: 0
-        };
-        this.analyses.unshift(placeholderCard);
-        const audioBuffer = this.rootAudioItem.audioData;
-        this.featureService.extract(`${this.countingId}`, {
-            audioData: [...Array(audioBuffer.numberOfChannels).keys()]
-                .map(i => audioBuffer.getChannelData(i)),
-            audioFormat: {
-                sampleRate: audioBuffer.sampleRate,
-                channelCount: audioBuffer.numberOfChannels,
-                length: audioBuffer.length
-            },
-            key: outputInfo.extractorKey,
-            outputId: outputInfo.outputId
-        }).then(result => {
-            const i = this.analyses.findIndex(val => val.id === result.id);
-            this.canExtract = true;
-            if (i !== -1) {
-                this.analyses.set(i, Object.assign({}, this.analyses.get(i), result.result, result.unit ? { unit: result.unit } : {}));
-            } // TODO else remove the item?
-        }).catch(err => {
-            this.canExtract = true;
-            this.analyses.shift();
-            console.error(`Error whilst extracting: ${err}`);
-        });
+        const rootAudio = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["g" /* getRootAudioItem */])(this.analyses.get(0));
+        if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["b" /* isLoadedRootAudioItem */])(rootAudio)) {
+            const placeholderCard = {
+                parent: rootAudio,
+                hasSharedTimeline: true,
+                extractorKey: outputInfo.extractorKey,
+                outputId: outputInfo.outputId,
+                title: outputInfo.name,
+                description: outputInfo.outputId,
+                id: `${++this.countingId}`,
+                progress: 0
+            };
+            this.analyses.unshiftMutating(placeholderCard);
+            this.sendExtractionRequest(placeholderCard);
+            return placeholderCard.id;
+        }
+        throw new Error('Cannot extract. No audio loaded');
     }
     removeItem(item) {
         const indicesToRemove = this.analyses.reduce((toRemove, current, index) => {
-            if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["d" /* isPendingAnalysisItem */])(current) && current.parent.id === item.id) {
+            if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["d" /* isPendingAnalysisItem */])(current) && current.parent.id === item.id) {
                 toRemove.push(index);
             }
             else if (item.id === current.id) {
@@ -3454,37 +3533,27 @@ let AppComponent = class AppComponent {
             return toRemove;
         }, []);
         this.analyses.remove(...indicesToRemove);
-        if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["e" /* isPendingRootAudioItem */])(item)) {
-            if (this.rootAudioItem.uri === item.uri) {
-                this.audioService.unload();
-                const topItem = this.analyses.get(0);
-                const nullRootAudio = { uri: '' }; // TODO eugh
-                if (topItem) {
-                    if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["d" /* isPendingAnalysisItem */])(topItem)) {
-                        this.rootAudioItem = topItem.parent;
-                    }
-                    else if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_analysis_item_component__["e" /* isPendingRootAudioItem */])(topItem)) {
-                        this.rootAudioItem = topItem;
-                    }
-                    else {
-                        this.rootAudioItem = nullRootAudio;
-                    }
-                }
-                else {
-                    this.rootAudioItem = nullRootAudio;
-                }
-                if (this.rootAudioItem) {
-                    this.audioService.loadAudioFromUri(this.rootAudioItem.uri);
-                }
-            }
-            else {
-                this.resourceManager.revokeUrlToResource(item.uri);
-            }
-        }
     }
     ngOnDestroy() {
         this.onAudioDataSubscription.unsubscribe();
         this.onProgressUpdated.unsubscribe();
+    }
+    sendExtractionRequest(analysis) {
+        const findAndUpdateItem = (result) => {
+            // TODO subscribe to the extraction service instead
+            const i = this.analyses.findIndex(val => val.id === result.id);
+            this.canExtract = true;
+            if (i !== -1) {
+                this.analyses.set(i, Object.assign({}, this.analyses.get(i), result.result, result.unit ? { unit: result.unit } : {}));
+            } // TODO else remove the item?
+        };
+        return this.featureService.extract(analysis.id, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["h" /* createExtractionRequest */])(analysis))
+            .then(findAndUpdateItem)
+            .catch(err => {
+            this.canExtract = true;
+            this.analyses.shift();
+            console.error(`Error whilst extracting: ${err}`);
+        });
     }
 };
 AppComponent = __decorate([
@@ -3517,6 +3586,157 @@ exports.push([module.i, "#extractor-outputs{max-width:80%;display:block;margin:0
 
 /*** EXPORTS FROM exports-loader ***/
 module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "xunm":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const exampleSession = {
+    root: {
+        id: '1',
+        hasSharedTimeline: true,
+        title: 'Drum Loop',
+        description: 'Remotely hosted audio file',
+        uri: 'https://piper-audio.github.io/waves-ui-piper/examples/assets/drum-loop.wav'
+    },
+    analyses: [
+        {
+            id: '2',
+            hasSharedTimeline: true,
+            extractorKey: 'vamp-example-plugins:amplitudefollower',
+            outputId: 'amplitude',
+            title: 'Amplitude',
+            description: 'amplitude'
+        },
+        {
+            id: '3',
+            hasSharedTimeline: true,
+            extractorKey: 'vamp-example-plugins:powerspectrum',
+            outputId: 'powerspectrum',
+            title: 'Simple Power Spectrum',
+            description: 'powerspectrum'
+        },
+    ]
+};
+/* unused harmony export exampleSession */
+
+const downloadResource = (url) => __awaiter(this, void 0, void 0, function* () {
+    const response = yield fetch(url);
+    const mimeType = response.headers.get('content-type');
+    // Safari's fetch.blob implementation doesn't populate the type property
+    // causing the audio player to fail due to an unsupported type.
+    // Manually create a blob from an array buffer and the content type in
+    // the response object
+    const arrayBufferToBlob = () => __awaiter(this, void 0, void 0, function* () {
+        const arrayBuffer = yield response.arrayBuffer();
+        return new Blob([arrayBuffer], { type: mimeType });
+    });
+    return mimeType ? arrayBufferToBlob() : response.blob();
+});
+/* unused harmony export downloadResource */
+
+class PersistentStack {
+    constructor() {
+        this.stack = [];
+        this.history = [[]];
+        this.historyOffset = 0;
+    }
+    shiftMutating() {
+        const item = this.stack[0];
+        this.stack = this.stack.slice(1);
+        return item;
+    }
+    shift() {
+        const item = this.shiftMutating();
+        this.updateHistory();
+        return item;
+    }
+    unshiftMutating(item) {
+        this.stack = [item, ...this.stack];
+        return this.stack.length;
+    }
+    unshift(item) {
+        const newLength = this.unshift(item);
+        this.updateHistory();
+        return newLength;
+    }
+    findIndex(predicate) {
+        return this.stack.findIndex(predicate);
+    }
+    filter(predicate) {
+        return this.stack.filter(predicate);
+    }
+    get(index) {
+        return this.stack[index];
+    }
+    set(index, value) {
+        this.setMutating(index, value);
+        this.updateHistory();
+    }
+    setMutating(index, value) {
+        this.stack = [
+            ...this.stack.slice(0, index),
+            value,
+            ...this.stack.slice(index + 1)
+        ];
+    }
+    map(transform) {
+        return this.stack.map(transform);
+    }
+    reduce(reducer, initialValue) {
+        return this.stack.reduce(reducer, initialValue);
+    }
+    remove(...indices) {
+        this.stack = this.stack.reduce((acc, item, i) => {
+            if (!indices.includes(i)) {
+                acc.push(item);
+            }
+            return acc;
+        }, []);
+        this.updateHistory();
+    }
+    stepBack() {
+        const latest = this.history.length - 1;
+        if (++this.historyOffset <= latest) {
+            this.stack = this.history[latest - this.historyOffset];
+        }
+        else {
+            this.historyOffset = latest;
+        }
+    }
+    stepForward() {
+        const latest = this.history.length - 1;
+        if (--this.historyOffset >= 0) {
+            this.stack = this.history[latest - this.historyOffset];
+        }
+        else {
+            this.historyOffset = 0;
+        }
+    }
+    toIterable() {
+        return this.stack;
+    }
+    updateHistory() {
+        if (this.historyOffset !== 0) {
+            this.history = this.history.slice(0, this.history.length - this.historyOffset);
+            this.historyOffset = 0;
+        }
+        this.history.push([...this.stack]);
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = PersistentStack;
+
+//# sourceMappingURL=Session.js.map
 
 /***/ }),
 
@@ -3605,8 +3825,8 @@ CurveComponent = CurveComponent_1 = __decorate([
     ></ugly-tracks>`,
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
-            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["e" /* VerticallyBounded */], useExisting: CurveComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: CurveComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["h" /* VerticallyBounded */], useExisting: CurveComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["d" /* VerticalScaleRenderer */], useExisting: CurveComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["b" /* VerticalValueInspectorRenderer */], useExisting: CurveComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["a" /* WavesComponent */], useExisting: CurveComponent_1 }
         ]
