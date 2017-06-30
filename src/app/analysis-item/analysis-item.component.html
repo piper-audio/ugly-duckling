@@ -78,10 +78,8 @@
               [duration]="getDuration()"
             ></ugly-notes>
           </ugly-cross-hair-inspector>
-          <ugly-cross-hair-inspector
+          <ugly-vertical-scale
             *ngSwitchCase="'matrix'"
-            [unit]="item.unit"
-            [isAnimated]="isActive"
           >
             <ugly-grid
               [colour]="getNextColour()"
@@ -91,7 +89,7 @@
               [grid]="item.collected"
               [duration]="getDuration()"
             ></ugly-grid>
-          </ugly-cross-hair-inspector>
+          </ugly-vertical-scale>
           <ugly-instants
             *ngSwitchCase="'instants'"
             [colour]="getNextColour()"
@@ -101,15 +99,6 @@
             [instants]="item.collected"
             [duration]="getDuration()"
           ></ugly-instants>
-<!--          <ugly-grid
-            *ngSwitchCase="'matrix'"
-            [timeline]="timeline"
-            [width]="contentWidth"
-            [onSeek]="onSeek"
-            [grid]="item.collected"
-            [duration]="getDuration()"
-          ></ugly-grid>
--->
 
           <div *ngSwitchDefault>Feature cannot be visualised.</div>
         </ugly-waves-play-head>

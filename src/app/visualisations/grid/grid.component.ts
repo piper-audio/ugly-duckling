@@ -15,7 +15,7 @@ import {
   Input,
 } from '@angular/core';
 import Waves from 'waves-ui-piper';
-import {MatrixFeature} from 'piper/HigherLevelUtilities';
+import {AugmentedMatrixFeature} from '../FeatureUtilities';
 import {iceMapper} from '../../spectrogram/ColourMap';
 import {estimatePercentile} from '../../spectrogram/MatrixUtils';
 
@@ -27,13 +27,13 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
   providers: [
     {provide: VerticallyBounded, useExisting: GridComponent },
     {provide: VerticalScaleRenderer, useExisting: GridComponent },
-    {provide: VerticalValueInspectorRenderer, useExisting: GridComponent },
     {provide: WavesComponent, useExisting: GridComponent}
   ]
 })
-export class GridComponent extends VerticallyBoundedWavesComponent<MatrixFeature> {
 
-  @Input() set grid(grid: MatrixFeature) {
+export class GridComponent extends VerticallyBoundedWavesComponent<AugmentedMatrixFeature> {
+
+  @Input() set grid(grid: AugmentedMatrixFeature) {
     this.feature = grid;
   }
 
@@ -68,6 +68,10 @@ export class GridComponent extends VerticallyBoundedWavesComponent<MatrixFeature
   }
     
   get range(): [number, number] {
+
+    const bins = this.feature.binNames;
+    console.log("have " + bins.length + " bins");
+    
     return [0, this.feature.data.length > 0 ? this.feature.data[0].length : 0];
   }
 }
