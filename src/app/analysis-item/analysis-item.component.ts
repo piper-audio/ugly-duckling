@@ -14,77 +14,21 @@ import {naivePagingMapper} from '../visualisations/WavesJunk';
 import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
 import {
   defaultColourGenerator,
-  HigherLevelFeatureShape,
-  KnownShapedFeature
+  HigherLevelFeatureShape
 } from '../visualisations/FeatureUtilities';
 import {
   RenderLoopService,
   TaskRemover
 } from '../services/render-loop/render-loop.service';
 import {DomSanitizer} from '@angular/platform-browser';
-
-export interface Item {
-  id: string;
-  hasSharedTimeline: boolean;
-  title?: string;
-  description?: string;
-  progress?: number;
-}
-
-export interface PendingRootAudioItem extends Item {
-  uri: string;
-  mimeType?: string;
-  isExportable?: boolean;
-}
-export interface RootAudioItem extends PendingRootAudioItem {
-  audioData: AudioBuffer;
-}
-
-export interface PendingAnalysisItem extends Item {
-  parent: RootAudioItem;
-  extractorKey: string;
-}
-
-export type AnalysisItem = PendingAnalysisItem & KnownShapedFeature & {
-  unit?: string
-};
-
-export function isItem(item: Item): item is Item {
-  return item.id != null && item.hasSharedTimeline != null;
-}
-
-export function isPendingRootAudioItem(item: Item): item is PendingRootAudioItem {
-  return isItem(item) && typeof (item as RootAudioItem).uri === 'string';
-}
-
-export function isRootAudioItem(item: Item): item is RootAudioItem {
-  return item && isPendingRootAudioItem(item) &&
-    (item as RootAudioItem).audioData instanceof AudioBuffer;
-}
-
-export function isPendingAnalysisItem(item: Item): item is AnalysisItem {
-  const downcast = (item as AnalysisItem);
-  return isRootAudioItem(downcast.parent)
-    && typeof downcast.extractorKey === 'string';
-}
-
-export function isAnalysisItem(item: Item): item is AnalysisItem {
-  const downcast = (item as AnalysisItem);
-  return isPendingAnalysisItem(item) &&
-    downcast.shape != null &&
-    downcast.collected != null;
-}
-
-// these should probably be actual concrete types with their own getUri methods
-export function getRootUri(item: Item): string {
-  if (isPendingRootAudioItem(item)) {
-    return item.uri;
-  }
-  if (isPendingAnalysisItem(item)) {
-    return item.parent.uri;
-  }
-  throw new Error('Invalid item: No URI property set.');
-}
+import {
+  isExtractedAnalysisItem,
+  isLoadedRootAudioItem,
+  isPendingAnalysisItem,
+  isPendingRootAudioItem,
+  Item,
+  RootAudioItem
+} from './AnalysisItem';
 
 @Component({
   selector: 'ugly-analysis-item',
@@ -141,25 +85,25 @@ export class AnalysisItemComponent implements OnInit, OnDestroy {
   }
 
   isAudioItem(): boolean {
-    return this.item && isRootAudioItem(this.item);
+    return this.item && isLoadedRootAudioItem(this.item);
   }
 
   isPending(): boolean {
     return this.item &&
-      !isRootAudioItem(this.item) && !isAnalysisItem(this.item) &&
+      !isLoadedRootAudioItem(this.item) && !isExtractedAnalysisItem(this.item) &&
       (isPendingAnalysisItem(this.item) || isPendingRootAudioItem(this.item));
   }
 
   getFeatureShape(): HigherLevelFeatureShape | null {
     return !isPendingRootAudioItem(this.item) &&
-    isAnalysisItem(this.item) ? this.item.shape : null;
+    isExtractedAnalysisItem(this.item) ? this.item.shape : null;
   }
 
   getDuration(): number | null {
-    if (isRootAudioItem(this.item)) {
+    if (isLoadedRootAudioItem(this.item)) {
       return this.item.audioData.duration;
     }
-    if (isAnalysisItem(this.item)) {
+    if (isExtractedAnalysisItem(this.item)) {
       return this.item.parent.audioData.duration;
     }
   }
@@ -176,7 +120,7 @@ export class AnalysisItemComponent implements OnInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustUrl(url);
   }
 
-  private generateFilename(item: PendingRootAudioItem): string {
+  private generateFilename(item: RootAudioItem): string {
     // TODO this is too brittle, and will often produce the wrong result
     // i.e. audio/mpeg results in .mpeg, when .mp3 is likely desired
     const mimeParts = item.mimeType ? item.mimeType.split('/') : [];

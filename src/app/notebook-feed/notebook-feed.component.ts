@@ -12,9 +12,9 @@ import {
 import Waves from 'waves-ui-piper';
 import {
   getRootUri,
-  isRootAudioItem,
+  isLoadedRootAudioItem,
   Item
-} from '../analysis-item/analysis-item.component';
+} from '../analysis-item/AnalysisItem';
 import {Observable} from 'rxjs/Observable';
 import {Dimension} from '../app.module';
 import {Subscription} from 'rxjs/Subscription';
@@ -82,7 +82,7 @@ export class NotebookFeedComponent implements OnDestroy {
   }
 
   isAudioItem(item: Item): boolean {
-    return isRootAudioItem(item);
+    return isLoadedRootAudioItem(item);
   }
 
   isActiveItem(item: Item): boolean {
