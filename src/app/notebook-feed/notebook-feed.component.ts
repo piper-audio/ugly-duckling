@@ -41,6 +41,8 @@ export class NotebookFeedComponent implements OnDestroy {
     this.mAnalyses = analyses;
     if (front) {
       this.currentAudioUri = this.getCurrentAudioUri();
+    } else {
+      this.currentAudioUri = '';
     }
   }
 
