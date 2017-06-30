@@ -19,6 +19,7 @@ import {Observable} from 'rxjs/Observable';
 import {Dimension} from '../app.module';
 import {Subscription} from 'rxjs/Subscription';
 import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
+import {AudioPlayerService} from '../services/audio-player/audio-player.service';
 
 @Component({
   selector: 'ugly-notebook-feed',
@@ -27,25 +28,38 @@ import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookFeedComponent implements OnDestroy {
-  @Input() analyses: Item[];
-  @Input() set rootAudioUri(uri: string) {
-    this._rootAudioUri = uri;
+  @Input() set analyses(analyses: Item[]) {
+    const front = analyses[0];
+    if (analyses !== this.mAnalyses) {
+      if (front && getRootUri(front) !== this.currentAudioUri) {
+        this.audioService.unload();
+        this.audioService.loadAudioFromUri(getRootUri(front));
+      }
+    }
+    this.mAnalyses = analyses;
+    if (front) {
+      this.currentAudioUri = this.getCurrentAudioUri();
+    }
   }
+
+  get analyses(): Item[] {
+    return this.mAnalyses;
+  }
+
   @Input() onSeek: OnSeekHandler;
   @Output() removeItem: EventEmitter<Item>;
 
-  get rootAudioUri(): string {
-    return this._rootAudioUri;
-  }
-  private _rootAudioUri: string;
   private resizeSubscription: Subscription;
   private width: number;
   private lastWidth: number;
   private timelines: Map<string, Timeline>;
+  private mAnalyses: Item[];
+  private currentAudioUri: string;
 
   constructor(
     private ref: ChangeDetectorRef,
-    @Inject('DimensionObservable') private onResize: Observable<Dimension>
+    @Inject('DimensionObservable') private onResize: Observable<Dimension>,
+    private audioService: AudioPlayerService
   ) {
     this.removeItem = new EventEmitter<Item>();
     this.timelines = new Map();
@@ -86,7 +100,7 @@ export class NotebookFeedComponent implements OnDestroy {
   }
 
   isActiveItem(item: Item): boolean {
-    return this.rootAudioUri === getRootUri(item);
+    return this.getCurrentAudioUri() === getRootUri(item);
   }
 
   getOnSeekForItem(item: Item): (timeSeconds: number) => any {
@@ -96,6 +110,17 @@ export class NotebookFeedComponent implements OnDestroy {
   ngOnDestroy(): void {
     if (this.resizeSubscription) {
       this.resizeSubscription.unsubscribe();
+    }
+  }
+
+  private getCurrentAudioUri(): string {
+    if (this.analyses.length === 0) {
+      return '';
+    }
+    try {
+      return getRootUri(this.analyses[0]);
+    } catch (e) {
+      return '';
     }
   }
 }

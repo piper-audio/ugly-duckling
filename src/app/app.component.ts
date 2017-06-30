@@ -19,7 +19,7 @@ import {
   isLoadedRootAudioItem,
   Item,
   RootAudioItem,
-  LoadedRootAudioItem
+  getRootAudioItem
 } from './analysis-item/AnalysisItem';
 import {OnSeekHandler} from './playhead/PlayHeadHelpers';
 import {UrlResourceLifetimeManager} from './app.module';
@@ -38,7 +38,6 @@ export class AppComponent implements OnDestroy {
   private analyses: PersistentStack<Item>; // TODO some immutable state container describing entire session
   private nRecordings: number; // TODO user control for naming a recording
   private countingId: number; // TODO improve uniquely identifying items
-  private rootAudioItem: LoadedRootAudioItem;
   private onSeek: OnSeekHandler;
 
   constructor(private audioService: AudioPlayerService,
@@ -53,7 +52,6 @@ export class AppComponent implements OnDestroy {
     this.nRecordings = 0;
     this.countingId = 0;
     this.onSeek = (time) => this.audioService.seekTo(time);
-    this.rootAudioItem = {} as any; // TODO eugh
 
     iconRegistry.addSvgIcon(
       'duck',
@@ -67,11 +65,12 @@ export class AppComponent implements OnDestroy {
           this.analyses.shift();
           this.canExtract = false;
         } else {
-          this.rootAudioItem.audioData = (resource as AudioResource).samples;
-          if (this.rootAudioItem.audioData) {
+          const audioData = (resource as AudioResource).samples;
+          if (audioData) {
+            const rootAudio = getRootAudioItem(this.analyses.get(0));
             this.canExtract = true;
             const currentRootIndex = this.analyses.findIndex(val => {
-              return isLoadedRootAudioItem(val) && val.uri === this.rootAudioItem.uri;
+              return isPendingRootAudioItem(val) && val.uri === rootAudio.uri;
             });
             if (currentRootIndex !== -1) {
               this.analyses.set(
@@ -79,7 +78,7 @@ export class AppComponent implements OnDestroy {
                 Object.assign(
                   {},
                   this.analyses.get(currentRootIndex),
-                  {audioData: this.rootAudioItem.audioData}
+                  {audioData}
                 )
               );
             }
@@ -130,7 +129,6 @@ export class AppComponent implements OnDestroy {
       mimeType: file.type,
       isExportable: createExportableItem
     } as RootAudioItem;
-    this.rootAudioItem = pending as LoadedRootAudioItem; // TODO this is silly
 
     // TODO re-ordering of items for display
     // , one alternative is a Angular Pipe / Filter for use in the Template
@@ -144,19 +142,24 @@ export class AppComponent implements OnDestroy {
 
     this.canExtract = false;
 
-    const placeholderCard: AnalysisItem = {
-      parent: this.rootAudioItem,
-      hasSharedTimeline: true,
-      extractorKey: outputInfo.extractorKey,
-      outputId: outputInfo.outputId,
-      title: outputInfo.name,
-      description: outputInfo.outputId,
-      id: `${++this.countingId}`,
-      progress: 0
-    };
-    this.analyses.unshift(placeholderCard);
-    this.sendExtractionRequest(placeholderCard);
-    return placeholderCard.id;
+    const rootAudio = getRootAudioItem(this.analyses.get(0));
+
+    if (isLoadedRootAudioItem(rootAudio)) {
+      const placeholderCard: AnalysisItem = {
+        parent: rootAudio,
+        hasSharedTimeline: true,
+        extractorKey: outputInfo.extractorKey,
+        outputId: outputInfo.outputId,
+        title: outputInfo.name,
+        description: outputInfo.outputId,
+        id: `${++this.countingId}`,
+        progress: 0
+      };
+      this.analyses.unshift(placeholderCard);
+      this.sendExtractionRequest(placeholderCard);
+      return placeholderCard.id;
+    }
+    throw new Error('Cannot extract. No audio loaded');
   }
 
   removeItem(item: Item): void {
@@ -170,30 +173,6 @@ export class AppComponent implements OnDestroy {
         return toRemove;
       }, []);
     this.analyses.remove(...indicesToRemove);
-    if (isPendingRootAudioItem(item)) {
-      if (this.rootAudioItem.uri === item.uri) {
-        this.audioService.unload();
-        const topItem = this.analyses.get(0);
-        const nullRootAudio: LoadedRootAudioItem = {uri: ''} as any; // TODO eugh
-
-        if (topItem) {
-          if (isPendingAnalysisItem(topItem)) {
-            this.rootAudioItem = topItem.parent as LoadedRootAudioItem;
-          } else if (isPendingRootAudioItem(topItem)) {
-            this.rootAudioItem = topItem as LoadedRootAudioItem;
-          } else {
-           this.rootAudioItem = nullRootAudio;
-          }
-        } else {
-          this.rootAudioItem = nullRootAudio;
-        }
-        if (this.rootAudioItem) {
-          this.audioService.loadAudioFromUri(this.rootAudioItem.uri);
-        }
-      } else {
-        this.resourceManager.revokeUrlToResource(item.uri);
-      }
-    }
   }
 
   ngOnDestroy(): void {

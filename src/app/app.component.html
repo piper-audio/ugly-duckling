@@ -17,9 +17,14 @@
       <ugly-audio-file-open
         (fileOpened)="onFileOpened($event); tray.close()"
       ></ugly-audio-file-open>
-      <!-- menu opens when trigger button is clicked -->
       <button md-icon-button (click)="tray.toggle()">
         <md-icon>extension</md-icon>
+      </button>
+      <button md-icon-button (click)="analyses.stepBack()">
+        <md-icon>undo</md-icon>
+      </button>
+      <button md-icon-button (click)="analyses.stepForward()">
+        <md-icon>redo</md-icon>
       </button>
     </md-toolbar>
   </div>
@@ -35,7 +40,6 @@
     <ugly-notebook-feed
       (removeItem)="removeItem($event)"
       [analyses]="analyses.toIterable()"
-      [rootAudioUri]="rootAudioItem.uri"
       [onSeek]="onSeek"></ugly-notebook-feed>
   </div>
 </div>
