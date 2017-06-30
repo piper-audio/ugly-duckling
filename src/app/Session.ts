@@ -162,7 +162,11 @@ export class PersistentStack<T> {
     }
   }
 
-  updateHistory(): void {
+  toIterable(): Iterable<T> {
+    return this.stack;
+  }
+
+  private updateHistory(): void {
     if (this.historyOffset !== 0) {
       this.history = this.history.slice(
         0,
@@ -171,9 +175,5 @@ export class PersistentStack<T> {
       this.historyOffset = 0;
     }
     this.history.push([...this.stack]);
-  }
-
-  toIterable(): Iterable<T> {
-    return this.stack;
   }
 }
