@@ -80,7 +80,7 @@ export class PersistentStack<T> {
 
   shift(): T {
     const item = this.shiftMutating();
-    this.history.push([...this.stack]);
+    this.updateHistory();
     return item;
   }
 
@@ -91,7 +91,7 @@ export class PersistentStack<T> {
 
   unshift(item: T): number {
     const newLength = this.unshift(item);
-    this.history.push([...this.stack]);
+    this.updateHistory();
     return newLength;
   }
 
@@ -111,7 +111,7 @@ export class PersistentStack<T> {
 
   set(index: number, value: T) {
     this.setMutating(index, value);
-    this.history.push([...this.stack]);
+    this.updateHistory();
   }
 
   setMutating(index: number, value: T) {
@@ -141,7 +141,7 @@ export class PersistentStack<T> {
       }
       return acc;
     }, [] as T[]);
-    this.history.push([...this.stack]);
+    this.updateHistory();
   }
 
   stepBack(): void {
@@ -160,6 +160,17 @@ export class PersistentStack<T> {
     } else {
       this.historyOffset = 0;
     }
+  }
+
+  updateHistory(): void {
+    if (this.historyOffset !== 0) {
+      this.history = this.history.slice(
+        0,
+        this.history.length - this.historyOffset
+      );
+      this.historyOffset = 0;
+    }
+    this.history.push([...this.stack]);
   }
 
   toIterable(): Iterable<T> {
