@@ -101,11 +101,7 @@ export class AudioPlayerService {
   }
 
   unload(): void {
-    const previousUri = this.currentObjectUrl;
     this.loadAudioFromUri('');
-    if (previousUri) {
-      this.resourceManager.revokeUrlToResource(previousUri);
-    }
   }
 
   togglePlaying(): void {
