@@ -5,7 +5,6 @@
 import {FeatureList} from 'piper/Feature';
 import {OutputDescriptor, toSeconds} from 'piper';
 import {
-  MatrixFeature,
   SimpleResponse,
   TracksFeature,
   VectorFeature
@@ -74,13 +73,16 @@ type CollectedShape = 'vector' | 'matrix' | 'tracks';
 type ShapeDeducedFromList = 'instants' | 'notes';
 export type HigherLevelFeatureShape = CollectedShape | ShapeDeducedFromList;
 
-export interface AugmentedMatrixFeature extends MatrixFeature {
+export abstract class Grid {
   binNames: string[];
+  startTime: number;
+  stepDuration: number;
+  data: Float32Array[];
 }
 
 export type ShapedFeatureData =
   VectorFeature
-  | AugmentedMatrixFeature
+  | Grid
   | TracksFeature
   | Note[]
   | Instant[];
@@ -93,7 +95,7 @@ export abstract class ShapedFeature<Shape extends HigherLevelFeatureShape,
 }
 
 export class Vector extends ShapedFeature<'vector', VectorFeature> {}
-export class Matrix extends ShapedFeature<'matrix', AugmentedMatrixFeature> {}
+export class Matrix extends ShapedFeature<'matrix', Grid> {}
 export class Tracks extends ShapedFeature<'tracks', TracksFeature> {}
 export class Notes extends ShapedFeature<'notes', Note[]> {}
 export class Instants extends ShapedFeature<'instants', Instant[]> {}

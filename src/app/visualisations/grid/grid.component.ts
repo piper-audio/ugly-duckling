@@ -5,7 +5,6 @@ import {
   VerticallyBinned,
   VerticallyBinnedWavesComponent,
   VerticalBinNameRenderer,
-  VerticalValueInspectorRenderer,
   WavesComponent
 } from '../waves-base.component';
 import {
@@ -14,7 +13,7 @@ import {
   Input,
 } from '@angular/core';
 import Waves from 'waves-ui-piper';
-import {AugmentedMatrixFeature} from '../FeatureUtilities';
+import {Grid} from '../FeatureUtilities';
 import {iceMapper} from '../../spectrogram/ColourMap';
 import {estimatePercentile} from '../../spectrogram/MatrixUtils';
 
@@ -30,9 +29,9 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
   ]
 })
 
-export class GridComponent extends VerticallyBinnedWavesComponent<AugmentedMatrixFeature> {
+export class GridComponent extends VerticallyBinnedWavesComponent<Grid> {
 
-  @Input() set grid(grid: AugmentedMatrixFeature) {
+  @Input() set grid(grid: Grid) {
     this.feature = grid;
   }
 
@@ -65,13 +64,13 @@ export class GridComponent extends VerticallyBinnedWavesComponent<AugmentedMatri
       )
     ];
   }
-    
+
   get binNames(): string[] {
     if (!this.feature.binNames || this.feature.binNames.length === 0) {
       const binCount = (this.feature.data.length > 0 ?
                         this.feature.data[0].length : 0);
       for (let i = 0; i < binCount; ++i) {
-        this.feature.binNames.push("" + (i + 1));
+        this.feature.binNames.push(`${i + 1}`);
       }
     }
     return this.feature.binNames;
