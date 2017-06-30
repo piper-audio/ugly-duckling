@@ -1,11 +1,8 @@
 import {Injectable, Inject} from '@angular/core';
 import {Subject} from 'rxjs/Subject';
 import {Observable} from 'rxjs/Observable';
-
-export interface UrlResourceLifetimeManager {
-  createUrlToResource(resource: File | Blob): string;
-  revokeUrlToResource(url: string): void;
-}
+import {ReplaySubject} from 'rxjs/ReplaySubject';
+import {UrlResourceLifetimeManager} from '../../app.module';
 
 export type ResourceReader = (resource: File | Blob) => Promise<ArrayBuffer>;
 
@@ -39,8 +36,10 @@ export class AudioPlayerService {
                 'UrlResourceLifetimeManager'
               ) private resourceManager: UrlResourceLifetimeManager) {
     this.currentObjectUrl = '';
-    this.playingStateChange = new Subject<boolean>();
-    this.playingStateChange$ = this.playingStateChange.asObservable();
+    this.playingStateChange = new ReplaySubject<boolean>(1);
+    this.playingStateChange$ = this.playingStateChange
+      .asObservable();
+
     this.seeked = new Subject<number>();
     this.seeked$ = this.seeked.asObservable();
     this.audioElement.addEventListener('ended', () => {
@@ -61,16 +60,16 @@ export class AudioPlayerService {
     return !this.audioElement.paused;
   }
 
+  loadAudioFromUri(uri: string): void {
+    this.currentObjectUrl = uri;
+    this.audioElement.pause();
+    this.audioElement.src = uri;
+    this.audioElement.load();
+  }
 
   loadAudio(resource: File | Blob): string {
-    if (this.currentObjectUrl) {
-      this.resourceManager.revokeUrlToResource(this.currentObjectUrl);
-    }
     const url: string = this.resourceManager.createUrlToResource(resource);
-    this.currentObjectUrl = url;
-    this.audioElement.pause();
-    this.audioElement.src = url;
-    this.audioElement.load();
+    this.loadAudioFromUri(url);
 
     const decode: (buffer: ArrayBuffer) => Promise<AudioBuffer> = buffer => {
       try {
@@ -99,6 +98,10 @@ export class AudioPlayerService {
         });
       });
     return url;
+  }
+
+  unload(): void {
+    this.loadAudioFromUri('');
   }
 
   togglePlaying(): void {

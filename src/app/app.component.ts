@@ -1,64 +1,30 @@
-import {Component, OnDestroy} from '@angular/core';
+import {Component, Inject, OnDestroy} from '@angular/core';
 import {
   AudioPlayerService,
-  AudioResourceError, AudioResource
+  AudioResourceError,
+  AudioResource
 } from './services/audio-player/audio-player.service';
-import {FeatureExtractionService} from './services/feature-extraction/feature-extraction.service';
+import {
+  ExtractionResult,
+  FeatureExtractionService
+} from './services/feature-extraction/feature-extraction.service';
 import {ExtractorOutputInfo} from './feature-extraction-menu/feature-extraction-menu.component';
 import {DomSanitizer} from '@angular/platform-browser';
 import {MdIconRegistry} from '@angular/material';
 import {Subscription} from 'rxjs/Subscription';
-import {AnalysisItem} from './analysis-item/analysis-item.component';
-
-class PersistentStack<T> {
-  private stack: T[];
-  private history: T[][];
-
-  constructor() {
-    this.stack = [];
-    this.history = [];
-  }
-
-  shift(): T {
-    this.history.push([...this.stack]);
-    const item = this.stack[0];
-    this.stack = this.stack.slice(1);
-    return item;
-  }
-
-  unshift(item: T): number {
-    this.history.push([...this.stack]);
-    this.stack = [item, ...this.stack];
-    return this.stack.length;
-  }
-
-  findIndex(predicate: (value: T,
-                        index: number,
-                        array: T[]) => boolean): number {
-    return this.stack.findIndex(predicate);
-  }
-
-  filter(predicate: (value: T, index: number, array: T[]) => boolean): T[] {
-    return this.stack.filter(predicate);
-  }
-
-  get(index: number): T {
-    return this.stack[index];
-  }
-
-  set(index: number, value: T) {
-    this.history.push([...this.stack]);
-    this.stack = [
-      ...this.stack.slice(0, index),
-      value,
-      ...this.stack.slice(index + 1)
-    ];
-  }
-
-  toIterable(): Iterable<T> {
-    return this.stack;
-  }
-}
+import {
+  AnalysisItem,
+  isPendingAnalysisItem,
+  isPendingRootAudioItem,
+  isLoadedRootAudioItem,
+  Item,
+  RootAudioItem,
+  getRootAudioItem
+} from './analysis-item/AnalysisItem';
+import {OnSeekHandler} from './playhead/PlayHeadHelpers';
+import {UrlResourceLifetimeManager} from './app.module';
+import {createExtractionRequest} from './analysis-item/AnalysisItem';
+import {PersistentStack} from './Session';
 
 @Component({
   selector: 'ugly-root',
@@ -66,23 +32,26 @@ class PersistentStack<T> {
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnDestroy {
-  audioBuffer: AudioBuffer; // TODO consider revising
   canExtract: boolean;
   private onAudioDataSubscription: Subscription;
   private onProgressUpdated: Subscription;
-  private analyses: PersistentStack<AnalysisItem>; // TODO some immutable state container describing entire session
+  private analyses: PersistentStack<Item>; // TODO some immutable state container describing entire session
   private nRecordings: number; // TODO user control for naming a recording
   private countingId: number; // TODO improve uniquely identifying items
-  private rootAudioUri: string;
+  private onSeek: OnSeekHandler;
 
   constructor(private audioService: AudioPlayerService,
               private featureService: FeatureExtractionService,
               private iconRegistry: MdIconRegistry,
-              private sanitizer: DomSanitizer) {
+              private sanitizer: DomSanitizer,
+              @Inject(
+                'UrlResourceLifetimeManager'
+              ) private resourceManager: UrlResourceLifetimeManager) {
     this.analyses = new PersistentStack<AnalysisItem>();
     this.canExtract = false;
     this.nRecordings = 0;
     this.countingId = 0;
+    this.onSeek = (time) => this.audioService.seekTo(time);
 
     iconRegistry.addSvgIcon(
       'duck',
@@ -96,9 +65,23 @@ export class AppComponent implements OnDestroy {
           this.analyses.shift();
           this.canExtract = false;
         } else {
-          this.audioBuffer = (resource as AudioResource).samples;
-          if (this.audioBuffer) {
+          const audioData = (resource as AudioResource).samples;
+          if (audioData) {
+            const rootAudio = getRootAudioItem(this.analyses.get(0));
             this.canExtract = true;
+            const currentRootIndex = this.analyses.findIndex(val => {
+              return isPendingRootAudioItem(val) && val.uri === rootAudio.uri;
+            });
+            if (currentRootIndex !== -1) {
+              this.analyses.set(
+                currentRootIndex,
+                Object.assign(
+                  {},
+                  this.analyses.get(currentRootIndex),
+                  {audioData}
+                )
+              );
+            }
           }
         }
       }
@@ -110,7 +93,7 @@ export class AppComponent implements OnDestroy {
           return;
         }
 
-        this.analyses.set(
+        this.analyses.setMutating(
           index,
           Object.assign(
             {},
@@ -122,11 +105,9 @@ export class AppComponent implements OnDestroy {
     );
   }
 
-  onFileOpened(file: File | Blob) {
+  onFileOpened(file: File | Blob, createExportableItem = false) {
     this.canExtract = false;
     const url = this.audioService.loadAudio(file);
-    this.rootAudioUri = url; // TODO this isn't going to work to id previously loaded files
-
     // TODO is it safe to assume it is a recording?
     const title = (file instanceof File) ?
       (file as File).name : `Recording ${this.nRecordings++}`;
@@ -139,58 +120,91 @@ export class AppComponent implements OnDestroy {
       return;
     }
 
-    // TODO re-ordering of items for display
-    // , one alternative is a Angular Pipe / Filter for use in the Template
-    this.analyses.unshift({
-      rootAudioUri: url,
+    const pending = {
+      uri: url,
       hasSharedTimeline: true,
-      extractorKey: 'not:real',
-      isRoot: true,
       title: title,
       description: new Date().toLocaleString(),
-      id: `${++this.countingId}`
-    });
+      id: `${++this.countingId}`,
+      mimeType: file.type,
+      isExportable: createExportableItem
+    } as RootAudioItem;
+
+    // TODO re-ordering of items for display
+    // , one alternative is a Angular Pipe / Filter for use in the Template
+    this.analyses.unshiftMutating(pending);
   }
 
-  extractFeatures(outputInfo: ExtractorOutputInfo): void {
+  extractFeatures(outputInfo: ExtractorOutputInfo): string {
     if (!this.canExtract || !outputInfo) {
       return;
     }
 
     this.canExtract = false;
 
-    this.analyses.unshift({
-      rootAudioUri: this.rootAudioUri,
-      hasSharedTimeline: true,
-      extractorKey: outputInfo.combinedKey,
-      isRoot: false,
-      title: outputInfo.name,
-      description: outputInfo.outputId,
-      id: `${++this.countingId}`,
-      progress: 0
-    });
+    const rootAudio = getRootAudioItem(this.analyses.get(0));
 
-    this.featureService.extract(`${this.countingId}`, {
-      audioData: [...Array(this.audioBuffer.numberOfChannels).keys()]
-        .map(i => this.audioBuffer.getChannelData(i)),
-      audioFormat: {
-        sampleRate: this.audioBuffer.sampleRate,
-        channelCount: this.audioBuffer.numberOfChannels,
-        length: this.audioBuffer.length
-      },
-      key: outputInfo.extractorKey,
-      outputId: outputInfo.outputId
-    }).then(() => {
-      this.canExtract = true;
-    }).catch(err => {
-      this.canExtract = true;
-      this.analyses.shift();
-      console.error(`Error whilst extracting: ${err}`);
-    });
+    if (isLoadedRootAudioItem(rootAudio)) {
+      const placeholderCard: AnalysisItem = {
+        parent: rootAudio,
+        hasSharedTimeline: true,
+        extractorKey: outputInfo.extractorKey,
+        outputId: outputInfo.outputId,
+        title: outputInfo.name,
+        description: outputInfo.outputId,
+        id: `${++this.countingId}`,
+        progress: 0
+      };
+      this.analyses.unshiftMutating(placeholderCard);
+      this.sendExtractionRequest(placeholderCard);
+      return placeholderCard.id;
+    }
+    throw new Error('Cannot extract. No audio loaded');
+  }
+
+  removeItem(item: Item): void {
+    const indicesToRemove: number[] = this.analyses.reduce(
+      (toRemove, current, index) => {
+        if (isPendingAnalysisItem(current) && current.parent.id === item.id) {
+          toRemove.push(index);
+        } else if (item.id === current.id) {
+          toRemove.push(index);
+        }
+        return toRemove;
+      }, []);
+    this.analyses.remove(...indicesToRemove);
   }
 
   ngOnDestroy(): void {
     this.onAudioDataSubscription.unsubscribe();
     this.onProgressUpdated.unsubscribe();
+  }
+
+  private sendExtractionRequest(analysis: AnalysisItem): Promise<void> {
+    const findAndUpdateItem = (result: ExtractionResult): void => {
+      // TODO subscribe to the extraction service instead
+      const i = this.analyses.findIndex(val => val.id === result.id);
+      this.canExtract = true;
+      if (i !== -1) {
+        this.analyses.set(
+          i,
+          Object.assign(
+            {},
+            this.analyses.get(i),
+            result.result,
+            result.unit ? {unit: result.unit} : {}
+          )
+        );
+      }  // TODO else remove the item?
+    };
+    return this.featureService.extract(
+      analysis.id,
+      createExtractionRequest(analysis))
+      .then(findAndUpdateItem)
+      .catch(err => {
+        this.canExtract = true;
+        this.analyses.shift();
+        console.error(`Error whilst extracting: ${err}`);
+      });
   }
 }

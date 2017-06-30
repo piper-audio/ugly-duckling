@@ -3,8 +3,7 @@ import {
   ListResponse
 } from 'piper';
 import {
-  SimpleRequest,
-  SimpleResponse
+  SimpleRequest
 } from 'piper/HigherLevelUtilities';
 import {Subject} from 'rxjs/Subject';
 import {Observable} from 'rxjs/Observable';
@@ -15,6 +14,10 @@ import {
 } from 'piper/client-stubs/WebWorkerStreamingClient';
 import {RequestId} from 'piper/protocols/WebWorkerProtocol';
 import {collect, StreamingConfiguration} from 'piper/StreamingService';
+import {
+  KnownShapedFeature,
+  toKnownShape
+} from '../../visualisations/FeatureUtilities';
 
 type RepoUri = string;
 export interface AvailableLibraries {
@@ -26,12 +29,18 @@ export interface Progress {
   value: number; // between 0 and 100, for material-ui
 }
 
+export interface ExtractionResult {
+  id: RequestId;
+  result: KnownShapedFeature;
+  unit?: string;
+}
+
 @Injectable()
 export class FeatureExtractionService {
 
   private worker: Worker;
-  private featuresExtracted: Subject<SimpleResponse>;
-  featuresExtracted$: Observable<SimpleResponse>;
+  private featuresExtracted: Subject<ExtractionResult>;
+  featuresExtracted$: Observable<ExtractionResult>;
   private librariesUpdated: Subject<ListResponse>;
   librariesUpdated$: Observable<ListResponse>;
   private progressUpdated: Subject<Progress>;
@@ -41,7 +50,7 @@ export class FeatureExtractionService {
   constructor(private http: Http,
               @Inject('PiperRepoUri') private repositoryUri: RepoUri) {
     this.worker = new Worker('bootstrap-feature-extraction-worker.js');
-    this.featuresExtracted = new Subject<SimpleResponse>();
+    this.featuresExtracted = new Subject<ExtractionResult>();
     this.featuresExtracted$ = this.featuresExtracted.asObservable();
     this.librariesUpdated = new Subject<ListResponse>();
     this.librariesUpdated$ = this.librariesUpdated.asObservable();
@@ -66,7 +75,8 @@ export class FeatureExtractionService {
     return this.client.list({});
   }
 
-  extract(analysisItemId: string, request: SimpleRequest): Promise<void> {
+  extract(analysisItemId: string,
+          request: SimpleRequest): Promise<ExtractionResult> {
     let config: StreamingConfiguration;
     return collect(this.client.process(request), val => {
       if (val.configuration) {
@@ -80,10 +90,21 @@ export class FeatureExtractionService {
         });
       }
     }).then(features => {
-      this.featuresExtracted.next({
+      const shaped = toKnownShape({
         features: features,
         outputDescriptor: config.outputDescriptor
       });
+      const result = config.outputDescriptor.configured.unit ? {
+        id: analysisItemId,
+        result: shaped,
+        unit: shaped.shape === 'notes' ?
+          'MIDI note' : config.outputDescriptor.configured.unit
+      } : {
+        id: analysisItemId,
+        result: shaped
+      };
+      this.featuresExtracted.next(result);
+      return result;
     });
   }
 
@@ -94,7 +115,7 @@ export class FeatureExtractionService {
         this.worker.postMessage({
           method: 'addRemoteLibraries',
           params: res.json()
-        })
+        });
       })
       .catch(console.error); // TODO Report error to user
   }

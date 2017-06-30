@@ -4,12 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
-import { WaveformComponent } from './waveform/waveform.component';
+import { WaveformComponent } from './visualisations/waveform/waveform.component';
 import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
 import { PlaybackControlComponent } from './playback-control/playback-control.component';
 import {
   AudioPlayerService,
-  UrlResourceLifetimeManager,
   ResourceReader
 } from './services/audio-player/audio-player.service';
 import { FeatureExtractionService } from './services/feature-extraction/feature-extraction.service';
@@ -20,8 +19,7 @@ import {
   AudioInputProvider,
   MediaRecorderConstructor,
   MediaRecorder as IMediaRecorder,
-  MediaRecorderOptions,
-  ThrowingMediaRecorder,
+  MediaRecorderOptions
 } from './services/audio-recorder/audio-recorder.service';
 import {RecordingControlComponent} from './recording-control/recording-control.component';
 import {NotebookFeedComponent} from './notebook-feed/notebook-feed.component';
@@ -29,6 +27,22 @@ import {AnalysisItemComponent} from './analysis-item/analysis-item.component';
 import {ProgressBarComponent} from './progress-bar/progress-bar';
 import {UglyMaterialModule} from './ugly-material.module';
 import {Observable} from 'rxjs/Observable';
+import {PlayHeadComponent} from './playhead/playhead.component';
+import {LivePlayHeadComponent} from './playhead/live-play-head.component';
+import {CurveComponent} from './visualisations/curve/curve.component';
+import {TracksComponent} from './visualisations/tracks/tracks.components';
+import {NotesComponent} from './visualisations/notes/notes.component';
+import {InstantsComponent} from './visualisations/instants/instants.component';
+import {GridComponent} from './visualisations/grid/grid.component';
+import {VerticalScaleComponent} from './visualisations/vertical-scale.component';
+import {VerticalBinnedComponent} from './visualisations/vertical-binned.component';
+import {CrossHairInspectorComponent} from './visualisations/cross-hair-inspector.component';
+import {RenderLoopService} from './services/render-loop/render-loop.service';
+import {WavesPlayHeadComponent} from './playhead/waves-ui-play-head.component';
+import {
+  ActionTrayComponent
+} from './actions/action-tray.component';
+import {RecordRtcMediaRecorder} from './services/audio-recorder/RecordRtcMediaRecorder';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -63,7 +77,7 @@ export function createMediaRecorderFactory(): MediaRecorderConstructor {
   if (typeof MediaRecorder !== 'undefined') {
     return MediaRecorder;
   } else {
-    return ThrowingMediaRecorder;
+    return RecordRtcMediaRecorder;
   }
 }
 
@@ -76,6 +90,11 @@ export function createUrlResourceManager(): UrlResourceLifetimeManager {
       URL.revokeObjectURL(url);
     }
   };
+}
+
+export abstract class UrlResourceLifetimeManager {
+  abstract createUrlToResource(resource: File | Blob): string;
+  abstract revokeUrlToResource(url: string): void;
 }
 
 export function createResourceReader(): ResourceReader {
@@ -114,7 +133,19 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     ProgressSpinnerComponent,
     AnalysisItemComponent,
     NotebookFeedComponent,
-    ProgressBarComponent
+    ProgressBarComponent,
+    PlayHeadComponent,
+    LivePlayHeadComponent,
+    CurveComponent,
+    TracksComponent,
+    NotesComponent,
+    InstantsComponent,
+    GridComponent,
+    VerticalScaleComponent,
+    VerticalBinnedComponent,
+    CrossHairInspectorComponent,
+    WavesPlayHeadComponent,
+    ActionTrayComponent
   ],
   imports: [
     BrowserModule,
@@ -133,7 +164,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     {provide: 'PiperRepoUri', useValue: 'assets/remote-extractors.json'},
     {provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager},
     {provide: 'ResourceReader', useFactory: createResourceReader},
-    {provide: 'DimensionObservable', useFactory: createWindowDimensionObservable}
+    {provide: 'DimensionObservable', useFactory: createWindowDimensionObservable},
+    RenderLoopService
   ],
   bootstrap: [AppComponent]
 })

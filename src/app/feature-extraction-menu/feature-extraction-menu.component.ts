@@ -11,14 +11,35 @@ import {
 } from '../services/feature-extraction/feature-extraction.service';
 import {ListResponse} from 'piper';
 import {Subscription} from 'rxjs/Subscription';
-import {MdSelect} from '@angular/material';
+import {HigherLevelFeatureShape} from '../visualisations/FeatureUtilities';
 
 export interface ExtractorOutputInfo {
   extractorKey: string;
   combinedKey: string;
   outputId: string;
   name: string;
+  typeUri?: string;
 }
+
+interface ExtractorInfo {
+  name: string;
+  outputs: ExtractorOutputInfo[];
+}
+
+const crudeTypeUriMap: {[key: string]: HigherLevelFeatureShape} = {
+  'http://purl.org/ontology/af/Beat': 'instants',
+  'http://purl.org/ontology/af/Chromagram': 'matrix',
+  'http://purl.org/ontology/af/Spectrogram': 'matrix',
+  'http://purl.org/ontology/af/KeyChange': 'instants',
+  'http://purl.org/ontology/af/OnsetDetectionFunction': 'vector',
+  'http://purl.org/ontology/af/Onset': 'instants',
+  'http://purl.org/ontology/af/StructuralSegment': 'instants',
+  'http://purl.org/ontology/af/TonalOnset': 'instants',
+  'http://purl.org/ontology/af/Note': 'notes',
+  'http://purl.org/ontology/af/ChordSegment': 'instants',
+  'http://purl.org/ontology/af/MusicSegment': 'instants',
+  'http://purl.org/ontology/af/Pitch': 'tracks'
+};
 
 @Component({
   selector: 'ugly-feature-extraction-menu',
@@ -35,48 +56,43 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
   get disabled() {
     return this.isDisabled;
   }
+  @Input() onRequestOutput: () => void;
 
   @Output() requestOutput: EventEmitter<ExtractorOutputInfo>;
 
   private isDisabled: boolean;
-  private extractorsMap: Map<string, ExtractorOutputInfo>;
   private populateExtractors: (available: ListResponse) => void;
-  extractors: Iterable<ExtractorOutputInfo>;
+  extractors: Iterable<ExtractorInfo>;
   private librariesUpdatedSubscription: Subscription;
+  private isLoading: boolean;
 
   constructor(private piperService: FeatureExtractionService) {
-    this.extractorsMap = new Map();
     this.extractors = [];
     this.requestOutput = new EventEmitter<ExtractorOutputInfo>();
     this.isDisabled = true;
     this.populateExtractors = available => {
-      const maxCharacterLimit = 50;
-      available.available.forEach(staticData => {
-        const isSingleOutputExtractor = staticData.basicOutputInfo.length === 1;
-        staticData.basicOutputInfo.forEach(output => {
-          const combinedKey = `${staticData.key}:${output.identifier}`;
-          this.extractorsMap.set(combinedKey, {
-            extractorKey: staticData.key,
-            combinedKey: combinedKey,
-            name: (
-              isSingleOutputExtractor
-                ? staticData.basic.name
-                : `${staticData.basic.name}: ${output.name}`
-            ).substr(0, maxCharacterLimit) + '...',
-            outputId: output.identifier
+      this.extractors = available.available.reduce((acc, staticData) => {
+        const name = staticData.basic.name;
+        const outputs: ExtractorOutputInfo[] =
+          staticData.basicOutputInfo.map(output => {
+            const combinedKey = `${staticData.key}:${output.identifier}`;
+            const maybeTypeInfo = staticData.staticOutputInfo &&
+              staticData.staticOutputInfo.get(output.identifier) &&
+              staticData.staticOutputInfo.get(output.identifier).typeURI;
+            return Object.assign({
+                extractorKey: staticData.key,
+                combinedKey: combinedKey,
+                name: output.name,
+                outputId: output.identifier
+              },
+              maybeTypeInfo ? {typeUri: maybeTypeInfo} : {}
+            );
           });
-        });
-      });
-      this.extractors = [...this.extractorsMap.values()];
+        acc.push({name, outputs});
+        return acc;
+      }, [] as ExtractorInfo[]);
+      this.isLoading = false;
     };
-  }
-
-  private getFirstSelectedItemOrEmpty(select: MdSelect): string {
-    const selected = select.selected;
-    if (selected) {
-      return selected instanceof Array ? selected[0].value : selected.value;
-    }
-    return '';
   }
 
   ngOnInit() {
@@ -85,16 +101,28 @@ export class FeatureExtractionMenuComponent implements OnInit, OnDestroy {
     this.piperService.list().then(this.populateExtractors);
   }
 
-  extract(combinedKey: string): void {
-    const info: ExtractorOutputInfo =
-      this.extractorsMap.get(combinedKey);
-    if (info) {
+  extract(info: ExtractorOutputInfo): void {
+    if (this.onRequestOutput) {
+      this.onRequestOutput();
+    }
+    if (info && !this.disabled) {
       this.requestOutput.emit(info);
     }
   }
 
   load(): void {
+    this.isLoading = true;
     this.piperService.updateAvailableLibraries();
+  }
+
+  getFeatureIconName(outputInfo: ExtractorOutputInfo): string {
+    return {
+      vector: 'show_chart',
+      matrix: 'grid_on',
+      tracks: 'multiline_chart',
+      instants: 'view_week',
+      notes: 'audiotrack',
+    }[crudeTypeUriMap[outputInfo.typeUri]] || 'extension';
   }
 
   ngOnDestroy(): void {

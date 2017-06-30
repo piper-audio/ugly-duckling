@@ -22,8 +22,6 @@ interface MatrixEntity {
   dispose(): void;
 }
 
-type TimeContext = any; // TODO
-
 interface Area {
   top: number;
   left: number;
@@ -38,6 +36,7 @@ interface Layer extends NodeJS.EventEmitter {
   stretchRatio: number;
   yDomain: number[];
   opacity: number;
+  timeContext: LayerTimeContext;
   readonly timeToPixel: () => (time: number) => number;
   readonly valueToPixel: () => (value: number) => number;
   readonly items: Element[];
@@ -45,7 +44,7 @@ interface Layer extends NodeJS.EventEmitter {
   data: ArrayLike<any> | Object;
   destroy(): void;
   configureTimeContextBehaviour(ctor: ObjectConstructor): void;
-  setTimeContext(context: TimeContext): void;
+  setTimeContext(context: LayerTimeContext): void;
   configureShape(ctor: ObjectConstructor /* TODO BaseShape*/,
                  accessors: Object,
                  options: Object): void;
@@ -72,6 +71,10 @@ interface Layer extends NodeJS.EventEmitter {
   updateShapes(): void;
 }
 
+interface HighlightLayer extends Layer {
+  currentPosition: number;
+}
+
 interface LayerConstructor {
   new(dataType: 'entity' | 'collection',
       data: ArrayLike<any> | Object,
@@ -91,17 +94,42 @@ interface PrefilledMatrixEntityConstructor {
 interface Utilities {
   MatrixEntity: MatrixEntityConstructor;
   PrefilledMatrixEntity: PrefilledMatrixEntityConstructor;
-  scales: any;
+  scales: {
+    linear: () => Scale;
+  };
+}
+
+type Timeline = any;
+type Track = any; // TODO
+
+interface Scale {
+  (value: number): number;
+  invert(): (value: number) => number;
+  domain(arr?: [number, number]): Scale;
+  range(arr?: [number, number]): Scale;
+}
+
+interface LayerTimeContext {
+  start: number;
+  duration: number;
+  offset: number;
+  stretchRatio: number;
+  parent: TimelineTimeContext;
+  timeToPixel(): Scale;
+  pixelToTime(px: number): number;
+  clone(): LayerTimeContext;
+}
+
+interface LayerTimeContextConstructor {
+  new(parent: TimelineTimeContext): LayerTimeContext;
 }
 
 interface Core {
   Layer: LayerConstructor;
-  LayerTimeContext: any; // TODO
-  Timeline: any; // TODO
+  LayerTimeContext: LayerTimeContextConstructor;
+  Timeline: Timeline; // TODO
   TimelineTimeContext: TimelineTimeContextConstructor;
 }
-
-type Timeline = any;
 
 interface TimelineTimeContext {
   pixelsPerSecond: number;
@@ -111,7 +139,7 @@ interface TimelineTimeContext {
   visibleWidth: number;
   readonly visibleDuration: number;
   maintainVisibleDuration: boolean;
-  timeToPixel: (time: number) => number;
+  timeToPixel: Scale;
 }
 
 interface TimelineTimeContextConstructor {

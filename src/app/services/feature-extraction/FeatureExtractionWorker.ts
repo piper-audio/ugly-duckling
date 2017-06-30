@@ -45,9 +45,31 @@ function waterfall<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
 
   return tasks.reduce((runningResponses, nextResponse) => {
     return runningResponses.then(response => {
-      return reducer(response, nextResponse());
+      try {
+        return reducer(response, nextResponse());
+      } catch (e) {
+        throw new QueuedTaskFailure(runningResponses);
+      }
     });
   }, Promise.resolve([]));
+}
+
+class QueuedTaskFailure<T> extends Error {
+  public previousResponses: Promise<T[]>;
+
+  constructor(previousResponses: Promise<T[]>, message?: string) {
+    super(message || 'Queued task failed.');
+    this.previousResponses = previousResponses;
+  }
+}
+
+function flattenListResponses(responses: ListResponse[]): ListResponse {
+  return {
+    available: responses.reduce(
+      (flat, res) => flat.concat(res.available),
+      []
+    )
+  };
 }
 
 class AggregateStreamingService implements StreamingService {
@@ -71,10 +93,8 @@ class AggregateStreamingService implements StreamingService {
     const listThunks: (() => Promise<ListResponse>)[] = [
       ...this.services.values()
     ].map(createClient => () => createClient().list({}));
-
-    return waterfall(listThunks).then(responses => ({
-      available: responses.reduce((flat, res) => flat.concat(res.available), [])
-    }));
+    return waterfall(listThunks)
+      .then(flattenListResponses);
   }
 
   process(request: SimpleRequest): Observable<StreamingResponse> {
@@ -162,6 +182,15 @@ export default class FeatureExtractionWorker {
                 method: 'import',
                 result: response
               });
+            })
+            .catch((e) => {
+              console.warn(`${e.message}. Try using results so far`);
+              e.previousResponses.then(responses => {
+                this.workerScope.postMessage({
+                  method: 'import',
+                  result: flattenListResponses(responses)
+                });
+              });
             });
       }
     };
@@ -170,10 +199,10 @@ export default class FeatureExtractionWorker {
   private downloadRemoteLibrary(key: LibraryKey,
                                 uri: LibraryUri): Promise<Factory<Service>> {
     return new Promise((res, rej) => {
-      this.requireJs([uri], (plugin) => {
+      this.requireJs([uri], (createModule) => {
         res(() => {
           // TODO a factory with more logic probably belongs in piper-js
-          const lib: any | EmscriptenModule = plugin.createLibrary();
+          const lib: any | EmscriptenModule = createModule();
           const isEmscriptenModule = typeof lib.cwrap === 'function';
           return isEmscriptenModule ? new PiperVampService(lib) : lib; // TODO
         });

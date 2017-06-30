@@ -22,7 +22,7 @@ export type RecordingState = 'inactive' | 'recording' | 'paused';
 
 export interface BlobEvent extends Event {
   readonly data: Blob;
-  readonly timecode: number;
+  readonly timecode?: number;
 }
 
 export interface MediaRecorderErrorEvent extends Event {
@@ -109,6 +109,11 @@ export class AudioRecorderService {
   newRecording$: Observable<Blob>;
   private isRecording: boolean;
   private chunks: Blob[];
+  private knownTypes = [
+    {mimeType: 'audio/ogg', extension: 'ogg'},
+    {mimeType: 'audio/webm', extension: 'webm'},
+    {mimeType: 'audio/wav', extension: 'wav'}
+  ];
 
   constructor(@Inject('AudioInputProvider') requestProvider: AudioInputProvider,
               @Inject(
@@ -127,10 +132,18 @@ export class AudioRecorderService {
 
   private getRecorderInstance(): Promise<MediaRecorder> {
     return this.requestProvider().then(stream => {
-      const recorder = new this.recorderImpl(stream);
+      const supported = this.knownTypes.find(
+        ({mimeType, extension}) => this.recorderImpl.isTypeSupported(mimeType)
+      );
+      const recorder = new this.recorderImpl(stream, supported ? {
+        mimeType: supported.mimeType
+      } : {});
+
       recorder.ondataavailable = e => this.chunks.push(e.data);
       recorder.onstop = () => {
-        const blob = new Blob(this.chunks, {'type': recorder.mimeType});
+        const blob = new Blob(this.chunks, {
+          'type': recorder.mimeType || supported.mimeType
+        });
         this.chunks.length = 0;
         this.ngZone.run(() => {
           this.newRecording.next(

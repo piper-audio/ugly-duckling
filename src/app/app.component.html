@@ -7,7 +7,7 @@
 
       <ugly-playback-control></ugly-playback-control>
       <ugly-recording-control
-        (finishedRecording)="onFileOpened($event)"
+        (finishedRecording)="onFileOpened($event, true); tray.close()"
       ></ugly-recording-control>
 
       <!-- This fills the remaining space of the current row -->
@@ -15,26 +15,31 @@
 
 
       <ugly-audio-file-open
-        (fileOpened)="onFileOpened($event)"
+        (fileOpened)="onFileOpened($event); tray.close()"
       ></ugly-audio-file-open>
-      <!-- menu opens when trigger button is clicked -->
-      <button md-icon-button (click)="sidenav.toggle()">
+      <button md-icon-button (click)="tray.toggle()">
         <md-icon>extension</md-icon>
+      </button>
+      <button md-icon-button (click)="analyses.stepBack()">
+        <md-icon>undo</md-icon>
+      </button>
+      <button md-icon-button (click)="analyses.stepForward()">
+        <md-icon>redo</md-icon>
       </button>
     </md-toolbar>
   </div>
 
+  <ugly-action-tray #tray>
+    <ugly-feature-extraction-menu
+      (requestOutput)="tray.close(); extractFeatures($event)"
+      [disabled]="!canExtract"
+    >
+    </ugly-feature-extraction-menu>
+  </ugly-action-tray>
   <div class="ugly-content">
-    <md-sidenav-container>
-      <md-sidenav #sidenav align="start" mode="over">
-        <ugly-feature-extraction-menu
-          (requestOutput)="extractFeatures($event)"
-          [disabled]="!canExtract">
-        </ugly-feature-extraction-menu>
-      </md-sidenav>
-      <ugly-notebook-feed
-        [analyses]="analyses.toIterable()"
-        [rootAudioUri]="rootAudioUri"></ugly-notebook-feed>
-    </md-sidenav-container>
+    <ugly-notebook-feed
+      (removeItem)="removeItem($event)"
+      [analyses]="analyses.toIterable()"
+      [onSeek]="onSeek"></ugly-notebook-feed>
   </div>
 </div>
