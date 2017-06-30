@@ -2,10 +2,9 @@
  * Created by lucast on 31/05/2017.
  */
 import {
-  InspectableVerticallyBoundedComponent,
-  VerticallyBounded,
-  VerticallyBoundedWavesComponent,
-  VerticalScaleRenderer,
+  VerticallyBinned,
+  VerticallyBinnedWavesComponent,
+  VerticalBinNameRenderer,
   VerticalValueInspectorRenderer,
   WavesComponent
 } from '../waves-base.component';
@@ -25,13 +24,13 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    {provide: VerticallyBounded, useExisting: GridComponent },
-    {provide: VerticalScaleRenderer, useExisting: GridComponent },
+    {provide: VerticallyBinned, useExisting: GridComponent },
+    {provide: VerticalBinNameRenderer, useExisting: GridComponent },
     {provide: WavesComponent, useExisting: GridComponent}
   ]
 })
 
-export class GridComponent extends VerticallyBoundedWavesComponent<AugmentedMatrixFeature> {
+export class GridComponent extends VerticallyBinnedWavesComponent<AugmentedMatrixFeature> {
 
   @Input() set grid(grid: AugmentedMatrixFeature) {
     this.feature = grid;
@@ -67,11 +66,7 @@ export class GridComponent extends VerticallyBoundedWavesComponent<AugmentedMatr
     ];
   }
     
-  get range(): [number, number] {
-
-    const bins = this.feature.binNames;
-    console.log("have " + bins.length + " bins");
-    
-    return [0, this.feature.data.length > 0 ? this.feature.data[0].length : 0];
+  get binNames(): string[] {
+    return this.feature.binNames;
   }
 }

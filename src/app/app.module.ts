@@ -36,6 +36,7 @@ import {NotesComponent} from './visualisations/notes/notes.component';
 import {InstantsComponent} from './visualisations/instants/instants.component';
 import {GridComponent} from './visualisations/grid/grid.component';
 import {VerticalScaleComponent} from './visualisations/vertical-scale.component';
+import {VerticalBinnedComponent} from './visualisations/vertical-binned.component';
 import {CrossHairInspectorComponent} from './visualisations/cross-hair-inspector.component';
 import {RenderLoopService} from './services/render-loop/render-loop.service';
 import {WavesPlayHeadComponent} from './playhead/waves-ui-play-head.component';
@@ -137,6 +138,7 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     InstantsComponent,
     GridComponent,
     VerticalScaleComponent,
+    VerticalBinnedComponent,
     CrossHairInspectorComponent,
     WavesPlayHeadComponent,
     ActionTrayComponent
