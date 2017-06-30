@@ -67,6 +67,13 @@ export class GridComponent extends VerticallyBinnedWavesComponent<AugmentedMatri
   }
     
   get binNames(): string[] {
+    if (!this.feature.binNames || this.feature.binNames.length === 0) {
+      const binCount = (this.feature.data.length > 0 ?
+                        this.feature.data[0].length : 0);
+      for (let i = 0; i < binCount; ++i) {
+        this.feature.binNames.push("" + (i + 1));
+      }
+    }
     return this.feature.binNames;
   }
 }
