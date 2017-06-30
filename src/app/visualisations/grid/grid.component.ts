@@ -1,14 +1,20 @@
 /**
  * Created by lucast on 31/05/2017.
  */
-import {WavesComponent} from '../waves-base.component';
+import {
+  VerticallyBinned,
+  VerticallyBinnedWavesComponent,
+  VerticalBinNameRenderer,
+  VerticalValueInspectorRenderer,
+  WavesComponent
+} from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
   Component,
   Input,
 } from '@angular/core';
 import Waves from 'waves-ui-piper';
-import {MatrixFeature} from 'piper/HigherLevelUtilities';
+import {AugmentedMatrixFeature} from '../FeatureUtilities';
 import {iceMapper} from '../../spectrogram/ColourMap';
 import {estimatePercentile} from '../../spectrogram/MatrixUtils';
 
@@ -18,17 +24,20 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
+    {provide: VerticallyBinned, useExisting: GridComponent },
+    {provide: VerticalBinNameRenderer, useExisting: GridComponent },
     {provide: WavesComponent, useExisting: GridComponent}
   ]
 })
-export class GridComponent extends WavesComponent<MatrixFeature> {
 
-  @Input() set grid(grid: MatrixFeature) {
+export class GridComponent extends VerticallyBinnedWavesComponent<AugmentedMatrixFeature> {
+
+  @Input() set grid(grid: AugmentedMatrixFeature) {
     this.feature = grid;
   }
 
   protected get featureLayers(): Layer[] {
-    const startTime = this.feature.startTime; // !!! + make use of
+    const startTime = this.feature.startTime;
     const stepDuration = this.feature.stepDuration;
     const matrixData = this.feature.data;
 
@@ -40,7 +49,7 @@ export class GridComponent extends WavesComponent<MatrixFeature> {
     const gain = (targetValue > 0.0 ? (1.0 / targetValue) : 1.0);
     const matrixEntity = new Waves.utils.PrefilledMatrixEntity(
       matrixData,
-      0, // startTime
+      startTime,
       stepDuration
     );
 
@@ -55,5 +64,16 @@ export class GridComponent extends WavesComponent<MatrixFeature> {
         }
       )
     ];
+  }
+    
+  get binNames(): string[] {
+    if (!this.feature.binNames || this.feature.binNames.length === 0) {
+      const binCount = (this.feature.data.length > 0 ?
+                        this.feature.data[0].length : 0);
+      for (let i = 0; i < binCount; ++i) {
+        this.feature.binNames.push("" + (i + 1));
+      }
+    }
+    return this.feature.binNames;
   }
 }

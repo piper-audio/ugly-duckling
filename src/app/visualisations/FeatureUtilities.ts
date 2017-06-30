@@ -74,9 +74,13 @@ type CollectedShape = 'vector' | 'matrix' | 'tracks';
 type ShapeDeducedFromList = 'instants' | 'notes';
 export type HigherLevelFeatureShape = CollectedShape | ShapeDeducedFromList;
 
+export interface AugmentedMatrixFeature extends MatrixFeature {
+  binNames: string[];
+}
+
 export type ShapedFeatureData =
   VectorFeature
-  | MatrixFeature
+  | AugmentedMatrixFeature
   | TracksFeature
   | Note[]
   | Instant[];
@@ -89,7 +93,7 @@ export abstract class ShapedFeature<Shape extends HigherLevelFeatureShape,
 }
 
 export class Vector extends ShapedFeature<'vector', VectorFeature> {}
-export class Matrix extends ShapedFeature<'matrix', MatrixFeature> {}
+export class Matrix extends ShapedFeature<'matrix', AugmentedMatrixFeature> {}
 export class Tracks extends ShapedFeature<'tracks', TracksFeature> {}
 export class Notes extends ShapedFeature<'notes', Note[]> {}
 export class Instants extends ShapedFeature<'instants', Instant[]> {}
@@ -148,7 +152,12 @@ export function toKnownShape(response: SimpleResponse): KnownShapedFeature {
     case 'vector':
       return response.features as Vector;
     case 'matrix':
-      return response.features as Matrix;
+      return {
+        shape: deducedShape,
+        collected: Object.assign(response.features.collected, {
+          binNames: response.outputDescriptor.configured.binNames || []
+        })
+      } as Matrix;
     case 'tracks':
       return response.features as Tracks;
     case 'notes':

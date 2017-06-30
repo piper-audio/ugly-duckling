@@ -19,6 +19,14 @@ export abstract class VerticalScaleRenderer extends VerticallyBounded {
   abstract renderScale(range: [number, number]): void;
 }
 
+export abstract class VerticallyBinned {
+  abstract get binNames(): string[];
+}
+
+export abstract class VerticalBinNameRenderer extends VerticallyBinned {
+  abstract renderNames(binNames: string[]): void;
+}
+
 export abstract class VerticalValueInspectorRenderer
   extends VerticalScaleRenderer {
   // TODO how do I know these layers are actually 'describable'?
@@ -208,6 +216,21 @@ export abstract class VerticallyBoundedWavesComponent
       textColor: this.colour,
       height: this.height,
       yDomain: range
+    }));
+  }
+}
+
+export abstract class VerticallyBinnedWavesComponent
+<T extends ShapedFeatureData> extends WavesComponent<T>
+  implements VerticalBinNameRenderer {
+  abstract binNames: string[];
+
+  renderNames(binNames: string[]): void {
+    this.addLayer(new Waves.helpers.DiscreteScaleLayer({
+      tickColor: this.colour,
+      textColor: this.colour,
+      height: this.height,
+      binNames
     }));
   }
 }
