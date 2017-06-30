@@ -56,15 +56,19 @@ export function isExtractedAnalysisItem(it: Item): it is ExtractedAnalysisItem {
     downcast.collected != null;
 }
 
-// these should probably be actual concrete types with their own getUri methods
-export function getRootUri(item: Item): string {
+export function getRootAudioItem(item: Item): RootAudioItem {
   if (isPendingRootAudioItem(item)) {
-    return item.uri;
+    return item;
   }
   if (isPendingAnalysisItem(item)) {
-    return item.parent.uri;
+    return item.parent;
   }
-  throw new Error('Invalid item: No URI property set.');
+  throw new Error('Invalid item.');
+}
+
+// these should probably be actual concrete types with their own getUri methods
+export function getRootUri(item: Item): string {
+  return getRootAudioItem(item).uri;
 }
 
 export function createExtractionRequest(item: AnalysisItem): SimpleRequest {
