@@ -101,6 +101,18 @@ export class PersistentStack<T> {
     return this.stack.findIndex(predicate);
   }
 
+  findIndexAndUse(predicate: (value: T,
+                              index: number,
+                              array: T[]) => boolean,
+                  use: (index: number) => void): boolean {
+    const index = this.stack.findIndex(predicate);
+    const didFind = index !== -1;
+    if (didFind) {
+      use(index);
+    }
+    return didFind;
+  }
+
   filter(predicate: (value: T, index: number, array: T[]) => boolean): T[] {
     return this.stack.filter(predicate);
   }
