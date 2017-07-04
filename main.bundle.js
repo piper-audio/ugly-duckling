@@ -2333,7 +2333,7 @@ __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_dyna
 /***/ "efyd":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event, true); tray.close()\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event); tray.close()\"\n      ></ugly-audio-file-open>\n      <button md-icon-button (click)=\"tray.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n      <button md-icon-button (click)=\"analyses.stepBack()\">\n        <md-icon>undo</md-icon>\n      </button>\n      <button md-icon-button (click)=\"analyses.stepForward()\">\n        <md-icon>redo</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <ugly-action-tray #tray>\n    <ugly-feature-extraction-menu\n      (requestOutput)=\"tray.close(); extractFeatures($event)\"\n      [disabled]=\"!canExtract\"\n    >\n    </ugly-feature-extraction-menu>\n  </ugly-action-tray>\n  <div class=\"ugly-content\">\n    <ugly-notebook-feed\n      (removeItem)=\"removeItem($event)\"\n      [analyses]=\"analyses.toIterable()\"\n      [onSeek]=\"onSeek\"></ugly-notebook-feed>\n  </div>\n</div>\n"
+module.exports = "<div class=\"ugly-container\">\n  <div class=\"ugly-header\">\n    <md-toolbar color=\"primary\">\n      <md-icon svgIcon=\"duck\"></md-icon>\n\n      <span class=\"ugly-toolbar-filler\"></span>\n\n      <ugly-playback-control></ugly-playback-control>\n      <ugly-recording-control\n        (finishedRecording)=\"onFileOpened($event, true); tray.close()\"\n      ></ugly-recording-control>\n\n      <!-- This fills the remaining space of the current row -->\n      <span class=\"ugly-toolbar-filler\"></span>\n\n\n      <ugly-audio-file-open\n        (fileOpened)=\"onFileOpened($event); tray.close()\"\n      ></ugly-audio-file-open>\n      <button md-icon-button (click)=\"analyses.stepBack()\">\n        <md-icon>undo</md-icon>\n      </button>\n      <button md-icon-button (click)=\"analyses.stepForward()\">\n        <md-icon>redo</md-icon>\n      </button>\n      <button md-icon-button (click)=\"tray.toggle()\">\n        <md-icon>extension</md-icon>\n      </button>\n    </md-toolbar>\n  </div>\n\n  <ugly-action-tray #tray>\n    <ugly-feature-extraction-menu\n      (requestOutput)=\"tray.close(); extractFeatures($event)\"\n      [disabled]=\"!canExtract\"\n    >\n    </ugly-feature-extraction-menu>\n  </ugly-action-tray>\n  <div class=\"ugly-content\">\n    <ugly-notebook-feed\n      (removeItem)=\"removeItem($event)\"\n      [analyses]=\"analyses.toIterable()\"\n      [onSeek]=\"onSeek\"></ugly-notebook-feed>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -3446,31 +3446,22 @@ let AppComponent = class AppComponent {
         this.onSeek = (time) => this.audioService.seekTo(time);
         iconRegistry.addSvgIcon('duck', sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg'));
         this.onAudioDataSubscription = this.audioService.audioLoaded$.subscribe(resource => {
+            const findCurrentAudio = val => __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["e" /* isPendingRootAudioItem */])(val) && val.uri === __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["g" /* getRootAudioItem */])(this.analyses.get(0)).uri;
             const wasError = resource.message != null;
             if (wasError) {
-                this.analyses.shift();
+                this.analyses.findIndexAndUse(findCurrentAudio, index => this.analyses.remove(index));
                 this.canExtract = false;
             }
             else {
                 const audioData = resource.samples;
                 if (audioData) {
-                    const rootAudio = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["g" /* getRootAudioItem */])(this.analyses.get(0));
                     this.canExtract = true;
-                    const currentRootIndex = this.analyses.findIndex(val => {
-                        return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["e" /* isPendingRootAudioItem */])(val) && val.uri === rootAudio.uri;
-                    });
-                    if (currentRootIndex !== -1) {
-                        this.analyses.set(currentRootIndex, Object.assign({}, this.analyses.get(currentRootIndex), { audioData }));
-                    }
+                    this.analyses.findIndexAndUse(findCurrentAudio, currentRootIndex => this.analyses.set(currentRootIndex, Object.assign({}, this.analyses.get(currentRootIndex), { audioData })));
                 }
             }
         });
         this.onProgressUpdated = this.featureService.progressUpdated$.subscribe(progress => {
-            const index = this.analyses.findIndex(val => val.id === progress.id);
-            if (index === -1) {
-                return;
-            }
-            this.analyses.setMutating(index, Object.assign({}, this.analyses.get(index), { progress: progress.value }));
+            this.analyses.findIndexAndUse(val => val.id === progress.id, index => this.analyses.setMutating(index, Object.assign({}, this.analyses.get(index), { progress: progress.value })));
         });
     }
     onFileOpened(file, createExportableItem = false) {
@@ -3541,17 +3532,14 @@ let AppComponent = class AppComponent {
     sendExtractionRequest(analysis) {
         const findAndUpdateItem = (result) => {
             // TODO subscribe to the extraction service instead
-            const i = this.analyses.findIndex(val => val.id === result.id);
+            this.analyses.findIndexAndUse(val => val.id === result.id, (index) => this.analyses.set(index, Object.assign({}, this.analyses.get(index), result.result, result.unit ? { unit: result.unit } : {})));
             this.canExtract = true;
-            if (i !== -1) {
-                this.analyses.set(i, Object.assign({}, this.analyses.get(i), result.result, result.unit ? { unit: result.unit } : {}));
-            } // TODO else remove the item?
         };
         return this.featureService.extract(analysis.id, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["h" /* createExtractionRequest */])(analysis))
             .then(findAndUpdateItem)
             .catch(err => {
             this.canExtract = true;
-            this.analyses.shift();
+            this.analyses.findIndexAndUse(val => val.id === analysis.id, index => this.analyses.remove(index));
             console.error(`Error whilst extracting: ${err}`);
         });
     }
@@ -3672,6 +3660,14 @@ class PersistentStack {
     }
     findIndex(predicate) {
         return this.stack.findIndex(predicate);
+    }
+    findIndexAndUse(predicate, use) {
+        const index = this.stack.findIndex(predicate);
+        const didFind = index !== -1;
+        if (didFind) {
+            use(index);
+        }
+        return didFind;
     }
     filter(predicate) {
         return this.stack.filter(predicate);
