@@ -282,7 +282,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-let WaveformComponent = WaveformComponent_1 = class WaveformComponent extends __WEBPACK_IMPORTED_MODULE_2__waves_base_component__["a" /* WavesComponent */] {
+let WaveformComponent = WaveformComponent_1 = class WaveformComponent extends __WEBPACK_IMPORTED_MODULE_2__waves_base_component__["f" /* WavesComponent */] {
     set audioBuffer(buffer) {
         this.duration = buffer.duration;
         this.timeline.pixelsPerSecond = this.timeline.visibleWidth / buffer.duration;
@@ -316,7 +316,8 @@ WaveformComponent = WaveformComponent_1 = __decorate([
         styles: [__webpack_require__("1B76")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
-            { provide: __WEBPACK_IMPORTED_MODULE_2__waves_base_component__["a" /* WavesComponent */], useExisting: WaveformComponent_1 }
+            { provide: __WEBPACK_IMPORTED_MODULE_2__waves_base_component__["a" /* PlayheadRenderer */], useExisting: WaveformComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_2__waves_base_component__["f" /* WavesComponent */], useExisting: WaveformComponent_1 }
         ]
     })
 ], WaveformComponent);
@@ -356,7 +357,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-let GridComponent = GridComponent_1 = class GridComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyBinnedWavesComponent */] {
+let GridComponent = GridComponent_1 = class GridComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["d" /* VerticallyBinnedWavesComponent */] {
     set grid(grid) {
         this.feature = grid;
     }
@@ -379,7 +380,7 @@ let GridComponent = GridComponent_1 = class GridComponent extends __WEBPACK_IMPO
             })
         ];
     }
-    get binNames() {
+    get labels() {
         if (!this.feature.binNames || this.feature.binNames.length === 0) {
             const binCount = (this.feature.data.length > 0 ?
                 this.feature.data[0].length : 0);
@@ -402,9 +403,10 @@ GridComponent = GridComponent_1 = __decorate([
         styles: [__webpack_require__("1B76")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["f" /* VerticallyBinned */], useExisting: GridComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalBinNameRenderer */], useExisting: GridComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* WavesComponent */], useExisting: GridComponent_1 }
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyLabelled */], useExisting: GridComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: GridComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */], useExisting: GridComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["f" /* WavesComponent */], useExisting: GridComponent_1 }
         ]
     })
 ], GridComponent);
@@ -564,7 +566,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 let NotesComponent = NotesComponent_1 = class NotesComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["g" /* InspectableVerticallyBoundedComponent */] {
-    get range() {
+    get labels() {
         return this.currentVerticalRange;
     }
     set notes(notes) {
@@ -593,10 +595,11 @@ NotesComponent = NotesComponent_1 = __decorate([
         styles: [__webpack_require__("1B76")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["h" /* VerticallyBounded */], useExisting: NotesComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["d" /* VerticalScaleRenderer */], useExisting: NotesComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyLabelled */], useExisting: NotesComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: NotesComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["b" /* VerticalValueInspectorRenderer */], useExisting: NotesComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* WavesComponent */], useExisting: NotesComponent_1 }
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */], useExisting: NotesComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["f" /* WavesComponent */], useExisting: NotesComponent_1 }
         ]
     })
 ], NotesComponent);
@@ -625,7 +628,7 @@ var NotesComponent_1;
 /***/ "9jta":
 /***/ (function(module, exports) {
 
-module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{item.title}}</md-card-title>\n    <md-card-subtitle>{{item.description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <div class=\"content\">\n      <ng-template [ngIf]=\"isLoading()\">\n        <ugly-progress-bar\n          [isDeterminate]=\"true\"\n          [progress]=\"item.progress\"\n        ></ugly-progress-bar>\n      </ng-template>\n      <ng-template [ngIf]=\"!isLoading()\">\n        <ugly-progress-spinner *ngIf=\"isPending()\"></ugly-progress-spinner>\n        <ugly-waves-play-head\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-waveform\n            *ngIf=\"isAudioItem(); else notAudio\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [audioBuffer]=\"item.audioData\"\n            [onSeek]=\"onSeek\"\n            [colour]=\"'#0868ac'\"\n            [duration]=\"getDuration()\"\n          ></ugly-waveform>\n        </ugly-waves-play-head>\n\n\n        <ugly-waves-play-head\n          #notAudio\n          *ngIf=\"getFeatureShape() as shape\"\n          [ngSwitch]=\"shape\"\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'vector'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-curve\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [curve]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-curve>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'tracks'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-tracks\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [tracks]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-tracks>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'notes'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-notes\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [notes]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-notes>\n          </ugly-cross-hair-inspector>\n          <ugly-vertical-binned\n            *ngSwitchCase=\"'matrix'\"\n          >\n            <ugly-grid\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [grid]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-grid>\n          </ugly-vertical-binned>\n          <ugly-instants\n            *ngSwitchCase=\"'instants'\"\n            [colour]=\"getNextColour()\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [onSeek]=\"onSeek\"\n            [instants]=\"item.collected\"\n            [duration]=\"getDuration()\"\n          ></ugly-instants>\n\n          <div *ngSwitchDefault>Feature cannot be visualised.</div>\n        </ugly-waves-play-head>\n      </ng-template>\n    </div>\n  </md-card-content>\n  <md-card-actions\n    *ngIf=\"isAudioItem()\">\n    <a md-icon-button\n       *ngIf=\"isAudioItem() && item.isExportable\"\n      [href]=\"sanitize(item.uri)\"\n      [download]=\"generateFilename(item)\"\n    ><md-icon>file_download</md-icon></a>\n    <button md-icon-button (click)=\"remove.emit(item)\">\n      <md-icon>delete_forever</md-icon>\n    </button>\n  </md-card-actions>\n</md-card>\n"
+module.exports = "<md-card>\n  <md-card-header>\n    <md-card-title>{{item.title}}</md-card-title>\n    <md-card-subtitle>{{item.description}}</md-card-subtitle>\n  </md-card-header>\n  <md-card-content>\n    <div class=\"content\">\n      <ng-template [ngIf]=\"isLoading()\">\n        <ugly-progress-bar\n          [isDeterminate]=\"true\"\n          [progress]=\"item.progress\"\n        ></ugly-progress-bar>\n      </ng-template>\n      <ng-template [ngIf]=\"!isLoading()\">\n        <ugly-progress-spinner *ngIf=\"isPending()\"></ugly-progress-spinner>\n        <ugly-waves-play-head\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-waveform\n            *ngIf=\"isAudioItem(); else notAudio\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [audioBuffer]=\"item.audioData\"\n            [onSeek]=\"onSeek\"\n            [colour]=\"'#0868ac'\"\n            [duration]=\"getDuration()\"\n          ></ugly-waveform>\n        </ugly-waves-play-head>\n\n\n        <ugly-waves-play-head\n          #notAudio\n          *ngIf=\"getFeatureShape() as shape\"\n          [ngSwitch]=\"shape\"\n          [colour]=\"'#c33c54'\"\n          [isActive]=\"isActive\"\n        >\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'vector'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-curve\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [curve]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-curve>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'tracks'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-tracks\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [tracks]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-tracks>\n          </ugly-cross-hair-inspector>\n          <ugly-cross-hair-inspector\n            *ngSwitchCase=\"'notes'\"\n            [unit]=\"item.unit\"\n            [isAnimated]=\"isActive\"\n          >\n            <ugly-notes\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [notes]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-notes>\n          </ugly-cross-hair-inspector>\n          <ugly-vertical-scale\n            *ngSwitchCase=\"'matrix'\"\n          >\n            <ugly-grid\n              [colour]=\"getNextColour()\"\n              [timeline]=\"timeline\"\n              [width]=\"contentWidth\"\n              [onSeek]=\"onSeek\"\n              [grid]=\"item.collected\"\n              [duration]=\"getDuration()\"\n            ></ugly-grid>\n          </ugly-vertical-scale>\n          <ugly-instants\n            *ngSwitchCase=\"'instants'\"\n            [colour]=\"getNextColour()\"\n            [timeline]=\"timeline\"\n            [width]=\"contentWidth\"\n            [onSeek]=\"onSeek\"\n            [instants]=\"item.collected\"\n            [duration]=\"getDuration()\"\n          ></ugly-instants>\n\n          <div *ngSwitchDefault>Feature cannot be visualised.</div>\n        </ugly-waves-play-head>\n      </ng-template>\n    </div>\n  </md-card-content>\n  <md-card-actions\n    *ngIf=\"isAudioItem()\">\n    <a md-icon-button\n       *ngIf=\"isAudioItem() && item.isExportable\"\n      [href]=\"sanitize(item.uri)\"\n      [download]=\"generateFilename(item)\"\n    ><md-icon>file_download</md-icon></a>\n    <button md-icon-button (click)=\"remove.emit(item)\">\n      <md-icon>delete_forever</md-icon>\n    </button>\n  </md-card-actions>\n</md-card>\n"
 
 /***/ }),
 
@@ -685,25 +688,25 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 const trackIdGenerator = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4_piper_client_stubs_WebWorkerStreamingClient__["countingIdProvider"])(0);
 // has to be an abstract class vs as interface for Angular's DI
-class VerticallyBounded {
+class VerticallyLabelled {
 }
-/* harmony export (immutable) */ __webpack_exports__["h"] = VerticallyBounded;
+/* harmony export (immutable) */ __webpack_exports__["e"] = VerticallyLabelled;
 
-class VerticalScaleRenderer extends VerticallyBounded {
+class VerticalScaleRenderer extends VerticallyLabelled {
 }
-/* harmony export (immutable) */ __webpack_exports__["d"] = VerticalScaleRenderer;
-
-class VerticallyBinned {
-}
-/* harmony export (immutable) */ __webpack_exports__["f"] = VerticallyBinned;
-
-class VerticalBinNameRenderer extends VerticallyBinned {
-}
-/* harmony export (immutable) */ __webpack_exports__["c"] = VerticalBinNameRenderer;
+/* harmony export (immutable) */ __webpack_exports__["c"] = VerticalScaleRenderer;
 
 class VerticalValueInspectorRenderer extends VerticalScaleRenderer {
 }
 /* harmony export (immutable) */ __webpack_exports__["b"] = VerticalValueInspectorRenderer;
+
+class PlayheadManager {
+}
+/* unused harmony export PlayheadManager */
+
+class PlayheadRenderer {
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = PlayheadRenderer;
 
 class WavesComponent {
     constructor() {
@@ -730,6 +733,20 @@ class WavesComponent {
             this.trackContainer.nativeElement.getBoundingClientRect().height;
         this.renderTimeline();
         this.update();
+    }
+    renderPlayhead(initialTime, colour) {
+        const cursor = new __WEBPACK_IMPORTED_MODULE_3_waves_ui_piper___default.a.helpers.CursorLayer({
+            height: this.height,
+            color: colour,
+        });
+        cursor.currentPosition = initialTime;
+        return {
+            update: currentTime => {
+                cursor.currentPosition = currentTime;
+                cursor.update();
+            },
+            remove: this.addLayer(cursor)
+        };
     }
     update() {
         if (!this.waveTrack || !this.mFeature) {
@@ -836,7 +853,7 @@ class WavesComponent {
         }
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = WavesComponent;
+/* harmony export (immutable) */ __webpack_exports__["f"] = WavesComponent;
 
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_6" /* ViewChild */])('track'),
@@ -869,28 +886,28 @@ __decorate([
     __metadata("design:paramtypes", [Object])
 ], WavesComponent.prototype, "feature", null);
 class VerticallyBoundedWavesComponent extends WavesComponent {
-    renderScale(range) {
+    renderScale(labels) {
         this.addLayer(new __WEBPACK_IMPORTED_MODULE_3_waves_ui_piper___default.a.helpers.ScaleLayer({
             tickColor: this.colour,
             textColor: this.colour,
             height: this.height,
-            yDomain: range
+            yDomain: labels
         }));
     }
 }
 /* unused harmony export VerticallyBoundedWavesComponent */
 
 class VerticallyBinnedWavesComponent extends WavesComponent {
-    renderNames(binNames) {
+    renderScale(labels) {
         this.addLayer(new __WEBPACK_IMPORTED_MODULE_3_waves_ui_piper___default.a.helpers.DiscreteScaleLayer({
             tickColor: this.colour,
             textColor: this.colour,
             height: this.height,
-            binNames
+            binNames: labels
         }));
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["e"] = VerticallyBinnedWavesComponent;
+/* harmony export (immutable) */ __webpack_exports__["d"] = VerticallyBinnedWavesComponent;
 
 class InspectableVerticallyBoundedComponent extends VerticallyBoundedWavesComponent {
     set onSeek(handler) {
@@ -1060,7 +1077,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-let InstantsComponent = InstantsComponent_1 = class InstantsComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* WavesComponent */] {
+let InstantsComponent = InstantsComponent_1 = class InstantsComponent extends __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["f" /* WavesComponent */] {
     set instants(instants) {
         this.feature = instants;
     }
@@ -1087,7 +1104,8 @@ InstantsComponent = InstantsComponent_1 = __decorate([
         styles: [__webpack_require__("1B76")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* WavesComponent */], useExisting: InstantsComponent_1 }
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */], useExisting: InstantsComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["f" /* WavesComponent */], useExisting: InstantsComponent_1 }
         ]
     })
 ], InstantsComponent);
@@ -1277,10 +1295,8 @@ module.exports = "<div class=\"container\">\n  <md-list dense>\n    <ng-containe
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__visualisations_waves_base_component__ = __webpack_require__("B96E");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__ = __webpack_require__("9yQI");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__services_render_loop_render_loop_service__ = __webpack_require__("EWzO");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__services_audio_player_audio_player_service__ = __webpack_require__("5/XR");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_render_loop_render_loop_service__ = __webpack_require__("EWzO");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__services_audio_player_audio_player_service__ = __webpack_require__("5/XR");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return WavesPlayHeadComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1294,7 +1310,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 /**
  * Created by lucas on 03/06/2017.
  */
-
 
 
 
@@ -1326,21 +1341,14 @@ let WavesPlayHeadComponent = class WavesPlayHeadComponent {
     setupAnimatedPlayheads() {
         if (this.wavesChildren && this.mIsActive) {
             this.wavesChildren.forEach(component => {
-                const cursor = new __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default.a.helpers.CursorLayer({
-                    height: component.height,
-                    color: this.colour,
-                });
-                cursor.currentPosition = this.player.getCurrentTime();
-                this.removers.push(component.addLayer(cursor), this.renderLoop.addPlayingTask(currentTime => {
-                    cursor.currentPosition = currentTime;
-                    cursor.update();
-                }));
+                const cursor = component.renderPlayhead(this.player.getCurrentTime(), this.colour);
+                this.removers.push(cursor.remove, this.renderLoop.addPlayingTask(cursor.update));
             });
         }
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_1__visualisations_waves_base_component__["a" /* WavesComponent */]),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_1__visualisations_waves_base_component__["a" /* PlayheadRenderer */]),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["_11" /* QueryList */]) === "function" && _a || Object)
 ], WavesPlayHeadComponent.prototype, "wavesChildren", void 0);
 __decorate([
@@ -1358,7 +1366,7 @@ WavesPlayHeadComponent = __decorate([
         template: '<ng-content></ng-content>',
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
     }),
-    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _c || Object])
+    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _c || Object])
 ], WavesPlayHeadComponent);
 
 var _a, _b, _c;
@@ -1740,7 +1748,7 @@ let TracksComponent = TracksComponent_1 = class TracksComponent extends __WEBPAC
     set tracks(input) {
         this.feature = input;
     }
-    get range() {
+    get labels() {
         return this.currentState && this.currentState.data.length > 0 ?
             this.currentState.yDomain : null;
     }
@@ -1772,10 +1780,11 @@ TracksComponent = TracksComponent_1 = __decorate([
         styles: [__webpack_require__("1B76")],
         changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["h" /* VerticallyBounded */], useExisting: TracksComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["d" /* VerticalScaleRenderer */], useExisting: TracksComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyLabelled */], useExisting: TracksComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: TracksComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["b" /* VerticalValueInspectorRenderer */], useExisting: TracksComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* WavesComponent */], useExisting: TracksComponent_1 }
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */], useExisting: TracksComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["f" /* WavesComponent */], useExisting: TracksComponent_1 }
         ],
     })
 ], TracksComponent);
@@ -1880,54 +1889,6 @@ var TracksComponent_1, _a, _b;
 // import 'intl';  // Run `npm install --save intl`.
 
 //# sourceMappingURL=polyfills.js.map
-
-/***/ }),
-
-/***/ "TsWN":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__waves_base_component__ = __webpack_require__("B96E");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return VerticalBinnedComponent; });
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-/**
- * Created by lucas on 01/06/2017.
- */
-
-
-let VerticalBinnedComponent = class VerticalBinnedComponent {
-    ngAfterViewInit() {
-        this.bounded.forEach(component => {
-            this.cachedBinNames = component.binNames;
-            if (this.cachedBinNames) {
-                component.renderNames(this.cachedBinNames);
-            }
-        });
-    }
-};
-__decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalBinNameRenderer */]),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */]) === "function" && _a || Object)
-], VerticalBinnedComponent.prototype, "bounded", void 0);
-VerticalBinnedComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_3" /* Component */])({
-        selector: 'ugly-vertical-binned',
-        template: '<ng-content></ng-content>',
-        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
-    })
-], VerticalBinnedComponent);
-
-var _a;
-//# sourceMappingURL=vertical-binned.component.js.map
 
 /***/ }),
 
@@ -2133,12 +2094,11 @@ var _a, _b;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__visualisations_instants_instants_component__ = __webpack_require__("I0f/");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__visualisations_grid_grid_component__ = __webpack_require__("6pam");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__visualisations_vertical_scale_component__ = __webpack_require__("vfMn");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__visualisations_vertical_binned_component__ = __webpack_require__("TsWN");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__visualisations_cross_hair_inspector_component__ = __webpack_require__("rVHm");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__services_render_loop_render_loop_service__ = __webpack_require__("EWzO");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__playhead_waves_ui_play_head_component__ = __webpack_require__("LbIP");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_31__actions_action_tray_component__ = __webpack_require__("MaDt");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_32__services_audio_recorder_RecordRtcMediaRecorder__ = __webpack_require__("jYsx");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__visualisations_cross_hair_inspector_component__ = __webpack_require__("rVHm");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__services_render_loop_render_loop_service__ = __webpack_require__("EWzO");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__playhead_waves_ui_play_head_component__ = __webpack_require__("LbIP");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__actions_action_tray_component__ = __webpack_require__("MaDt");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_31__services_audio_recorder_RecordRtcMediaRecorder__ = __webpack_require__("jYsx");
 /* unused harmony export createAudioContext */
 /* unused harmony export createAudioElement */
 /* unused harmony export createAudioInputProvider */
@@ -2153,7 +2113,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-
 
 
 
@@ -2207,7 +2166,7 @@ function createMediaRecorderFactory() {
         return MediaRecorder;
     }
     else {
-        return __WEBPACK_IMPORTED_MODULE_32__services_audio_recorder_RecordRtcMediaRecorder__["a" /* RecordRtcMediaRecorder */];
+        return __WEBPACK_IMPORTED_MODULE_31__services_audio_recorder_RecordRtcMediaRecorder__["a" /* RecordRtcMediaRecorder */];
     }
 }
 function createUrlResourceManager() {
@@ -2267,10 +2226,9 @@ AppModule = __decorate([
             __WEBPACK_IMPORTED_MODULE_24__visualisations_instants_instants_component__["a" /* InstantsComponent */],
             __WEBPACK_IMPORTED_MODULE_25__visualisations_grid_grid_component__["a" /* GridComponent */],
             __WEBPACK_IMPORTED_MODULE_26__visualisations_vertical_scale_component__["a" /* VerticalScaleComponent */],
-            __WEBPACK_IMPORTED_MODULE_27__visualisations_vertical_binned_component__["a" /* VerticalBinnedComponent */],
-            __WEBPACK_IMPORTED_MODULE_28__visualisations_cross_hair_inspector_component__["a" /* CrossHairInspectorComponent */],
-            __WEBPACK_IMPORTED_MODULE_30__playhead_waves_ui_play_head_component__["a" /* WavesPlayHeadComponent */],
-            __WEBPACK_IMPORTED_MODULE_31__actions_action_tray_component__["a" /* ActionTrayComponent */]
+            __WEBPACK_IMPORTED_MODULE_27__visualisations_cross_hair_inspector_component__["a" /* CrossHairInspectorComponent */],
+            __WEBPACK_IMPORTED_MODULE_29__playhead_waves_ui_play_head_component__["a" /* WavesPlayHeadComponent */],
+            __WEBPACK_IMPORTED_MODULE_30__actions_action_tray_component__["a" /* ActionTrayComponent */]
         ],
         imports: [
             __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -2290,7 +2248,7 @@ AppModule = __decorate([
             { provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager },
             { provide: 'ResourceReader', useFactory: createResourceReader },
             { provide: 'DimensionObservable', useFactory: createWindowDimensionObservable },
-            __WEBPACK_IMPORTED_MODULE_29__services_render_loop_render_loop_service__["a" /* RenderLoopService */]
+            __WEBPACK_IMPORTED_MODULE_28__services_render_loop_render_loop_service__["a" /* RenderLoopService */]
         ],
         bootstrap: [__WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */]]
     })
@@ -3290,7 +3248,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-let CrossHairInspectorComponent = class CrossHairInspectorComponent extends __WEBPACK_IMPORTED_MODULE_2__vertical_scale_component__["a" /* VerticalScaleComponent */] {
+let CrossHairInspectorComponent = CrossHairInspectorComponent_1 = class CrossHairInspectorComponent extends __WEBPACK_IMPORTED_MODULE_2__vertical_scale_component__["a" /* VerticalScaleComponent */] {
     constructor(renderLoop, player) {
         super();
         this.renderLoop = renderLoop;
@@ -3315,6 +3273,9 @@ let CrossHairInspectorComponent = class CrossHairInspectorComponent extends __WE
         });
         this.addTasks();
     }
+    ngOnDestroy() {
+        this.removers.forEach(remove => remove());
+    }
     addTasks() {
         if (this.inspectorRenderers && this.mIsAnimated) {
             this.inspectorRenderers.forEach(renderer => {
@@ -3336,16 +3297,19 @@ __decorate([
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], CrossHairInspectorComponent.prototype, "isAnimated", null);
-CrossHairInspectorComponent = __decorate([
+CrossHairInspectorComponent = CrossHairInspectorComponent_1 = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
         selector: 'ugly-cross-hair-inspector',
         template: '<ng-content></ng-content>',
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        providers: [
+            { provide: __WEBPACK_IMPORTED_MODULE_1__waves_base_component__["a" /* PlayheadRenderer */], useExisting: CrossHairInspectorComponent_1 }
+        ]
     }),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _c || Object])
 ], CrossHairInspectorComponent);
 
-var _a, _b, _c;
+var CrossHairInspectorComponent_1, _a, _b, _c;
 //# sourceMappingURL=cross-hair-inspector.component.js.map
 
 /***/ }),
@@ -3371,29 +3335,47 @@ var __metadata = (this && this.__metadata) || function (k, v) {
  */
 
 
-let VerticalScaleComponent = class VerticalScaleComponent {
+let VerticalScaleComponent = VerticalScaleComponent_1 = class VerticalScaleComponent {
     ngAfterViewInit() {
         this.bounded.forEach(component => {
-            this.cachedRange = component.range;
+            this.cachedRange = component.labels;
             if (this.cachedRange) {
                 component.renderScale(this.cachedRange);
             }
         });
     }
+    renderPlayhead(initialTime, colour) {
+        const rendered = this.seekable
+            .filter(x => x !== this) // why does QueryList consider itself as a child?
+            .map(component => component.renderPlayhead(initialTime, colour));
+        return {
+            update: (time) => {
+                rendered.forEach(component => component.update(time));
+            },
+            remove: () => rendered.map(component => component.remove())
+        };
+    }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["d" /* VerticalScaleRenderer */]),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */]),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */]) === "function" && _a || Object)
 ], VerticalScaleComponent.prototype, "bounded", void 0);
-VerticalScaleComponent = __decorate([
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */]),
+    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */]) === "function" && _b || Object)
+], VerticalScaleComponent.prototype, "seekable", void 0);
+VerticalScaleComponent = VerticalScaleComponent_1 = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_3" /* Component */])({
         selector: 'ugly-vertical-scale',
         template: '<ng-content></ng-content>',
-        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
+        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        providers: [
+            { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */], useExisting: VerticalScaleComponent_1 }
+        ]
     })
 ], VerticalScaleComponent);
 
-var _a;
+var VerticalScaleComponent_1, _a, _b;
 //# sourceMappingURL=vertical-scale.component.js.map
 
 /***/ }),
@@ -3766,6 +3748,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 let CurveComponent = CurveComponent_1 = class CurveComponent {
+    renderPlayhead(initialTime, colour) {
+        return this.tracksComponent.renderPlayhead(initialTime, colour);
+    }
     renderInspector(range, unit) {
         this.tracksComponent.renderInspector(range, unit);
     }
@@ -3775,8 +3760,8 @@ let CurveComponent = CurveComponent_1 = class CurveComponent {
     renderScale(range) {
         this.tracksComponent.renderScale(range);
     }
-    get range() {
-        return this.tracksComponent.range;
+    get labels() {
+        return this.tracksComponent.labels;
     }
 };
 __decorate([
@@ -3821,10 +3806,11 @@ CurveComponent = CurveComponent_1 = __decorate([
     ></ugly-tracks>`,
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
         providers: [
-            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["h" /* VerticallyBounded */], useExisting: CurveComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["d" /* VerticalScaleRenderer */], useExisting: CurveComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["e" /* VerticallyLabelled */], useExisting: CurveComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: CurveComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["b" /* VerticalValueInspectorRenderer */], useExisting: CurveComponent_1 },
-            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["a" /* WavesComponent */], useExisting: CurveComponent_1 }
+            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["a" /* PlayheadRenderer */], useExisting: CurveComponent_1 },
+            { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["f" /* WavesComponent */], useExisting: CurveComponent_1 }
         ]
     })
 ], CurveComponent);
