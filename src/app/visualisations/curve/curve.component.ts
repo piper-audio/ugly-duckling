@@ -10,6 +10,8 @@ import {
 import {OnSeekHandler} from '../../playhead/PlayHeadHelpers';
 import {VectorFeature} from 'piper/HigherLevelUtilities';
 import {
+  PlayheadManager,
+  PlayheadRenderer,
   VerticallyBounded,
   VerticalScaleRenderer,
   VerticalValueInspectorRenderer,
@@ -33,10 +35,13 @@ import {TracksComponent} from '../tracks/tracks.components';
     {provide: VerticallyBounded, useExisting: CurveComponent },
     {provide: VerticalScaleRenderer, useExisting: CurveComponent},
     {provide: VerticalValueInspectorRenderer, useExisting: CurveComponent},
+    {provide: PlayheadRenderer, useExisting: CurveComponent },
     {provide: WavesComponent, useExisting: CurveComponent}
   ]
 })
-export class CurveComponent implements VerticalValueInspectorRenderer {
+export class CurveComponent
+  implements VerticalValueInspectorRenderer, PlayheadRenderer {
+
   @Input() timeline: Timeline; // TODO refactor WaveComponents to have own Timeline, sharing a TimeContext
   @Input() onSeek: OnSeekHandler;
   @Input() width: number;
@@ -44,6 +49,10 @@ export class CurveComponent implements VerticalValueInspectorRenderer {
   @Input() colour: string;
   @Input() duration: number;
   @ViewChild(TracksComponent) tracksComponent: TracksComponent;
+
+  renderPlayhead(initialTime: number, colour: string): PlayheadManager {
+    return this.tracksComponent.renderPlayhead(initialTime, colour);
+  }
 
   renderInspector(range: [number, number], unit?: string): void {
     this.tracksComponent.renderInspector(range, unit);

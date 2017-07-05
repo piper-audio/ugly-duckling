@@ -11,6 +11,7 @@ import {
   QueryList
 } from '@angular/core';
 import {
+  PlayheadRenderer,
   VerticalValueInspectorRenderer
 } from './waves-base.component';
 import {VerticalScaleComponent} from './vertical-scale.component';
@@ -23,7 +24,10 @@ import {AudioPlayerService} from '../services/audio-player/audio-player.service'
 @Component({
   selector: 'ugly-cross-hair-inspector',
   template: '<ng-content></ng-content>',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {provide: PlayheadRenderer, useExisting: CrossHairInspectorComponent }
+  ]
 })
 export class CrossHairInspectorComponent extends VerticalScaleComponent
   implements AfterViewInit, OnDestroy {

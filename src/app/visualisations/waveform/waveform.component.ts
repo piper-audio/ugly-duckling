@@ -4,7 +4,7 @@ import {
   ChangeDetectionStrategy
 } from '@angular/core';
 import wavesUI from 'waves-ui-piper';
-import {WavesComponent} from '../waves-base.component';
+import {PlayheadRenderer, WavesComponent} from '../waves-base.component';
 
 
 @Component({
@@ -13,6 +13,7 @@ import {WavesComponent} from '../waves-base.component';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
+    {provide: PlayheadRenderer, useExisting: WaveformComponent },
     {provide: WavesComponent, useExisting: WaveformComponent}
   ]
 })

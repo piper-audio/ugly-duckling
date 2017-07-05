@@ -2,10 +2,8 @@
  * Created by lucast on 31/05/2017.
  */
 import {
-  VerticallyBinned,
   VerticallyBinnedWavesComponent,
-  VerticalBinNameRenderer,
-  WavesComponent
+  WavesComponent, PlayheadRenderer, VerticallyBounded, VerticalScaleRenderer
 } from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
@@ -23,8 +21,9 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    {provide: VerticallyBinned, useExisting: GridComponent },
-    {provide: VerticalBinNameRenderer, useExisting: GridComponent },
+    {provide: VerticallyBounded, useExisting: GridComponent },
+    {provide: VerticalScaleRenderer, useExisting: GridComponent},
+    {provide: PlayheadRenderer, useExisting: GridComponent },
     {provide: WavesComponent, useExisting: GridComponent}
   ]
 })
@@ -65,7 +64,7 @@ export class GridComponent extends VerticallyBinnedWavesComponent<Grid> {
     ];
   }
 
-  get binNames(): string[] {
+  get range(): string[] {
     if (!this.feature.binNames || this.feature.binNames.length === 0) {
       const binCount = (this.feature.data.length > 0 ?
                         this.feature.data[0].length : 0);

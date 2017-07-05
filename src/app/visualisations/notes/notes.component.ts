@@ -3,6 +3,7 @@
  */
 import {
   InspectableVerticallyBoundedComponent,
+  PlayheadRenderer,
   VerticallyBounded,
   VerticalScaleRenderer,
   VerticalValueInspectorRenderer,
@@ -25,6 +26,7 @@ import Waves from 'waves-ui-piper';
     { provide: VerticallyBounded, useExisting: NotesComponent },
     { provide: VerticalScaleRenderer, useExisting: NotesComponent },
     {provide: VerticalValueInspectorRenderer, useExisting: NotesComponent },
+    {provide: PlayheadRenderer, useExisting: NotesComponent},
     {provide: WavesComponent, useExisting: NotesComponent}
   ]
 })

@@ -3,9 +3,11 @@
  */
 import {
   InspectableVerticallyBoundedComponent,
+  PlayheadRenderer,
   VerticallyBounded,
   VerticalScaleRenderer,
-  VerticalValueInspectorRenderer, WavesComponent,
+  VerticalValueInspectorRenderer,
+  WavesComponent
 } from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
@@ -25,6 +27,7 @@ import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
     {provide: VerticallyBounded, useExisting: TracksComponent },
     {provide: VerticalScaleRenderer, useExisting: TracksComponent},
     {provide: VerticalValueInspectorRenderer, useExisting: TracksComponent},
+    {provide: PlayheadRenderer, useExisting: TracksComponent },
     {provide: WavesComponent, useExisting: TracksComponent}
   ],
 })
