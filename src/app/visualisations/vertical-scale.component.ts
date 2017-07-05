@@ -34,7 +34,7 @@ export class VerticalScaleComponent implements AfterViewInit, PlayheadRenderer {
 
   ngAfterViewInit(): void {
     this.bounded.forEach(component => {
-      this.cachedRange = component.range;
+      this.cachedRange = component.labels;
       if (this.cachedRange) {
         component.renderScale(this.cachedRange);
       }

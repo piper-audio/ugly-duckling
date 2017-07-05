@@ -3,7 +3,10 @@
  */
 import {
   VerticallyBinnedWavesComponent,
-  WavesComponent, PlayheadRenderer, VerticallyBounded, VerticalScaleRenderer
+  WavesComponent,
+  PlayheadRenderer,
+  VerticallyLabelled,
+  VerticalScaleRenderer
 } from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
@@ -21,7 +24,7 @@ import {estimatePercentile} from '../../spectrogram/MatrixUtils';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    {provide: VerticallyBounded, useExisting: GridComponent },
+    {provide: VerticallyLabelled, useExisting: GridComponent },
     {provide: VerticalScaleRenderer, useExisting: GridComponent},
     {provide: PlayheadRenderer, useExisting: GridComponent },
     {provide: WavesComponent, useExisting: GridComponent}
@@ -64,7 +67,7 @@ export class GridComponent extends VerticallyBinnedWavesComponent<Grid> {
     ];
   }
 
-  get range(): string[] {
+  get labels(): string[] {
     if (!this.feature.binNames || this.feature.binNames.length === 0) {
       const binCount = (this.feature.data.length > 0 ?
                         this.feature.data[0].length : 0);

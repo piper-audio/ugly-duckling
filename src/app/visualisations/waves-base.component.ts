@@ -11,12 +11,12 @@ import {ShapedFeatureData} from './FeatureUtilities';
 const trackIdGenerator = countingIdProvider(0);
 
 // has to be an abstract class vs as interface for Angular's DI
-export abstract class VerticallyBounded<T> {
-  abstract get range(): T;
+export abstract class VerticallyLabelled<T> {
+  abstract get labels(): T;
 }
 
-export abstract class VerticalScaleRenderer<T> extends VerticallyBounded<T> {
-  abstract renderScale(range: T): void;
+export abstract class VerticalScaleRenderer<T> extends VerticallyLabelled<T> {
+  abstract renderScale(labels: T): void;
 }
 
 export abstract class VerticalValueInspectorRenderer
@@ -226,14 +226,14 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
 export abstract class VerticallyBoundedWavesComponent
 <T extends ShapedFeatureData> extends WavesComponent<T>
   implements VerticalScaleRenderer<[number, number]> {
-  abstract range: [number, number];
+  abstract labels: [number, number];
 
-  renderScale(range: [number, number]): void {
+  renderScale(labels: [number, number]): void {
     this.addLayer(new Waves.helpers.ScaleLayer({
       tickColor: this.colour,
       textColor: this.colour,
       height: this.height,
-      yDomain: range
+      yDomain: labels
     }));
   }
 }
@@ -241,14 +241,14 @@ export abstract class VerticallyBoundedWavesComponent
 export abstract class VerticallyBinnedWavesComponent
 <T extends ShapedFeatureData> extends WavesComponent<T>
   implements VerticalScaleRenderer<string[]> {
-  abstract range: string[];
+  abstract labels: string[];
 
-  renderScale(binNames: string[]): void {
+  renderScale(labels: string[]): void {
     this.addLayer(new Waves.helpers.DiscreteScaleLayer({
       tickColor: this.colour,
       textColor: this.colour,
       height: this.height,
-      binNames
+      labels
     }));
   }
 }

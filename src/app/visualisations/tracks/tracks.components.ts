@@ -4,7 +4,7 @@
 import {
   InspectableVerticallyBoundedComponent,
   PlayheadRenderer,
-  VerticallyBounded,
+  VerticallyLabelled,
   VerticalScaleRenderer,
   VerticalValueInspectorRenderer,
   WavesComponent
@@ -24,7 +24,7 @@ import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    {provide: VerticallyBounded, useExisting: TracksComponent },
+    {provide: VerticallyLabelled, useExisting: TracksComponent },
     {provide: VerticalScaleRenderer, useExisting: TracksComponent},
     {provide: VerticalValueInspectorRenderer, useExisting: TracksComponent},
     {provide: PlayheadRenderer, useExisting: TracksComponent },
@@ -40,7 +40,7 @@ export class TracksComponent
     this.feature = input;
   }
 
-  get range(): [number, number] {
+  get labels(): [number, number] {
     return this.currentState && this.currentState.data.length > 0 ?
       this.currentState.yDomain : null;
   }

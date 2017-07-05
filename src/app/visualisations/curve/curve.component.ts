@@ -12,7 +12,7 @@ import {VectorFeature} from 'piper/HigherLevelUtilities';
 import {
   PlayheadManager,
   PlayheadRenderer,
-  VerticallyBounded,
+  VerticallyLabelled,
   VerticalScaleRenderer,
   VerticalValueInspectorRenderer,
   WavesComponent
@@ -32,7 +32,7 @@ import {TracksComponent} from '../tracks/tracks.components';
     ></ugly-tracks>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    {provide: VerticallyBounded, useExisting: CurveComponent },
+    {provide: VerticallyLabelled, useExisting: CurveComponent },
     {provide: VerticalScaleRenderer, useExisting: CurveComponent},
     {provide: VerticalValueInspectorRenderer, useExisting: CurveComponent},
     {provide: PlayheadRenderer, useExisting: CurveComponent },
@@ -66,7 +66,7 @@ export class CurveComponent
     this.tracksComponent.renderScale(range);
   }
 
-  get range(): [number, number] {
-    return this.tracksComponent.range;
+  get labels(): [number, number] {
+    return this.tracksComponent.labels;
   }
 }
