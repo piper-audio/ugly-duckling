@@ -49,7 +49,7 @@ export class VerticalScaleComponent implements AfterViewInit, PlayheadRenderer {
       update: (time: number) => {
         rendered.forEach(component => component.update(time));
       },
-      remove: () => rendered.map(component => component.remove)
+      remove: () => rendered.map(component => component.remove())
     };
   }
 }
