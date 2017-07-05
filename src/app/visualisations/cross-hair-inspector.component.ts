@@ -7,6 +7,7 @@ import {
   Component,
   ContentChildren,
   Input,
+  OnDestroy,
   QueryList
 } from '@angular/core';
 import {
@@ -25,7 +26,7 @@ import {AudioPlayerService} from '../services/audio-player/audio-player.service'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CrossHairInspectorComponent extends VerticalScaleComponent
-  implements AfterViewInit {
+  implements AfterViewInit, OnDestroy {
   @ContentChildren(
     VerticalValueInspectorRenderer
   ) inspectorRenderers: QueryList<VerticalValueInspectorRenderer>;
@@ -57,6 +58,10 @@ export class CrossHairInspectorComponent extends VerticalScaleComponent
       renderer.updatePosition(this.player.getCurrentTime());
     });
     this.addTasks();
+  }
+
+  ngOnDestroy(): void {
+    this.removers.forEach(remove => remove());
   }
 
   private addTasks(): void {
