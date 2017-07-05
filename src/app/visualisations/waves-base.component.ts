@@ -86,7 +86,6 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
   }
 
   renderPlayhead(initialTime: number, colour: string): PlayheadManager {
-    console.warn('waves base render playhead');
     const cursor = new Waves.helpers.CursorLayer({
       height: this.height,
       color: colour,
@@ -248,7 +247,7 @@ export abstract class VerticallyBinnedWavesComponent
       tickColor: this.colour,
       textColor: this.colour,
       height: this.height,
-      labels
+      binNames: labels
     }));
   }
 }
