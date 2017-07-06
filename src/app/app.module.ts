@@ -42,6 +42,7 @@ import {
   ActionTrayComponent
 } from './actions/action-tray.component';
 import {RecordRtcMediaRecorder} from './services/audio-recorder/RecordRtcMediaRecorder';
+import {NotificationService} from './services/notifications/notifications.service';
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -163,7 +164,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     {provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager},
     {provide: 'ResourceReader', useFactory: createResourceReader},
     {provide: 'DimensionObservable', useFactory: createWindowDimensionObservable},
-    RenderLoopService
+    RenderLoopService,
+    NotificationService
   ],
   bootstrap: [AppComponent]
 })

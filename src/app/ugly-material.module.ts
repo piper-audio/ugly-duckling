@@ -5,7 +5,7 @@ import {
   MdButtonModule, MdCardModule,
   MdIconModule, MdListModule, MdProgressBarModule, MdProgressSpinnerModule,
   MdSelectModule,
-  MdSidenavModule,
+  MdSidenavModule, MdSnackBarModule,
   MdToolbarModule
 } from '@angular/material';
 import {NgModule} from '@angular/core';
@@ -21,7 +21,8 @@ const importExports = [
   MdProgressSpinnerModule,
   MdProgressBarModule,
   MdCardModule,
-  MdListModule
+  MdListModule,
+  MdSnackBarModule
 ];
 
 @NgModule({
