@@ -2,7 +2,8 @@ import {Component, Inject, OnDestroy} from '@angular/core';
 import {
   AudioPlayerService,
   AudioResourceError,
-  AudioResource
+  AudioResource,
+  AudioLoadResponse
 } from './services/audio-player/audio-player.service';
 import {
   ExtractionResult,
@@ -25,6 +26,7 @@ import {OnSeekHandler} from './playhead/PlayHeadHelpers';
 import {UrlResourceLifetimeManager} from './app.module';
 import {createExtractionRequest} from './analysis-item/AnalysisItem';
 import {PersistentStack} from './Session';
+import {NotificationService} from './services/notifications/notifications.service';
 
 @Component({
   selector: 'ugly-root',
@@ -46,7 +48,8 @@ export class AppComponent implements OnDestroy {
               private sanitizer: DomSanitizer,
               @Inject(
                 'UrlResourceLifetimeManager'
-              ) private resourceManager: UrlResourceLifetimeManager) {
+              ) private resourceManager: UrlResourceLifetimeManager,
+              private notifier: NotificationService) {
     this.analyses = new PersistentStack<AnalysisItem>();
     this.canExtract = false;
     this.nRecordings = 0;
@@ -64,8 +67,10 @@ export class AppComponent implements OnDestroy {
           val => isPendingRootAudioItem(val) && val.uri === getRootAudioItem(
             this.analyses.get(0)
           ).uri;
-        const wasError = (resource as AudioResourceError).message != null;
-        if (wasError) {
+        const wasError = (res: AudioLoadResponse):
+          res is AudioResourceError => (res as any).message != null;
+        if (wasError(resource)) {
+          this.notifier.displayError(resource.message);
           this.analyses.findIndexAndUse(
             findCurrentAudio,
             index => this.analyses.remove(index)
@@ -208,7 +213,7 @@ export class AppComponent implements OnDestroy {
           val => val.id === analysis.id,
           index => this.analyses.remove(index)
         );
-        console.error(`Error whilst extracting: ${err}`);
+        this.notifier.displayError(`Error whilst extracting: ${err}`);
       });
   }
 }

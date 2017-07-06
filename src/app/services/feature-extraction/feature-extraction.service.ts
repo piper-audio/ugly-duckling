@@ -18,6 +18,7 @@ import {
   KnownShapedFeature,
   toKnownShape
 } from '../../visualisations/FeatureUtilities';
+import {NotificationService} from '../notifications/notifications.service';
 
 type RepoUri = string;
 export interface AvailableLibraries {
@@ -48,7 +49,8 @@ export class FeatureExtractionService {
   private client: WebWorkerStreamingClient;
 
   constructor(private http: Http,
-              @Inject('PiperRepoUri') private repositoryUri: RepoUri) {
+              @Inject('PiperRepoUri') private repositoryUri: RepoUri,
+              private notifier: NotificationService) {
     this.worker = new Worker('bootstrap-feature-extraction-worker.js');
     this.featuresExtracted = new Subject<ExtractionResult>();
     this.featuresExtracted$ = this.featuresExtracted.asObservable();
@@ -117,7 +119,7 @@ export class FeatureExtractionService {
           params: res.json()
         });
       })
-      .catch(console.error); // TODO Report error to user
+      .catch(err => this.notifier.displayError(err));
   }
 
   load(libraryKey: string): void {
