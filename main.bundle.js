@@ -48,15 +48,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 const importExports = [
     __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_animations__["a" /* BrowserAnimationsModule */],
-    __WEBPACK_IMPORTED_MODULE_0__angular_material__["a" /* MdIconModule */],
-    __WEBPACK_IMPORTED_MODULE_0__angular_material__["b" /* MdSidenavModule */],
-    __WEBPACK_IMPORTED_MODULE_0__angular_material__["c" /* MdToolbarModule */],
-    __WEBPACK_IMPORTED_MODULE_0__angular_material__["d" /* MdButtonModule */],
-    __WEBPACK_IMPORTED_MODULE_0__angular_material__["e" /* MdSelectModule */],
-    __WEBPACK_IMPORTED_MODULE_0__angular_material__["f" /* MdProgressSpinnerModule */],
-    __WEBPACK_IMPORTED_MODULE_0__angular_material__["g" /* MdProgressBarModule */],
-    __WEBPACK_IMPORTED_MODULE_0__angular_material__["h" /* MdCardModule */],
-    __WEBPACK_IMPORTED_MODULE_0__angular_material__["i" /* MdListModule */]
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["b" /* MdIconModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["c" /* MdSidenavModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["d" /* MdToolbarModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["e" /* MdButtonModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["f" /* MdSelectModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["g" /* MdProgressSpinnerModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["h" /* MdProgressBarModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["i" /* MdCardModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["j" /* MdListModule */],
+    __WEBPACK_IMPORTED_MODULE_0__angular_material__["k" /* MdSnackBarModule */]
 ];
 let UglyMaterialModule = class UglyMaterialModule {
 };
@@ -96,15 +97,15 @@ let ProgressBarComponent = class ProgressBarComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Object)
 ], ProgressBarComponent.prototype, "isDeterminate", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Number)
 ], ProgressBarComponent.prototype, "progress", void 0);
 ProgressBarComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-progress-bar',
         template: `
     <md-progress-bar
@@ -113,7 +114,7 @@ ProgressBarComponent = __decorate([
       [value]="progress"
     ></md-progress-bar>
   `,
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["B" /* ChangeDetectionStrategy */].OnPush
     })
 ], ProgressBarComponent);
 
@@ -249,10 +250,10 @@ let AudioPlayerService = class AudioPlayerService {
 };
 AudioPlayerService = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
-    __param(0, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])(HTMLAudioElement)),
-    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('AudioContext')),
-    __param(2, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('ResourceReader')),
-    __param(3, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('UrlResourceLifetimeManager')),
+    __param(0, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["g" /* Inject */])(HTMLAudioElement)),
+    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["g" /* Inject */])('AudioContext')),
+    __param(2, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["g" /* Inject */])('ResourceReader')),
+    __param(3, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["g" /* Inject */])('UrlResourceLifetimeManager')),
     __metadata("design:paramtypes", [Object, Object, Function, typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__app_module__["b" /* UrlResourceLifetimeManager */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__app_module__["b" /* UrlResourceLifetimeManager */]) === "function" && _a || Object])
 ], AudioPlayerService);
 
@@ -305,16 +306,16 @@ let WaveformComponent = WaveformComponent_1 = class WaveformComponent extends __
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Object),
     __metadata("design:paramtypes", [Object])
 ], WaveformComponent.prototype, "audioBuffer", null);
 WaveformComponent = WaveformComponent_1 = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-waveform',
         template: __webpack_require__("AcCh"),
         styles: [__webpack_require__("1B76")],
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["B" /* ChangeDetectionStrategy */].OnPush,
         providers: [
             { provide: __WEBPACK_IMPORTED_MODULE_2__waves_base_component__["a" /* PlayheadRenderer */], useExisting: WaveformComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_2__waves_base_component__["f" /* WavesComponent */], useExisting: WaveformComponent_1 }
@@ -392,16 +393,16 @@ let GridComponent = GridComponent_1 = class GridComponent extends __WEBPACK_IMPO
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__FeatureUtilities__["b" /* Grid */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__FeatureUtilities__["b" /* Grid */]) === "function" && _a || Object),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__FeatureUtilities__["b" /* Grid */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__FeatureUtilities__["b" /* Grid */]) === "function" && _b || Object])
 ], GridComponent.prototype, "grid", null);
 GridComponent = GridComponent_1 = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["q" /* Component */])({
         selector: 'ugly-grid',
         template: __webpack_require__("AcCh"),
         styles: [__webpack_require__("1B76")],
-        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["B" /* ChangeDetectionStrategy */].OnPush,
         providers: [
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyLabelled */], useExisting: GridComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: GridComponent_1 },
@@ -423,6 +424,7 @@ var GridComponent_1, _a, _b;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__ = __webpack_require__("rlar");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__notifications_notifications_service__ = __webpack_require__("WEfR");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AudioRecorderService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -439,6 +441,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 /**
  * Created by lucas on 17/03/2017.
  */
+
 
 
 class ThrowingMediaRecorder {
@@ -462,8 +465,9 @@ class ThrowingMediaRecorder {
 /* unused harmony export ThrowingMediaRecorder */
 
 let AudioRecorderService = class AudioRecorderService {
-    constructor(requestProvider, recorderImpl, ngZone) {
+    constructor(requestProvider, recorderImpl, ngZone, notifier) {
         this.ngZone = ngZone;
+        this.notifier = notifier;
         this.knownTypes = [
             { mimeType: 'audio/ogg', extension: 'ogg' },
             { mimeType: 'audio/webm', extension: 'webm' },
@@ -506,7 +510,7 @@ let AudioRecorderService = class AudioRecorderService {
                 .then(recorder => this.startRecording(recorder))
                 .catch(e => {
                 this.recordingStateChange.next('disabled'); // don't really need to do this
-                console.warn(e); // TODO emit an error message for display?
+                this.notifier.displayError(e);
             });
         }
     }
@@ -531,12 +535,12 @@ let AudioRecorderService = class AudioRecorderService {
 };
 AudioRecorderService = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
-    __param(0, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('AudioInputProvider')),
-    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('MediaRecorderFactory')),
-    __metadata("design:paramtypes", [Function, Object, typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* NgZone */]) === "function" && _a || Object])
+    __param(0, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["g" /* Inject */])('AudioInputProvider')),
+    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["g" /* Inject */])('MediaRecorderFactory')),
+    __metadata("design:paramtypes", [Function, Object, typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* NgZone */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__notifications_notifications_service__["a" /* NotificationService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__notifications_notifications_service__["a" /* NotificationService */]) === "function" && _b || Object])
 ], AudioRecorderService);
 
-var _a;
+var _a, _b;
 //# sourceMappingURL=audio-recorder.service.js.map
 
 /***/ }),
@@ -584,16 +588,16 @@ let NotesComponent = NotesComponent_1 = class NotesComponent extends __WEBPACK_I
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["k" /* Input */])(),
     __metadata("design:type", Array),
     __metadata("design:paramtypes", [Array])
 ], NotesComponent.prototype, "notes", null);
 NotesComponent = NotesComponent_1 = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["q" /* Component */])({
         selector: 'ugly-notes',
         template: __webpack_require__("AcCh"),
         styles: [__webpack_require__("1B76")],
-        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["B" /* ChangeDetectionStrategy */].OnPush,
         providers: [
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyLabelled */], useExisting: NotesComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: NotesComponent_1 },
@@ -856,32 +860,32 @@ class WavesComponent {
 /* harmony export (immutable) */ __webpack_exports__["f"] = WavesComponent;
 
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_6" /* ViewChild */])('track'),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* ElementRef */]) === "function" && _a || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["z" /* ViewChild */])('track'),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["h" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["h" /* ElementRef */]) === "function" && _a || Object)
 ], WavesComponent.prototype, "trackContainer", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Number),
     __metadata("design:paramtypes", [Number])
 ], WavesComponent.prototype, "width", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Object)
 ], WavesComponent.prototype, "timeline", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _b || Object)
 ], WavesComponent.prototype, "onSeek", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", String)
 ], WavesComponent.prototype, "colour", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Number)
 ], WavesComponent.prototype, "duration", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Object),
     __metadata("design:paramtypes", [Object])
 ], WavesComponent.prototype, "feature", null);
@@ -944,7 +948,7 @@ class InspectableVerticallyBoundedComponent extends VerticallyBoundedWavesCompon
 /* harmony export (immutable) */ __webpack_exports__["g"] = InspectableVerticallyBoundedComponent;
 
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _c || Object),
     __metadata("design:paramtypes", [typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _d || Object])
 ], InspectableVerticallyBoundedComponent.prototype, "onSeek", null);
@@ -1038,7 +1042,7 @@ let RenderLoopService = class RenderLoopService {
 };
 RenderLoopService = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* NgZone */]) === "function" && _b || Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* NgZone */]) === "function" && _b || Object])
 ], RenderLoopService);
 
 var _a, _b;
@@ -1093,16 +1097,16 @@ let InstantsComponent = InstantsComponent_1 = class InstantsComponent extends __
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["k" /* Input */])(),
     __metadata("design:type", Array),
     __metadata("design:paramtypes", [Array])
 ], InstantsComponent.prototype, "instants", null);
 InstantsComponent = InstantsComponent_1 = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["q" /* Component */])({
         selector: 'ugly-instants',
         template: __webpack_require__("AcCh"),
         styles: [__webpack_require__("1B76")],
-        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["B" /* ChangeDetectionStrategy */].OnPush,
         providers: [
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */], useExisting: InstantsComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["f" /* WavesComponent */], useExisting: InstantsComponent_1 }
@@ -1152,7 +1156,7 @@ let AnalysisItemComponent = class AnalysisItemComponent {
         this.renderLoop = renderLoop;
         this.sanitizer = sanitizer;
         this.hasProgressOnInit = false;
-        this.remove = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]();
+        this.remove = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]();
     }
     // TODO should be TimelineTimeContext?
     set timeline(timeline) {
@@ -1235,39 +1239,39 @@ let AnalysisItemComponent = class AnalysisItemComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Object),
     __metadata("design:paramtypes", [Object])
 ], AnalysisItemComponent.prototype, "timeline", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], AnalysisItemComponent.prototype, "isActive", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["f" /* Item */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__AnalysisItem__["f" /* Item */]) === "function" && _a || Object)
 ], AnalysisItemComponent.prototype, "item", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Number)
 ], AnalysisItemComponent.prototype, "contentWidth", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _b || Object)
 ], AnalysisItemComponent.prototype, "onSeek", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_0" /* Output */])(),
-    __metadata("design:type", typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]) === "function" && _c || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["l" /* Output */])(),
+    __metadata("design:type", typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]) === "function" && _c || Object)
 ], AnalysisItemComponent.prototype, "remove", void 0);
 AnalysisItemComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-analysis-item',
         template: __webpack_require__("9jta"),
         styles: [__webpack_require__("hth3")],
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["B" /* ChangeDetectionStrategy */].OnPush
     }),
-    __metadata("design:paramtypes", [typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _e || Object])
+    __metadata("design:paramtypes", [typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["e" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["e" /* DomSanitizer */]) === "function" && _e || Object])
 ], AnalysisItemComponent);
 
 var _a, _b, _c, _d, _e;
@@ -1348,23 +1352,23 @@ let WavesPlayHeadComponent = class WavesPlayHeadComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_1__visualisations_waves_base_component__["a" /* PlayheadRenderer */]),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["y" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_1__visualisations_waves_base_component__["a" /* PlayheadRenderer */]),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["_11" /* QueryList */]) === "function" && _a || Object)
 ], WavesPlayHeadComponent.prototype, "wavesChildren", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", String)
 ], WavesPlayHeadComponent.prototype, "colour", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], WavesPlayHeadComponent.prototype, "isActive", null);
 WavesPlayHeadComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-waves-play-head',
         template: '<ng-content></ng-content>',
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["B" /* ChangeDetectionStrategy */].OnPush
     }),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _c || Object])
 ], WavesPlayHeadComponent);
@@ -1407,11 +1411,11 @@ let ActionTrayComponent = class ActionTrayComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", String)
 ], ActionTrayComponent.prototype, "visibility", void 0);
 ActionTrayComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-action-tray',
         template: `<div
     class="tray"
@@ -1689,24 +1693,24 @@ let PlayHeadComponent = class PlayHeadComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers__["TimePixelMapper"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers__["TimePixelMapper"]) === "function" && _a || Object)
 ], PlayHeadComponent.prototype, "timeToPixel", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Number),
     __metadata("design:paramtypes", [Number])
 ], PlayHeadComponent.prototype, "currentTime", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", String),
     __metadata("design:paramtypes", [String])
 ], PlayHeadComponent.prototype, "colour", null);
 PlayHeadComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-play-head',
         template: `<div [ngStyle]="currentStyle"></div>`,
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["B" /* ChangeDetectionStrategy */].OnPush
     })
 ], PlayHeadComponent);
 
@@ -1769,16 +1773,16 @@ let TracksComponent = TracksComponent_1 = class TracksComponent extends __WEBPAC
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2_piper_HigherLevelUtilities__["TracksFeature"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_piper_HigherLevelUtilities__["TracksFeature"]) === "function" && _a || Object),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2_piper_HigherLevelUtilities__["TracksFeature"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_piper_HigherLevelUtilities__["TracksFeature"]) === "function" && _b || Object])
 ], TracksComponent.prototype, "tracks", null);
 TracksComponent = TracksComponent_1 = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["q" /* Component */])({
         selector: 'ugly-tracks',
         template: __webpack_require__("AcCh"),
         styles: [__webpack_require__("1B76")],
-        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["B" /* ChangeDetectionStrategy */].OnPush,
         providers: [
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["e" /* VerticallyLabelled */], useExisting: TracksComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: TracksComponent_1 },
@@ -1892,6 +1896,50 @@ var TracksComponent_1, _a, _b;
 
 /***/ }),
 
+/***/ "WEfR":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_material__ = __webpack_require__("Z04r");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return NotificationService; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+/**
+ * Created by lucast on 06/07/2017.
+ */
+
+
+let NotificationService = class NotificationService {
+    constructor(snackBar) {
+        this.snackBar = snackBar;
+    }
+    displayError(message) {
+        // TODO perhaps actual distinguish this as an error?
+        this.displayMessage(message);
+    }
+    displayMessage(message) {
+        this.snackBar.open(message, 'Dismiss', { duration: 5000 });
+    }
+    ;
+};
+NotificationService = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_material__["a" /* MdSnackBar */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_material__["a" /* MdSnackBar */]) === "function" && _a || Object])
+], NotificationService);
+
+var _a;
+//# sourceMappingURL=notifications.service.js.map
+
+/***/ }),
+
 /***/ "ZNtH":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1928,7 +1976,7 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     constructor(piperService) {
         this.piperService = piperService;
         this.extractors = [];
-        this.requestOutput = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]();
+        this.requestOutput = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]();
         this.isDisabled = true;
         this.populateExtractors = available => {
             this.extractors = available.available.reduce((acc, staticData) => {
@@ -1988,20 +2036,20 @@ let FeatureExtractionMenuComponent = class FeatureExtractionMenuComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], FeatureExtractionMenuComponent.prototype, "disabled", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Function)
 ], FeatureExtractionMenuComponent.prototype, "onRequestOutput", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_0" /* Output */])(),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]) === "function" && _a || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["l" /* Output */])(),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]) === "function" && _a || Object)
 ], FeatureExtractionMenuComponent.prototype, "requestOutput", void 0);
 FeatureExtractionMenuComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-feature-extraction-menu',
         template: __webpack_require__("J4P9"),
         styles: [__webpack_require__("x5+K")]
@@ -2099,6 +2147,7 @@ var _a, _b;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__playhead_waves_ui_play_head_component__ = __webpack_require__("LbIP");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__actions_action_tray_component__ = __webpack_require__("MaDt");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_31__services_audio_recorder_RecordRtcMediaRecorder__ = __webpack_require__("jYsx");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_32__services_notifications_notifications_service__ = __webpack_require__("WEfR");
 /* unused harmony export createAudioContext */
 /* unused harmony export createAudioElement */
 /* unused harmony export createAudioInputProvider */
@@ -2113,6 +2162,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -2248,7 +2298,8 @@ AppModule = __decorate([
             { provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager },
             { provide: 'ResourceReader', useFactory: createResourceReader },
             { provide: 'DimensionObservable', useFactory: createWindowDimensionObservable },
-            __WEBPACK_IMPORTED_MODULE_28__services_render_loop_render_loop_service__["a" /* RenderLoopService */]
+            __WEBPACK_IMPORTED_MODULE_28__services_render_loop_render_loop_service__["a" /* RenderLoopService */],
+            __WEBPACK_IMPORTED_MODULE_32__services_notifications_notifications_service__["a" /* NotificationService */]
         ],
         bootstrap: [__WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */]]
     })
@@ -2336,23 +2387,23 @@ let LivePlayHeadComponent = class LivePlayHeadComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers__["TimePixelMapper"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers__["TimePixelMapper"]) === "function" && _a || Object)
 ], LivePlayHeadComponent.prototype, "timeToPixel", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", String)
 ], LivePlayHeadComponent.prototype, "colour", void 0);
 LivePlayHeadComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-live-play-head',
         template: `<ugly-play-head
     [currentTime]="currentTime"
     [timeToPixel]="timeToPixel"
     [colour]="colour"></ugly-play-head>`,
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["B" /* ChangeDetectionStrategy */].OnPush
     }),
-    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */]) === "function" && _c || Object])
+    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_render_loop_render_loop_service__["a" /* RenderLoopService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_render_loop_render_loop_service__["a" /* RenderLoopService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ChangeDetectorRef */]) === "function" && _c || Object])
 ], LivePlayHeadComponent);
 
 var _a, _b, _c;
@@ -2407,7 +2458,7 @@ let PlaybackControlComponent = class PlaybackControlComponent {
     }
 };
 PlaybackControlComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-playback-control',
         template: __webpack_require__("bese"),
         styles: [__webpack_require__("AERx")]
@@ -2438,7 +2489,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 let AudioFileOpenComponent = class AudioFileOpenComponent {
     constructor() {
-        this.fileOpened = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]();
+        this.fileOpened = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]();
     }
     ngOnInit() {
     }
@@ -2452,15 +2503,15 @@ let AudioFileOpenComponent = class AudioFileOpenComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_6" /* ViewChild */])('open'),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* ElementRef */]) === "function" && _a || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["z" /* ViewChild */])('open'),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["h" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["h" /* ElementRef */]) === "function" && _a || Object)
 ], AudioFileOpenComponent.prototype, "open", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_0" /* Output */])(),
-    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]) === "function" && _b || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["l" /* Output */])(),
+    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]) === "function" && _b || Object)
 ], AudioFileOpenComponent.prototype, "fileOpened", void 0);
 AudioFileOpenComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-audio-file-open',
         template: __webpack_require__("hsUb"),
         styles: [__webpack_require__("lmXt")]
@@ -2814,7 +2865,7 @@ let RecordingControlComponent = class RecordingControlComponent {
     constructor(recordingService) {
         this.recordingService = recordingService;
         this.recordingStatus = 'disabled';
-        this.finishedRecording = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]();
+        this.finishedRecording = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]();
     }
     ngOnInit() {
         this.recordingState = this.recordingService.recordingStateChange$.subscribe((status) => {
@@ -2833,11 +2884,11 @@ let RecordingControlComponent = class RecordingControlComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_0" /* Output */])(),
-    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]) === "function" && _a || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["l" /* Output */])(),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]) === "function" && _a || Object)
 ], RecordingControlComponent.prototype, "finishedRecording", void 0);
 RecordingControlComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-recording-control',
         template: __webpack_require__("Eemu")
     }),
@@ -2902,7 +2953,7 @@ let NotebookFeedComponent = class NotebookFeedComponent {
         this.ref = ref;
         this.onResize = onResize;
         this.audioService = audioService;
-        this.removeItem = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]();
+        this.removeItem = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]();
         this.timelines = new Map();
         this.onResize.subscribe(dim => {
             this.lastWidth = this.width;
@@ -2983,27 +3034,27 @@ let NotebookFeedComponent = class NotebookFeedComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Array),
     __metadata("design:paramtypes", [Array])
 ], NotebookFeedComponent.prototype, "analyses", null);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _a || Object)
 ], NotebookFeedComponent.prototype, "onSeek", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_0" /* Output */])(),
-    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["F" /* EventEmitter */]) === "function" && _b || Object)
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["l" /* Output */])(),
+    __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* EventEmitter */]) === "function" && _b || Object)
 ], NotebookFeedComponent.prototype, "removeItem", void 0);
 NotebookFeedComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-notebook-feed',
         template: __webpack_require__("IXBa"),
         styles: [__webpack_require__("D/YE")],
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["B" /* ChangeDetectionStrategy */].OnPush
     }),
-    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('DimensionObservable')),
-    __metadata("design:paramtypes", [typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["Z" /* ChangeDetectorRef */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_5__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _e || Object])
+    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["g" /* Inject */])('DimensionObservable')),
+    __metadata("design:paramtypes", [typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* ChangeDetectorRef */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_rxjs_Observable__["Observable"]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_5__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _e || Object])
 ], NotebookFeedComponent);
 
 var _a, _b, _c, _d, _e;
@@ -3024,6 +3075,7 @@ var _a, _b, _c, _d, _e;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_StreamingService__ = __webpack_require__("PUUq");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_piper_StreamingService___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_piper_StreamingService__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__visualisations_FeatureUtilities__ = __webpack_require__("kdy0");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__notifications_notifications_service__ = __webpack_require__("WEfR");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FeatureExtractionService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3043,10 +3095,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 
 
 
+
 let FeatureExtractionService = class FeatureExtractionService {
-    constructor(http, repositoryUri) {
+    constructor(http, repositoryUri, notifier) {
         this.http = http;
         this.repositoryUri = repositoryUri;
+        this.notifier = notifier;
         this.worker = new Worker('bootstrap-feature-extraction-worker.js');
         this.featuresExtracted = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__["Subject"]();
         this.featuresExtracted$ = this.featuresExtracted.asObservable();
@@ -3107,7 +3161,7 @@ let FeatureExtractionService = class FeatureExtractionService {
                 params: res.json()
             });
         })
-            .catch(console.error); // TODO Report error to user
+            .catch(err => this.notifier.displayError(err));
     }
     load(libraryKey) {
         this.worker.postMessage({ method: 'import', params: libraryKey });
@@ -3115,11 +3169,11 @@ let FeatureExtractionService = class FeatureExtractionService {
 };
 FeatureExtractionService = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* Injectable */])(),
-    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('PiperRepoUri')),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__angular_http__["b" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_http__["b" /* Http */]) === "function" && _a || Object, String])
+    __param(1, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["g" /* Inject */])('PiperRepoUri')),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__angular_http__["b" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_http__["b" /* Http */]) === "function" && _a || Object, String, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_6__notifications_notifications_service__["a" /* NotificationService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__notifications_notifications_service__["a" /* NotificationService */]) === "function" && _b || Object])
 ], FeatureExtractionService);
 
-var _a;
+var _a, _b;
 //# sourceMappingURL=feature-extraction.service.js.map
 
 /***/ }),
@@ -3175,20 +3229,20 @@ let ProgressSpinnerComponent = class ProgressSpinnerComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Object)
 ], ProgressSpinnerComponent.prototype, "isVisible", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Object)
 ], ProgressSpinnerComponent.prototype, "isDeterminate", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Number),
     __metadata("design:paramtypes", [Number])
 ], ProgressSpinnerComponent.prototype, "progress", null);
 ProgressSpinnerComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-progress-spinner',
         template: `
     <div class="container" [hidden]="!isVisible">
@@ -3285,23 +3339,23 @@ let CrossHairInspectorComponent = CrossHairInspectorComponent_1 = class CrossHai
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_1__waves_base_component__["b" /* VerticalValueInspectorRenderer */]),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["y" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_1__waves_base_component__["b" /* VerticalValueInspectorRenderer */]),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["_11" /* QueryList */]) === "function" && _a || Object)
 ], CrossHairInspectorComponent.prototype, "inspectorRenderers", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", String)
 ], CrossHairInspectorComponent.prototype, "unit", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Boolean),
     __metadata("design:paramtypes", [Boolean])
 ], CrossHairInspectorComponent.prototype, "isAnimated", null);
 CrossHairInspectorComponent = CrossHairInspectorComponent_1 = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-cross-hair-inspector',
         template: '<ng-content></ng-content>',
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["B" /* ChangeDetectionStrategy */].OnPush,
         providers: [
             { provide: __WEBPACK_IMPORTED_MODULE_1__waves_base_component__["a" /* PlayheadRenderer */], useExisting: CrossHairInspectorComponent_1 }
         ]
@@ -3357,18 +3411,18 @@ let VerticalScaleComponent = VerticalScaleComponent_1 = class VerticalScaleCompo
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */]),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["y" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["c" /* VerticalScaleRenderer */]),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */]) === "function" && _a || Object)
 ], VerticalScaleComponent.prototype, "bounded", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_5" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */]),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["y" /* ContentChildren */])(__WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */]),
     __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_core__["_11" /* QueryList */]) === "function" && _b || Object)
 ], VerticalScaleComponent.prototype, "seekable", void 0);
 VerticalScaleComponent = VerticalScaleComponent_1 = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["q" /* Component */])({
         selector: 'ugly-vertical-scale',
         template: '<ng-content></ng-content>',
-        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        changeDetection: __WEBPACK_IMPORTED_MODULE_1__angular_core__["B" /* ChangeDetectionStrategy */].OnPush,
         providers: [
             { provide: __WEBPACK_IMPORTED_MODULE_0__waves_base_component__["a" /* PlayheadRenderer */], useExisting: VerticalScaleComponent_1 }
         ]
@@ -3392,6 +3446,7 @@ var VerticalScaleComponent_1, _a, _b;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__ = __webpack_require__("O5jy");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__app_module__ = __webpack_require__("aR8+");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Session__ = __webpack_require__("xunm");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__services_notifications_notifications_service__ = __webpack_require__("WEfR");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3414,13 +3469,15 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 
 
 
+
 let AppComponent = class AppComponent {
-    constructor(audioService, featureService, iconRegistry, sanitizer, resourceManager) {
+    constructor(audioService, featureService, iconRegistry, sanitizer, resourceManager, notifier) {
         this.audioService = audioService;
         this.featureService = featureService;
         this.iconRegistry = iconRegistry;
         this.sanitizer = sanitizer;
         this.resourceManager = resourceManager;
+        this.notifier = notifier;
         this.analyses = new __WEBPACK_IMPORTED_MODULE_7__Session__["a" /* PersistentStack */]();
         this.canExtract = false;
         this.nRecordings = 0;
@@ -3429,8 +3486,9 @@ let AppComponent = class AppComponent {
         iconRegistry.addSvgIcon('duck', sanitizer.bypassSecurityTrustResourceUrl('assets/duck.svg'));
         this.onAudioDataSubscription = this.audioService.audioLoaded$.subscribe(resource => {
             const findCurrentAudio = val => __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["e" /* isPendingRootAudioItem */])(val) && val.uri === __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__analysis_item_AnalysisItem__["g" /* getRootAudioItem */])(this.analyses.get(0)).uri;
-            const wasError = resource.message != null;
-            if (wasError) {
+            const wasError = (res) => res.message != null;
+            if (wasError(resource)) {
+                this.notifier.displayError(resource.message);
                 this.analyses.findIndexAndUse(findCurrentAudio, index => this.analyses.remove(index));
                 this.canExtract = false;
             }
@@ -3522,21 +3580,21 @@ let AppComponent = class AppComponent {
             .catch(err => {
             this.canExtract = true;
             this.analyses.findIndexAndUse(val => val.id === analysis.id, index => this.analyses.remove(index));
-            console.error(`Error whilst extracting: ${err}`);
+            this.notifier.displayError(`Error whilst extracting: ${err}`);
         });
     }
 };
 AppComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-root',
         template: __webpack_require__("efyd"),
         styles: [__webpack_require__("hxJY")]
     }),
-    __param(4, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* Inject */])('UrlResourceLifetimeManager')),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_material__["j" /* MdIconRegistry */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["f" /* DomSanitizer */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_6__app_module__["b" /* UrlResourceLifetimeManager */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__app_module__["b" /* UrlResourceLifetimeManager */]) === "function" && _e || Object])
+    __param(4, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["g" /* Inject */])('UrlResourceLifetimeManager')),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__services_audio_player_audio_player_service__["a" /* AudioPlayerService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_feature_extraction_feature_extraction_service__["a" /* FeatureExtractionService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__angular_material__["l" /* MdIconRegistry */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_material__["l" /* MdIconRegistry */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["e" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["e" /* DomSanitizer */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_6__app_module__["b" /* UrlResourceLifetimeManager */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__app_module__["b" /* UrlResourceLifetimeManager */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_8__services_notifications_notifications_service__["a" /* NotificationService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_8__services_notifications_notifications_service__["a" /* NotificationService */]) === "function" && _f || Object])
 ], AppComponent);
 
-var _a, _b, _c, _d, _e;
+var _a, _b, _c, _d, _e, _f;
 //# sourceMappingURL=app.component.js.map
 
 /***/ }),
@@ -3765,35 +3823,35 @@ let CurveComponent = CurveComponent_1 = class CurveComponent {
     }
 };
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Object)
 ], CurveComponent.prototype, "timeline", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__["OnSeekHandler"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__["OnSeekHandler"]) === "function" && _a || Object)
 ], CurveComponent.prototype, "onSeek", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Number)
 ], CurveComponent.prototype, "width", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2_piper_HigherLevelUtilities__["VectorFeature"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_piper_HigherLevelUtilities__["VectorFeature"]) === "function" && _b || Object)
 ], CurveComponent.prototype, "curve", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", String)
 ], CurveComponent.prototype, "colour", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["O" /* Input */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["k" /* Input */])(),
     __metadata("design:type", Number)
 ], CurveComponent.prototype, "duration", void 0);
 __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_6" /* ViewChild */])(__WEBPACK_IMPORTED_MODULE_4__tracks_tracks_components__["a" /* TracksComponent */]),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["z" /* ViewChild */])(__WEBPACK_IMPORTED_MODULE_4__tracks_tracks_components__["a" /* TracksComponent */]),
     __metadata("design:type", typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__tracks_tracks_components__["a" /* TracksComponent */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__tracks_tracks_components__["a" /* TracksComponent */]) === "function" && _c || Object)
 ], CurveComponent.prototype, "tracksComponent", void 0);
 CurveComponent = CurveComponent_1 = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_3" /* Component */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["q" /* Component */])({
         selector: 'ugly-curve',
         template: `
     <ugly-tracks
@@ -3804,7 +3862,7 @@ CurveComponent = CurveComponent_1 = __decorate([
       [tracks]="[curve]"
       [duration]="duration"
     ></ugly-tracks>`,
-        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* ChangeDetectionStrategy */].OnPush,
+        changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["B" /* ChangeDetectionStrategy */].OnPush,
         providers: [
             { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["e" /* VerticallyLabelled */], useExisting: CurveComponent_1 },
             { provide: __WEBPACK_IMPORTED_MODULE_3__waves_base_component__["c" /* VerticalScaleRenderer */], useExisting: CurveComponent_1 },
