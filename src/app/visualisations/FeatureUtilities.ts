@@ -129,14 +129,14 @@ function hasKnownShapeOtherThanList(shape: string): shape is CollectedShape {
 
 const rdfTypes = {
   'http://purl.org/ontology/af/Note': 'notes',
-//  'http://purl.org/ontology/af/StructuralSegment': 'segments'
-}
+//  'http://purl.org/ontology/af/StructuralSegment': 'segments' // TODO segments
+};
 
 const throwShapeError = () => { throw new Error('No shape could be deduced'); };
 
 function deduceHigherLevelFeatureShape(response: SimpleResponse)
 : HigherLevelFeatureShape {
-  
+
   const collection = response.features;
   const descriptor = response.outputDescriptor;
   if (hasKnownShapeOtherThanList(collection.shape)) {
@@ -163,19 +163,17 @@ function deduceHigherLevelFeatureShape(response: SimpleResponse)
 
   if (descriptor.static) {
     const typeURI = descriptor.static.typeURI;
-    if (typeURI &&
-        typeURI !== "" &&
-        typeof (rdfTypes[typeURI]) !== 'undefined') {
+    if (typeof typeURI === 'string' && typeof rdfTypes[typeURI] === 'string') {
       return rdfTypes[typeURI];
     }
   }
 
   const isRegionLike = hasDuration &&
     (featureData.length > 0 && featureData[0].timestamp != null);
-  
+
   const isMaybeNote = getCanonicalNoteLikeUnit(descriptor.configured.unit)
     && [1, 2].find(nBins => nBins === binCount);
-  
+
   if (isRegionLike) {
     if (isMaybeNote) {
       return 'notes';
@@ -183,7 +181,7 @@ function deduceHigherLevelFeatureShape(response: SimpleResponse)
       return 'regions';
     }
   }
-  
+
   throwShapeError();
 }
 
@@ -269,8 +267,6 @@ export function generatePlotData(features: VectorFeature[]): PlotLayerData {
     max = 1;
   }
 
-  console.log("range min = " + min + ", max = " + max);
-    
   return {
     data: winnowed.map(feature => {
       let duration = 0;
