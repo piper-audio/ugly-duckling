@@ -42,7 +42,7 @@ export class RegionsComponent extends InspectableVerticallyBoundedComponent<Regi
   protected get featureLayers(): Layer[] {
     this.currentVerticalRange = findVerticalRange(this.feature);
     return [
-      new Waves.helpers.PianoRollLayer(
+      new Waves.helpers.RegionLayer(
         this.feature,
         {
           height: this.height,
