@@ -109,7 +109,10 @@ function hasKnownShapeOtherThanList(shape: string): shape is CollectedShape {
   return ['vector', 'matrix', 'tracks'].includes(shape);
 }
 
-const throwShapeError = () => { throw new Error('No shape could be deduced'); };
+function throwShapeError(compileAssertion?: never) {
+  throw new Error('No shape could be deduced');
+}
+
 function deduceHigherLevelFeatureShape(response: SimpleResponse)
 : HigherLevelFeatureShape {
   const collection = response.features;
@@ -180,7 +183,7 @@ export function toKnownShape(response: SimpleResponse): KnownShapedFeature {
         }))
       };
   }
-  throwShapeError();
+  throwShapeError(deducedShape);
 }
 
 export interface PlotDataPoint {
