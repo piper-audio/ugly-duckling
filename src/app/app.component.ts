@@ -23,7 +23,7 @@ import {
   getRootAudioItem
 } from './analysis-item/AnalysisItem';
 import {OnSeekHandler} from './playhead/PlayHeadHelpers';
-import {UrlResourceLifetimeManager} from './app.module';
+import {UrlResourceLifetimeManager} from './services/File';
 import {createExtractionRequest} from './analysis-item/AnalysisItem';
 import {PersistentStack} from './Session';
 import {NotificationService} from './services/notifications/notifications.service';

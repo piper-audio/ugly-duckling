@@ -2,25 +2,26 @@
  * Created by lucas on 01/12/2016.
  */
 
-import {PiperVampService, ListRequest, ListResponse, Service} from 'piper';
+import {ListRequest, ListResponse, Service} from 'piper-js/core';
+import {EmscriptenService as PiperVampService} from 'piper-js/emscripten';
 import {
-  SimpleRequest
-} from 'piper/HigherLevelUtilities';
-import { VampExamplePlugins } from 'piper/ext/VampExamplePluginsModule';
+  OneShotExtractionRequest as SimpleRequest,
+} from 'piper-js/one-shot';
+import { VampExamplePlugins } from 'piper-js/ext/VampExamplePluginsModule';
 import {
   AvailableLibraries
 } from './feature-extraction.service';
 import {
   DedicatedWorkerGlobalScope,
   WebWorkerStreamingServer
-} from 'piper/servers/WebWorkerStreamingServer';
+} from 'piper-js/web-worker';
 import {
   PiperStreamingService,
   StreamingResponse,
   StreamingService
-} from 'piper/StreamingService';
+} from 'piper-js/streaming';
 import {Observable} from 'rxjs/Observable';
-import {EmscriptenModule} from 'piper/PiperVampService';
+import {EmscriptenModule} from 'piper-js/emscripten';
 import {streamingResponseReducer} from './FeatureReducers';
 
 interface MessageEvent {

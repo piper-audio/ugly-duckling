@@ -2,7 +2,7 @@ import {Injectable, Inject} from '@angular/core';
 import {Subject} from 'rxjs/Subject';
 import {Observable} from 'rxjs/Observable';
 import {ReplaySubject} from 'rxjs/ReplaySubject';
-import {UrlResourceLifetimeManager} from '../../app.module';
+import {UrlResourceLifetimeManager} from '../File';
 
 export type ResourceReader = (resource: File | Blob) => Promise<ArrayBuffer>;
 

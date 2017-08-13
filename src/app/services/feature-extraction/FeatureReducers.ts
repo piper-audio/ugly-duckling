@@ -1,7 +1,7 @@
 /**
  * Created by lucast on 26/04/2017.
  */
-import {StreamingResponse} from 'piper/StreamingService';
+import {StreamingResponse} from 'piper-js/streaming';
 
 export const arrayReducer = <T>(acc: T[], val: T[]): T[] => {
   const len = val.length;

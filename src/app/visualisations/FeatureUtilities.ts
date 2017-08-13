@@ -2,13 +2,13 @@
  * Created by lucast on 24/05/2017.
  */
 
-import {FeatureList} from 'piper/Feature';
-import {OutputDescriptor, toSeconds} from 'piper';
+import {FeatureList, OutputDescriptor} from 'piper-js/core';
+import {toSeconds} from 'piper-js/time';
 import {
-  SimpleResponse,
+  OneShotExtractionResponse as SimpleResponse,
   TracksFeature,
   VectorFeature
-} from 'piper/HigherLevelUtilities';
+} from 'piper-js/one-shot';
 
 
 export type NoteLikeUnit = 'midi' | 'hz' ;
@@ -122,7 +122,7 @@ function deduceHigherLevelFeatureShape(response: SimpleResponse)
   }
 
 
-  // TODO it's a shame that the types in piper don't make this easy for the
+  // TODO it's a shame that the types in piper-js don't make this easy for the
   // compiler to deduce
   if (collection.shape !== 'list' && collection.collected instanceof Array) {
     throwShapeError();

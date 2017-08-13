@@ -14,7 +14,7 @@ import {
   Component,
   Input,
 } from '@angular/core';
-import {TracksFeature} from 'piper/HigherLevelUtilities';
+import {TracksFeature} from 'piper-js/one-shot';
 import Waves from 'waves-ui-piper';
 import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
 

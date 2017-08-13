@@ -1,19 +1,19 @@
 import {Injectable, Inject} from '@angular/core';
 import {
   ListResponse
-} from 'piper';
+} from 'piper-js/core';
 import {
-  SimpleRequest
-} from 'piper/HigherLevelUtilities';
+  OneShotExtractionRequest as SimpleRequest,
+} from 'piper-js/one-shot';
 import {Subject} from 'rxjs/Subject';
 import {Observable} from 'rxjs/Observable';
 import {Http} from '@angular/http';
 import {
   countingIdProvider,
-  WebWorkerStreamingClient
-} from 'piper/client-stubs/WebWorkerStreamingClient';
-import {RequestId} from 'piper/protocols/WebWorkerProtocol';
-import {collect, StreamingConfiguration} from 'piper/StreamingService';
+  WebWorkerStreamingClient,
+  RequestId
+} from 'piper-js/web-worker';
+import {collect, StreamingConfiguration} from 'piper-js/streaming';
 import {
   KnownShapedFeature,
   toKnownShape

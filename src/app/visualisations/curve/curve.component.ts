@@ -8,7 +8,7 @@ import {
   ViewChild
 } from '@angular/core';
 import {OnSeekHandler} from '../../playhead/PlayHeadHelpers';
-import {VectorFeature} from 'piper/HigherLevelUtilities';
+import {VectorFeature} from 'piper-js/one-shot';
 import {
   PlayheadManager,
   PlayheadRenderer,

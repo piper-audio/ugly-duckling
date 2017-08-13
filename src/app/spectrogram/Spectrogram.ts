@@ -1,9 +1,9 @@
 /**
  * Created by lucast on 16/03/2017.
  */
-import {RealFft, KissRealFft} from 'piper/fft/RealFft';
-import {hann} from 'piper/FftUtilities';
-import {Framing} from 'piper';
+import {RealFft, KissRealFft, hann} from 'piper-js/fft';
+import {KissFft} from 'piper-js/fft/KissFftModule';
+import {Framing} from 'piper-js/core';
 import Waves from 'waves-ui-piper';
 
 class SpectrogramEntity extends Waves.utils.MatrixEntity {
@@ -25,7 +25,7 @@ class SpectrogramEntity extends Waves.utils.MatrixEntity {
     this.real = new Float32Array(this.framing.blockSize);
     this.nCols = Math.floor(this.samples.length / this.framing.stepSize); // !!! not correct
     this.columnHeight = Math.round(this.framing.blockSize / 2) + 1;
-    this.fft = new KissRealFft(this.framing.blockSize);
+    this.fft = new KissRealFft(this.framing.blockSize, KissFft);
     this.window = hann(this.framing.blockSize);
   }
 

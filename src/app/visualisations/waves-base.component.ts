@@ -5,7 +5,7 @@ import {AfterViewInit, ElementRef, Input, ViewChild} from '@angular/core';
 import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
 import {attachTouchHandlerBodges} from './WavesJunk';
 import Waves from 'waves-ui-piper';
-import {countingIdProvider} from 'piper/client-stubs/WebWorkerStreamingClient';
+import {countingIdProvider} from 'piper-js/web-worker';
 import {ShapedFeatureData} from './FeatureUtilities';
 
 const trackIdGenerator = countingIdProvider(0);
