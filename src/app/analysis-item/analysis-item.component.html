@@ -78,6 +78,20 @@
               [duration]="getDuration()"
             ></ugly-notes>
           </ugly-cross-hair-inspector>
+          <ugly-cross-hair-inspector
+            *ngSwitchCase="'regions'"
+            [unit]="item.unit"
+            [isAnimated]="isActive"
+          >
+            <ugly-regions
+              [colour]="getNextColour()"
+              [timeline]="timeline"
+              [width]="contentWidth"
+              [onSeek]="onSeek"
+              [regions]="item.collected"
+              [duration]="getDuration()"
+            ></ugly-regions>
+          </ugly-cross-hair-inspector>
           <ugly-vertical-scale
             *ngSwitchCase="'matrix'"
           >

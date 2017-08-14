@@ -32,6 +32,7 @@ import {LivePlayHeadComponent} from './playhead/live-play-head.component';
 import {CurveComponent} from './visualisations/curve/curve.component';
 import {TracksComponent} from './visualisations/tracks/tracks.components';
 import {NotesComponent} from './visualisations/notes/notes.component';
+import {RegionsComponent} from './visualisations/regions/regions.component';
 import {InstantsComponent} from './visualisations/instants/instants.component';
 import {GridComponent} from './visualisations/grid/grid.component';
 import {VerticalScaleComponent} from './visualisations/vertical-scale.component';
@@ -133,6 +134,7 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     CurveComponent,
     TracksComponent,
     NotesComponent,
+    RegionsComponent,
     InstantsComponent,
     GridComponent,
     VerticalScaleComponent,

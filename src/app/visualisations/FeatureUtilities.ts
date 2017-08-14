@@ -19,6 +19,12 @@ export interface Note {
   velocity?: number;
 }
 
+export interface Region {
+  time: number;
+  duration: number;
+  value: number;
+}
+
 export function getCanonicalNoteLikeUnit(unit: string): NoteLikeUnit | null {
   const canonicalUnits: NoteLikeUnit[] = ['midi', 'hz'];
   return canonicalUnits.find(canonicalUnit => {
@@ -35,6 +41,16 @@ export function mapFeaturesToNotes(featureData: FeatureList,
     duration: toSeconds(feature.duration),
     pitch: isHz ?
       frequencyToMidiNote(feature.featureValues[0]) : feature.featureValues[0]
+  }));
+}
+
+export function mapFeaturesToRegions(featureData: FeatureList,
+                                     descriptor: OutputDescriptor): Region[] {
+  return featureData.map(feature => ({
+    time: toSeconds(feature.timestamp),
+    duration: toSeconds(feature.duration),
+    value: feature.featureValues.length > 0 ? feature.featureValues[0] : null,
+    label: feature.label
   }));
 }
 
@@ -69,8 +85,7 @@ export interface Instant {
 
 type CollectedShape = 'vector' | 'matrix' | 'tracks';
 
-// TODO regions
-type ShapeDeducedFromList = 'instants' | 'notes';
+type ShapeDeducedFromList = 'notes' | 'regions' | 'instants';
 export type HigherLevelFeatureShape = CollectedShape | ShapeDeducedFromList;
 
 export abstract class Grid {
@@ -85,6 +100,7 @@ export type ShapedFeatureData =
   | Grid
   | TracksFeature
   | Note[]
+  | Region[]
   | Instant[];
 
 // These needn't be classes (could just be interfaces), just experimenting
@@ -98,11 +114,13 @@ export class Vector extends ShapedFeature<'vector', VectorFeature> {}
 export class Matrix extends ShapedFeature<'matrix', Grid> {}
 export class Tracks extends ShapedFeature<'tracks', TracksFeature> {}
 export class Notes extends ShapedFeature<'notes', Note[]> {}
+export class Regions extends ShapedFeature<'regions', Region[]> {}
 export class Instants extends ShapedFeature<'instants', Instant[]> {}
 export type KnownShapedFeature = Vector
   | Matrix
   | Tracks
   | Notes
+  | Regions
   | Instants;
 
 function hasKnownShapeOtherThanList(shape: string): shape is CollectedShape {
@@ -112,6 +130,11 @@ function hasKnownShapeOtherThanList(shape: string): shape is CollectedShape {
 function throwShapeError(compileAssertion?: never) {
   throw new Error('No shape could be deduced');
 }
+
+const rdfTypes = {
+  'http://purl.org/ontology/af/Note': 'notes',
+//  'http://purl.org/ontology/af/StructuralSegment': 'segments' // TODO segments
+};
 
 function deduceHigherLevelFeatureShape(response: SimpleResponse)
 : HigherLevelFeatureShape {
@@ -133,23 +156,36 @@ function deduceHigherLevelFeatureShape(response: SimpleResponse)
   const binCount = descriptor.configured.binCount;
   const isMarker = !hasDuration
     && binCount === 0
-    && featureData[0].featureValues == null;
+    && (featureData.length === 0 || featureData[0].featureValues == null);
+
+  if (isMarker) {
+    return 'instants';
+  }
+
+  if (descriptor.static) {
+    const typeURI = descriptor.static.typeURI;
+    if (typeof typeURI === 'string' && typeof rdfTypes[typeURI] === 'string') {
+      return rdfTypes[typeURI];
+    }
+  }
+
+  const isRegionLike = hasDuration &&
+    (featureData.length > 0 && featureData[0].timestamp != null);
+
   const hasUnit = descriptor.configured && descriptor.configured.unit;
 
   const isMaybeNote = hasUnit
     && getCanonicalNoteLikeUnit(descriptor.configured.unit)
     && [1, 2].find(nBins => nBins === binCount);
 
-  // TODO any need to be directly inspecting features?
-  const isRegionLike = hasDuration && featureData[0].timestamp != null;
+  if (isRegionLike) {
+    if (isMaybeNote) {
+      return 'notes';
+    } else {
+      return 'regions';
+    }
+  }
 
-  const isNote = isMaybeNote && isRegionLike;
-  if (isMarker) {
-    return 'instants';
-  }
-  if (isNote) {
-    return 'notes';
-  }
   throwShapeError();
 }
 
@@ -171,6 +207,14 @@ export function toKnownShape(response: SimpleResponse): KnownShapedFeature {
       return {
         shape: deducedShape,
         collected: mapFeaturesToNotes(
+          response.features.collected as FeatureList,
+          response.outputDescriptor
+        )
+      };
+    case 'regions':
+      return {
+        shape: deducedShape,
+        collected: mapFeaturesToRegions(
           response.features.collected as FeatureList,
           response.outputDescriptor
         )
