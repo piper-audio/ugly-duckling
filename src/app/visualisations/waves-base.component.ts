@@ -5,39 +5,41 @@ import {AfterViewInit, ElementRef, Input, ViewChild} from '@angular/core';
 import {OnSeekHandler} from '../playhead/PlayHeadHelpers';
 import {attachTouchHandlerBodges} from './WavesJunk';
 import Waves from 'waves-ui-piper';
-import {countingIdProvider} from 'piper/client-stubs/WebWorkerStreamingClient';
+import {countingIdProvider} from 'piper-js/web-worker';
 import {ShapedFeatureData} from './FeatureUtilities';
 
 const trackIdGenerator = countingIdProvider(0);
 
 // has to be an abstract class vs as interface for Angular's DI
-export abstract class VerticallyBounded {
-  abstract get range(): [number, number];
+export abstract class VerticallyLabelled<T> {
+  abstract get labels(): T;
 }
 
-export abstract class VerticalScaleRenderer extends VerticallyBounded {
-  abstract renderScale(range: [number, number]): void;
-}
-
-export abstract class VerticallyBinned {
-  abstract get binNames(): string[];
-}
-
-export abstract class VerticalBinNameRenderer extends VerticallyBinned {
-  abstract renderNames(binNames: string[]): void;
+export abstract class VerticalScaleRenderer<T> extends VerticallyLabelled<T> {
+  abstract renderScale(labels: T): void;
 }
 
 export abstract class VerticalValueInspectorRenderer
-  extends VerticalScaleRenderer {
+  extends VerticalScaleRenderer<[number, number]> {
   // TODO how do I know these layers are actually 'describable'?
   abstract renderInspector(range: [number, number], unit?: string): void;
   abstract get updatePosition(): OnSeekHandler;
 }
 
+export abstract class PlayheadManager {
+  abstract update(time: number): void;
+  abstract remove(): void;
+}
+
+export abstract class PlayheadRenderer {
+  abstract renderPlayhead(initialTime: number, colour: string): PlayheadManager;
+}
+
 export type LayerRemover = () => void;
 
 export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
-  implements AfterViewInit {
+  implements AfterViewInit, PlayheadRenderer {
+
   @ViewChild('track') trackContainer: ElementRef;
   @Input() set width(width: number) {
     if (this.timeline) {
@@ -81,6 +83,21 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
       this.trackContainer.nativeElement.getBoundingClientRect().height;
     this.renderTimeline();
     this.update();
+  }
+
+  renderPlayhead(initialTime: number, colour: string): PlayheadManager {
+    const cursor = new Waves.helpers.CursorLayer({
+      height: this.height,
+      color: colour,
+    });
+    cursor.currentPosition = initialTime;
+    return {
+      update: currentTime => {
+        cursor.currentPosition = currentTime;
+        cursor.update();
+      },
+      remove: this.addLayer(cursor)
+    };
   }
 
   private update(): void {
@@ -207,30 +224,30 @@ export abstract class WavesComponent<T extends ShapedFeatureData | AudioBuffer>
 
 export abstract class VerticallyBoundedWavesComponent
 <T extends ShapedFeatureData> extends WavesComponent<T>
-  implements VerticalScaleRenderer {
-  abstract range: [number, number];
+  implements VerticalScaleRenderer<[number, number]> {
+  abstract labels: [number, number];
 
-  renderScale(range: [number, number]): void {
+  renderScale(labels: [number, number]): void {
     this.addLayer(new Waves.helpers.ScaleLayer({
       tickColor: this.colour,
       textColor: this.colour,
       height: this.height,
-      yDomain: range
+      yDomain: labels
     }));
   }
 }
 
 export abstract class VerticallyBinnedWavesComponent
 <T extends ShapedFeatureData> extends WavesComponent<T>
-  implements VerticalBinNameRenderer {
-  abstract binNames: string[];
+  implements VerticalScaleRenderer<string[]> {
+  abstract labels: string[];
 
-  renderNames(binNames: string[]): void {
+  renderScale(labels: string[]): void {
     this.addLayer(new Waves.helpers.DiscreteScaleLayer({
       tickColor: this.colour,
       textColor: this.colour,
       height: this.height,
-      binNames
+      binNames: labels
     }));
   }
 }

@@ -9,7 +9,7 @@ import {
 import {
   FeatureExtractionService
 } from '../services/feature-extraction/feature-extraction.service';
-import {ListResponse} from 'piper';
+import {ListResponse} from 'piper-js/core';
 import {Subscription} from 'rxjs/Subscription';
 import {HigherLevelFeatureShape} from '../visualisations/FeatureUtilities';
 

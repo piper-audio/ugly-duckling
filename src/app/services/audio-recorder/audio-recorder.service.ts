@@ -4,6 +4,7 @@
 import {Injectable, Inject, NgZone} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
 import {Subject} from 'rxjs/Subject';
+import {NotificationService} from '../notifications/notifications.service';
 
 
 // seems the TypeScript definitions are not up to date,
@@ -119,7 +120,8 @@ export class AudioRecorderService {
               @Inject(
                 'MediaRecorderFactory'
               ) recorderImpl: MediaRecorderConstructor,
-              private ngZone: NgZone) {
+              private ngZone: NgZone,
+              private notifier: NotificationService) {
     this.requestProvider = requestProvider;
     this.recorderImpl = recorderImpl;
     this.recordingStateChange = new Subject<RecorderServiceStatus>();
@@ -163,7 +165,7 @@ export class AudioRecorderService {
         .then(recorder => this.startRecording(recorder))
         .catch(e => {
           this.recordingStateChange.next('disabled'); // don't really need to do this
-          console.warn(e); // TODO emit an error message for display?
+          this.notifier.displayError(e);
         });
     }
   }

@@ -2,7 +2,7 @@
  * Created by lucast on 08/06/2017.
  */
 import {KnownShapedFeature} from '../visualisations/FeatureUtilities';
-import {SimpleRequest} from 'piper/HigherLevelUtilities';
+import {OneShotExtractionRequest as SimpleRequest} from 'piper-js/one-shot';
 export abstract class Item {
   id: string;
   hasSharedTimeline: boolean;

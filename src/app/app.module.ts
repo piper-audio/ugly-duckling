@@ -1,24 +1,24 @@
-import { BrowserModule } from '@angular/platform-browser';
+import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
+import {FormsModule} from '@angular/forms';
+import {HttpModule} from '@angular/http';
 
-import { AppComponent } from './app.component';
-import { WaveformComponent } from './visualisations/waveform/waveform.component';
-import { AudioFileOpenComponent } from './audio-file-open/audio-file-open.component';
-import { PlaybackControlComponent } from './playback-control/playback-control.component';
+import {AppComponent} from './app.component';
+import {WaveformComponent} from './visualisations/waveform/waveform.component';
+import {AudioFileOpenComponent} from './audio-file-open/audio-file-open.component';
+import {PlaybackControlComponent} from './playback-control/playback-control.component';
 import {
   AudioPlayerService,
   ResourceReader
 } from './services/audio-player/audio-player.service';
-import { FeatureExtractionService } from './services/feature-extraction/feature-extraction.service';
-import { FeatureExtractionMenuComponent } from './feature-extraction-menu/feature-extraction-menu.component';
-import { ProgressSpinnerComponent } from './progress-spinner/progress-spinner.component';
+import {FeatureExtractionService} from './services/feature-extraction/feature-extraction.service';
+import {FeatureExtractionMenuComponent} from './feature-extraction-menu/feature-extraction-menu.component';
+import {ProgressSpinnerComponent} from './progress-spinner/progress-spinner.component';
 import {
-  AudioRecorderService,
   AudioInputProvider,
-  MediaRecorderConstructor,
+  AudioRecorderService,
   MediaRecorder as IMediaRecorder,
+  MediaRecorderConstructor,
   MediaRecorderOptions
 } from './services/audio-recorder/audio-recorder.service';
 import {RecordingControlComponent} from './recording-control/recording-control.component';
@@ -36,14 +36,13 @@ import {RegionsComponent} from './visualisations/regions/regions.component';
 import {InstantsComponent} from './visualisations/instants/instants.component';
 import {GridComponent} from './visualisations/grid/grid.component';
 import {VerticalScaleComponent} from './visualisations/vertical-scale.component';
-import {VerticalBinnedComponent} from './visualisations/vertical-binned.component';
 import {CrossHairInspectorComponent} from './visualisations/cross-hair-inspector.component';
 import {RenderLoopService} from './services/render-loop/render-loop.service';
 import {WavesPlayHeadComponent} from './playhead/waves-ui-play-head.component';
-import {
-  ActionTrayComponent
-} from './actions/action-tray.component';
+import {ActionTrayComponent} from './actions/action-tray.component';
 import {RecordRtcMediaRecorder} from './services/audio-recorder/RecordRtcMediaRecorder';
+import {NotificationService} from './services/notifications/notifications.service';
+import {UrlResourceLifetimeManager} from "./services/File";
 
 export function createAudioContext(): AudioContext {
   return new (
@@ -93,11 +92,6 @@ export function createUrlResourceManager(): UrlResourceLifetimeManager {
   };
 }
 
-export abstract class UrlResourceLifetimeManager {
-  abstract createUrlToResource(resource: File | Blob): string;
-  abstract revokeUrlToResource(url: string): void;
-}
-
 export function createResourceReader(): ResourceReader {
   return (resource) => {
     return new Promise((res, rej) => {
@@ -144,7 +138,6 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     InstantsComponent,
     GridComponent,
     VerticalScaleComponent,
-    VerticalBinnedComponent,
     CrossHairInspectorComponent,
     WavesPlayHeadComponent,
     ActionTrayComponent
@@ -167,7 +160,8 @@ export function createWindowDimensionObservable(): Observable<Dimension> {
     {provide: 'UrlResourceLifetimeManager', useFactory: createUrlResourceManager},
     {provide: 'ResourceReader', useFactory: createResourceReader},
     {provide: 'DimensionObservable', useFactory: createWindowDimensionObservable},
-    RenderLoopService
+    RenderLoopService,
+    NotificationService
   ],
   bootstrap: [AppComponent]
 })

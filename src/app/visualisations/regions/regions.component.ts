@@ -3,7 +3,8 @@
  */
 import {
   InspectableVerticallyBoundedComponent,
-  VerticallyBounded,
+  PlayheadRenderer,
+  VerticallyLabelled,
   VerticalScaleRenderer,
   VerticalValueInspectorRenderer,
   WavesComponent
@@ -22,16 +23,17 @@ import Waves from 'waves-ui-piper';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    { provide: VerticallyBounded, useExisting: RegionsComponent },
+    { provide: VerticallyLabelled, useExisting: RegionsComponent },
     { provide: VerticalScaleRenderer, useExisting: RegionsComponent },
     {provide: VerticalValueInspectorRenderer, useExisting: RegionsComponent },
+    {provide: PlayheadRenderer, useExisting: RegionsComponent},
     {provide: WavesComponent, useExisting: RegionsComponent}
   ]
 })
 export class RegionsComponent extends InspectableVerticallyBoundedComponent<Region[]> {
   private currentVerticalRange: [number, number];
 
-  get range(): [number, number] {
+  get labels(): [number, number] {
     return this.currentVerticalRange;
   }
 

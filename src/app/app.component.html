@@ -17,14 +17,14 @@
       <ugly-audio-file-open
         (fileOpened)="onFileOpened($event); tray.close()"
       ></ugly-audio-file-open>
-      <button md-icon-button (click)="tray.toggle()">
-        <md-icon>extension</md-icon>
-      </button>
       <button md-icon-button (click)="analyses.stepBack()">
         <md-icon>undo</md-icon>
       </button>
       <button md-icon-button (click)="analyses.stepForward()">
         <md-icon>redo</md-icon>
+      </button>
+      <button md-icon-button (click)="tray.toggle()">
+        <md-icon>extension</md-icon>
       </button>
     </md-toolbar>
   </div>

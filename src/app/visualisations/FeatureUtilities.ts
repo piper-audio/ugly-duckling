@@ -2,13 +2,13 @@
  * Created by lucast on 24/05/2017.
  */
 
-import {FeatureList} from 'piper/Feature';
-import {OutputDescriptor, toSeconds} from 'piper';
+import {FeatureList, OutputDescriptor} from 'piper-js/core';
+import {toSeconds} from 'piper-js/time';
 import {
-  SimpleResponse,
+  OneShotExtractionResponse as SimpleResponse,
   TracksFeature,
   VectorFeature
-} from 'piper/HigherLevelUtilities';
+} from 'piper-js/one-shot';
 
 
 export type NoteLikeUnit = 'midi' | 'hz' ;
@@ -127,23 +127,25 @@ function hasKnownShapeOtherThanList(shape: string): shape is CollectedShape {
   return ['vector', 'matrix', 'tracks'].includes(shape);
 }
 
+function throwShapeError(compileAssertion?: never) {
+  throw new Error('No shape could be deduced');
+}
+
 const rdfTypes = {
   'http://purl.org/ontology/af/Note': 'notes',
 //  'http://purl.org/ontology/af/StructuralSegment': 'segments' // TODO segments
 };
 
-const throwShapeError = () => { throw new Error('No shape could be deduced'); };
-
 function deduceHigherLevelFeatureShape(response: SimpleResponse)
 : HigherLevelFeatureShape {
-
   const collection = response.features;
   const descriptor = response.outputDescriptor;
   if (hasKnownShapeOtherThanList(collection.shape)) {
     return collection.shape;
   }
 
-  // TODO it's a shame that the types in piper don't make this easy for the
+
+  // TODO it's a shame that the types in piper-js don't make this easy for the
   // compiler to deduce
   if (collection.shape !== 'list' && collection.collected instanceof Array) {
     throwShapeError();
@@ -152,7 +154,6 @@ function deduceHigherLevelFeatureShape(response: SimpleResponse)
   const featureData = collection.collected as FeatureList;
   const hasDuration = descriptor.configured.hasDuration;
   const binCount = descriptor.configured.binCount;
-
   const isMarker = !hasDuration
     && binCount === 0
     && (featureData.length === 0 || featureData[0].featureValues == null);
@@ -171,7 +172,10 @@ function deduceHigherLevelFeatureShape(response: SimpleResponse)
   const isRegionLike = hasDuration &&
     (featureData.length > 0 && featureData[0].timestamp != null);
 
-  const isMaybeNote = getCanonicalNoteLikeUnit(descriptor.configured.unit)
+  const hasUnit = descriptor.configured && descriptor.configured.unit;
+
+  const isMaybeNote = hasUnit
+    && getCanonicalNoteLikeUnit(descriptor.configured.unit)
     && [1, 2].find(nBins => nBins === binCount);
 
   if (isRegionLike) {
@@ -225,7 +229,7 @@ export function toKnownShape(response: SimpleResponse): KnownShapedFeature {
         }))
       };
   }
-  throwShapeError();
+  throwShapeError(deducedShape);
 }
 
 export interface PlotDataPoint {

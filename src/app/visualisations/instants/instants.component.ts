@@ -1,7 +1,7 @@
 /**
  * Created by lucast on 31/05/2017.
  */
-import {WavesComponent} from '../waves-base.component';
+import {PlayheadRenderer, WavesComponent} from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,6 +16,7 @@ import Waves from 'waves-ui-piper';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
+    {provide: PlayheadRenderer, useExisting: InstantsComponent},
     {provide: WavesComponent, useExisting: InstantsComponent}
   ]
 })

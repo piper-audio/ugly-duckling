@@ -92,7 +92,7 @@
               [duration]="getDuration()"
             ></ugly-regions>
           </ugly-cross-hair-inspector>
-          <ugly-vertical-binned
+          <ugly-vertical-scale
             *ngSwitchCase="'matrix'"
           >
             <ugly-grid
@@ -103,7 +103,7 @@
               [grid]="item.collected"
               [duration]="getDuration()"
             ></ugly-grid>
-          </ugly-vertical-binned>
+          </ugly-vertical-scale>
           <ugly-instants
             *ngSwitchCase="'instants'"
             [colour]="getNextColour()"

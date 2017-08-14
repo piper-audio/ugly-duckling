@@ -2,7 +2,8 @@ import {Component, Inject, OnDestroy} from '@angular/core';
 import {
   AudioPlayerService,
   AudioResourceError,
-  AudioResource
+  AudioResource,
+  AudioLoadResponse
 } from './services/audio-player/audio-player.service';
 import {
   ExtractionResult,
@@ -22,9 +23,10 @@ import {
   getRootAudioItem
 } from './analysis-item/AnalysisItem';
 import {OnSeekHandler} from './playhead/PlayHeadHelpers';
-import {UrlResourceLifetimeManager} from './app.module';
+import {UrlResourceLifetimeManager} from './services/File';
 import {createExtractionRequest} from './analysis-item/AnalysisItem';
 import {PersistentStack} from './Session';
+import {NotificationService} from './services/notifications/notifications.service';
 
 @Component({
   selector: 'ugly-root',
@@ -46,7 +48,8 @@ export class AppComponent implements OnDestroy {
               private sanitizer: DomSanitizer,
               @Inject(
                 'UrlResourceLifetimeManager'
-              ) private resourceManager: UrlResourceLifetimeManager) {
+              ) private resourceManager: UrlResourceLifetimeManager,
+              private notifier: NotificationService) {
     this.analyses = new PersistentStack<AnalysisItem>();
     this.canExtract = false;
     this.nRecordings = 0;
@@ -60,45 +63,48 @@ export class AppComponent implements OnDestroy {
 
     this.onAudioDataSubscription = this.audioService.audioLoaded$.subscribe(
       resource => {
-        const wasError = (resource as AudioResourceError).message != null;
-        if (wasError) {
-          this.analyses.shift();
+        const findCurrentAudio =
+          val => isPendingRootAudioItem(val) && val.uri === getRootAudioItem(
+            this.analyses.get(0)
+          ).uri;
+        const wasError = (res: AudioLoadResponse):
+          res is AudioResourceError => (res as any).message != null;
+        if (wasError(resource)) {
+          this.notifier.displayError(resource.message);
+          this.analyses.findIndexAndUse(
+            findCurrentAudio,
+            index => this.analyses.remove(index)
+          );
           this.canExtract = false;
         } else {
           const audioData = (resource as AudioResource).samples;
           if (audioData) {
-            const rootAudio = getRootAudioItem(this.analyses.get(0));
             this.canExtract = true;
-            const currentRootIndex = this.analyses.findIndex(val => {
-              return isPendingRootAudioItem(val) && val.uri === rootAudio.uri;
-            });
-            if (currentRootIndex !== -1) {
-              this.analyses.set(
+            this.analyses.findIndexAndUse(
+              findCurrentAudio,
+              currentRootIndex => this.analyses.set(
                 currentRootIndex,
                 Object.assign(
                   {},
                   this.analyses.get(currentRootIndex),
                   {audioData}
                 )
-              );
-            }
+              ));
           }
         }
       }
     );
     this.onProgressUpdated = this.featureService.progressUpdated$.subscribe(
       progress => {
-        const index = this.analyses.findIndex(val => val.id === progress.id);
-        if (index === -1) {
-          return;
-        }
-
-        this.analyses.setMutating(
-          index,
-          Object.assign(
-            {},
-            this.analyses.get(index),
-            {progress: progress.value}
+        this.analyses.findIndexAndUse(
+          val => val.id === progress.id,
+          index => this.analyses.setMutating(
+            index,
+            Object.assign(
+              {},
+              this.analyses.get(index),
+              {progress: progress.value}
+            )
           )
         );
       }
@@ -183,19 +189,19 @@ export class AppComponent implements OnDestroy {
   private sendExtractionRequest(analysis: AnalysisItem): Promise<void> {
     const findAndUpdateItem = (result: ExtractionResult): void => {
       // TODO subscribe to the extraction service instead
-      const i = this.analyses.findIndex(val => val.id === result.id);
-      this.canExtract = true;
-      if (i !== -1) {
-        this.analyses.set(
-          i,
+      this.analyses.findIndexAndUse(
+        val => val.id === result.id,
+        (index) => this.analyses.set(
+          index,
           Object.assign(
             {},
-            this.analyses.get(i),
+            this.analyses.get(index),
             result.result,
             result.unit ? {unit: result.unit} : {}
           )
-        );
-      }  // TODO else remove the item?
+        )
+      );
+      this.canExtract = true;
     };
     return this.featureService.extract(
       analysis.id,
@@ -203,8 +209,11 @@ export class AppComponent implements OnDestroy {
       .then(findAndUpdateItem)
       .catch(err => {
         this.canExtract = true;
-        this.analyses.shift();
-        console.error(`Error whilst extracting: ${err}`);
+        this.analyses.findIndexAndUse(
+          val => val.id === analysis.id,
+          index => this.analyses.remove(index)
+        );
+        this.notifier.displayError(`Error whilst extracting: ${err}`);
       });
   }
 }

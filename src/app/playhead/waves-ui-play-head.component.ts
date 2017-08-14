@@ -10,7 +10,7 @@ import {
   QueryList
 } from '@angular/core';
 import {
-  LayerRemover,
+  LayerRemover, PlayheadRenderer,
   WavesComponent
 } from '../visualisations/waves-base.component';
 import Waves from 'waves-ui-piper';
@@ -27,7 +27,7 @@ import {AudioPlayerService} from '../services/audio-player/audio-player.service'
 })
 export class WavesPlayHeadComponent implements AfterViewInit, OnDestroy {
 
-  @ContentChildren(WavesComponent) wavesChildren: QueryList<WavesComponent<any>>;
+  @ContentChildren(PlayheadRenderer) wavesChildren: QueryList<PlayheadRenderer>;
   @Input() colour: string;
   @Input() set isActive(isActive: boolean) {
     this.mIsActive = isActive;
@@ -63,17 +63,13 @@ export class WavesPlayHeadComponent implements AfterViewInit, OnDestroy {
   private setupAnimatedPlayheads(): void {
     if (this.wavesChildren && this.mIsActive) {
       this.wavesChildren.forEach(component => {
-        const cursor = new Waves.helpers.CursorLayer({
-          height: component.height,
-          color: this.colour,
-        });
-        cursor.currentPosition = this.player.getCurrentTime();
+        const cursor = component.renderPlayhead(
+          this.player.getCurrentTime(),
+          this.colour
+        );
         this.removers.push(
-          component.addLayer(cursor),
-          this.renderLoop.addPlayingTask(currentTime => {
-            cursor.currentPosition = currentTime;
-            cursor.update();
-          })
+          cursor.remove,
+          this.renderLoop.addPlayingTask(cursor.update)
         );
       });
     }

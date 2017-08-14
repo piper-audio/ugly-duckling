@@ -3,16 +3,18 @@
  */
 import {
   InspectableVerticallyBoundedComponent,
-  VerticallyBounded,
+  PlayheadRenderer,
+  VerticallyLabelled,
   VerticalScaleRenderer,
-  VerticalValueInspectorRenderer, WavesComponent,
+  VerticalValueInspectorRenderer,
+  WavesComponent
 } from '../waves-base.component';
 import {
   ChangeDetectionStrategy,
   Component,
   Input,
 } from '@angular/core';
-import {TracksFeature} from 'piper/HigherLevelUtilities';
+import {TracksFeature} from 'piper-js/one-shot';
 import Waves from 'waves-ui-piper';
 import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
 
@@ -22,9 +24,10 @@ import {generatePlotData, PlotLayerData} from '../FeatureUtilities';
   styleUrls: ['../waves-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    {provide: VerticallyBounded, useExisting: TracksComponent },
+    {provide: VerticallyLabelled, useExisting: TracksComponent },
     {provide: VerticalScaleRenderer, useExisting: TracksComponent},
     {provide: VerticalValueInspectorRenderer, useExisting: TracksComponent},
+    {provide: PlayheadRenderer, useExisting: TracksComponent },
     {provide: WavesComponent, useExisting: TracksComponent}
   ],
 })
@@ -37,7 +40,7 @@ export class TracksComponent
     this.feature = input;
   }
 
-  get range(): [number, number] {
+  get labels(): [number, number] {
     return this.currentState && this.currentState.data.length > 0 ?
       this.currentState.yDomain : null;
   }

@@ -8,9 +8,11 @@ import {
   ViewChild
 } from '@angular/core';
 import {OnSeekHandler} from '../../playhead/PlayHeadHelpers';
-import {VectorFeature} from 'piper/HigherLevelUtilities';
+import {VectorFeature} from 'piper-js/one-shot';
 import {
-  VerticallyBounded,
+  PlayheadManager,
+  PlayheadRenderer,
+  VerticallyLabelled,
   VerticalScaleRenderer,
   VerticalValueInspectorRenderer,
   WavesComponent
@@ -30,13 +32,16 @@ import {TracksComponent} from '../tracks/tracks.components';
     ></ugly-tracks>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    {provide: VerticallyBounded, useExisting: CurveComponent },
+    {provide: VerticallyLabelled, useExisting: CurveComponent },
     {provide: VerticalScaleRenderer, useExisting: CurveComponent},
     {provide: VerticalValueInspectorRenderer, useExisting: CurveComponent},
+    {provide: PlayheadRenderer, useExisting: CurveComponent },
     {provide: WavesComponent, useExisting: CurveComponent}
   ]
 })
-export class CurveComponent implements VerticalValueInspectorRenderer {
+export class CurveComponent
+  implements VerticalValueInspectorRenderer, PlayheadRenderer {
+
   @Input() timeline: Timeline; // TODO refactor WaveComponents to have own Timeline, sharing a TimeContext
   @Input() onSeek: OnSeekHandler;
   @Input() width: number;
@@ -44,6 +49,10 @@ export class CurveComponent implements VerticalValueInspectorRenderer {
   @Input() colour: string;
   @Input() duration: number;
   @ViewChild(TracksComponent) tracksComponent: TracksComponent;
+
+  renderPlayhead(initialTime: number, colour: string): PlayheadManager {
+    return this.tracksComponent.renderPlayhead(initialTime, colour);
+  }
 
   renderInspector(range: [number, number], unit?: string): void {
     this.tracksComponent.renderInspector(range, unit);
@@ -57,7 +66,7 @@ export class CurveComponent implements VerticalValueInspectorRenderer {
     this.tracksComponent.renderScale(range);
   }
 
-  get range(): [number, number] {
-    return this.tracksComponent.range;
+  get labels(): [number, number] {
+    return this.tracksComponent.labels;
   }
 }
