@@ -134,8 +134,10 @@ function deduceHigherLevelFeatureShape(response: SimpleResponse)
   const isMarker = !hasDuration
     && binCount === 0
     && featureData[0].featureValues == null;
+  const hasUnit = descriptor.configured && descriptor.configured.unit;
 
-  const isMaybeNote = getCanonicalNoteLikeUnit(descriptor.configured.unit)
+  const isMaybeNote = hasUnit
+    && getCanonicalNoteLikeUnit(descriptor.configured.unit)
     && [1, 2].find(nBins => nBins === binCount);
 
   // TODO any need to be directly inspecting features?
