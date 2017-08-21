@@ -1,6 +1,8 @@
-# UglyDuckling
+# Ugly Duckling
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.0.1.
+A technology demo for [Piper Audio](https://github.com/piper-audio) libraries and components using [Waves UI](https://github.com/piper-audio/waves-ui-piper) and [Angular](https://github.com/angular/).
+
+See the [example deployment here](https://piper-audio.github.io/ugly-duckling).
 
 ## Development server
 
