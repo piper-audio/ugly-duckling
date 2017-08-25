@@ -117,7 +117,7 @@ module.exports = "<button md-icon-button (click)=\"emitFastRewindStart()\">\n  <
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/polyfills.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/polyfills.ts
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_core_js_es6_symbol__ = __webpack_require__("GWWY");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_core_js_es6_symbol___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_core_js_es6_symbol__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_core_js_es6_object__ = __webpack_require__("f/CF");
@@ -209,11 +209,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 // import 'intl';  // Run `npm install --save intl`.
 
 //# sourceMappingURL=polyfills.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/services/File.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/services/File.ts
 class UrlResourceLifetimeManager {
 }
 //# sourceMappingURL=File.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/services/audio-player/audio-player.service.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/services/audio-player/audio-player.service.ts
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__ = __webpack_require__("rlar");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
@@ -345,7 +345,7 @@ AudioPlayerService = __decorate([
 
 var _a;
 //# sourceMappingURL=audio-player.service.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/FeatureUtilities.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/FeatureUtilities.ts
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_piper_js_time__ = __webpack_require__("Xtij");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_piper_js_time___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_piper_js_time__);
 /**
@@ -541,7 +541,7 @@ function generatePlotData(features) {
     };
 }
 //# sourceMappingURL=FeatureUtilities.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/services/notifications/notifications.service.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/services/notifications/notifications.service.ts
 /* harmony import */ var notifications_service___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_material__ = __webpack_require__("Z04r");
 var notifications_service___decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -578,7 +578,7 @@ NotificationService = notifications_service___decorate([
 
 var notifications_service__a;
 //# sourceMappingURL=notifications.service.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/services/feature-extraction/feature-extraction.service.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/services/feature-extraction/feature-extraction.service.ts
 /* harmony import */ var feature_extraction_service___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var feature_extraction_service___WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__ = __webpack_require__("rlar");
 /* harmony import */ var feature_extraction_service___WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(feature_extraction_service___WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
@@ -685,7 +685,7 @@ feature_extraction_service_FeatureExtractionService = feature_extraction_service
 
 var feature_extraction_service__a, _b;
 //# sourceMappingURL=feature-extraction.service.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/analysis-item/AnalysisItem.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/analysis-item/AnalysisItem.ts
 class Item {
 }
 function isItem(item) {
@@ -736,7 +736,7 @@ function createExtractionRequest(item) {
     };
 }
 //# sourceMappingURL=AnalysisItem.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/Session.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/Session.ts
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -883,7 +883,7 @@ class PersistentStack {
     }
 }
 //# sourceMappingURL=Session.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/app.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/app.component.ts
 /* harmony import */ var app_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__("fc+i");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_material__ = __webpack_require__("Z04r");
@@ -1035,7 +1035,7 @@ app_component_AppComponent = app_component___decorate([
 
 var app_component__a, app_component__b, _c, _d, _e, _f;
 //# sourceMappingURL=app.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/WavesJunk.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/WavesJunk.ts
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_waves_ui_piper__ = __webpack_require__("9yQI");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_waves_ui_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_waves_ui_piper__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_hammerjs__ = __webpack_require__("rgUS");
@@ -1168,7 +1168,7 @@ function naivePagingMapper(timeline) {
     };
 }
 //# sourceMappingURL=WavesJunk.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/waves-base.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/waves-base.component.ts
 /* harmony import */ var waves_base_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__ = __webpack_require__("NXUV");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__);
@@ -1439,7 +1439,7 @@ waves_base_component___decorate([
 ], InspectableVerticallyBoundedComponent.prototype, "onSeek", null);
 var waves_base_component__a, waves_base_component__b, waves_base_component__c, waves_base_component__d;
 //# sourceMappingURL=waves-base.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/waveform/waveform.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/waveform/waveform.component.ts
 /* harmony import */ var waveform_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui_piper__ = __webpack_require__("9yQI");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_waves_ui_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_waves_ui_piper__);
@@ -1497,7 +1497,7 @@ WaveformComponent = WaveformComponent_1 = waveform_component___decorate([
 
 var WaveformComponent_1;
 //# sourceMappingURL=waveform.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/audio-file-open/audio-file-open.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/audio-file-open/audio-file-open.component.ts
 /* harmony import */ var audio_file_open_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 var audio_file_open_component___decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1543,7 +1543,7 @@ AudioFileOpenComponent = audio_file_open_component___decorate([
 
 var audio_file_open_component__a, audio_file_open_component__b;
 //# sourceMappingURL=audio-file-open.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/playback-control/playback-control.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/playback-control/playback-control.component.ts
 /* harmony import */ var playback_control_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 var playback_control_component___decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1595,7 +1595,7 @@ PlaybackControlComponent = playback_control_component___decorate([
 
 var playback_control_component__a;
 //# sourceMappingURL=playback-control.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/feature-extraction-menu/feature-extraction-menu.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/feature-extraction-menu/feature-extraction-menu.component.ts
 /* harmony import */ var feature_extraction_menu_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 var feature_extraction_menu_component___decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1709,7 +1709,7 @@ FeatureExtractionMenuComponent = feature_extraction_menu_component___decorate([
 
 var feature_extraction_menu_component__a, feature_extraction_menu_component__b;
 //# sourceMappingURL=feature-extraction-menu.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/progress-spinner/progress-spinner.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/progress-spinner/progress-spinner.component.ts
 /* harmony import */ var progress_spinner_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /**
  * Created by lucast on 14/03/2017.
@@ -1786,7 +1786,7 @@ ProgressSpinnerComponent = progress_spinner_component___decorate([
 ], ProgressSpinnerComponent);
 
 //# sourceMappingURL=progress-spinner.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/services/audio-recorder/audio-recorder.service.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/services/audio-recorder/audio-recorder.service.ts
 /* harmony import */ var audio_recorder_service___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var audio_recorder_service___WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__ = __webpack_require__("rlar");
 /* harmony import */ var audio_recorder_service___WEBPACK_IMPORTED_MODULE_1_rxjs_Subject___default = __webpack_require__.n(audio_recorder_service___WEBPACK_IMPORTED_MODULE_1_rxjs_Subject__);
@@ -1904,7 +1904,7 @@ AudioRecorderService = audio_recorder_service___decorate([
 
 var audio_recorder_service__a, audio_recorder_service__b;
 //# sourceMappingURL=audio-recorder.service.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/recording-control/recording-control.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/recording-control/recording-control.component.ts
 /* harmony import */ var recording_control_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /**
  * Created by lucas on 17/03/2017.
@@ -1956,7 +1956,7 @@ RecordingControlComponent = recording_control_component___decorate([
 
 var recording_control_component__a, recording_control_component__b;
 //# sourceMappingURL=recording-control.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/notebook-feed/notebook-feed.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/notebook-feed/notebook-feed.component.ts
 /* harmony import */ var notebook_feed_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var notebook_feed_component___WEBPACK_IMPORTED_MODULE_1_waves_ui_piper__ = __webpack_require__("9yQI");
 /* harmony import */ var notebook_feed_component___WEBPACK_IMPORTED_MODULE_1_waves_ui_piper___default = __webpack_require__.n(notebook_feed_component___WEBPACK_IMPORTED_MODULE_1_waves_ui_piper__);
@@ -2096,7 +2096,7 @@ notebook_feed_component_NotebookFeedComponent = notebook_feed_component___decora
 
 var notebook_feed_component__a, notebook_feed_component__b, notebook_feed_component__c, notebook_feed_component__d, notebook_feed_component__e;
 //# sourceMappingURL=notebook-feed.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/services/render-loop/render-loop.service.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/services/render-loop/render-loop.service.ts
 /* harmony import */ var render_loop_service___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 var render_loop_service___decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2163,7 +2163,7 @@ RenderLoopService = render_loop_service___decorate([
 
 var render_loop_service__a, render_loop_service__b;
 //# sourceMappingURL=render-loop.service.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/analysis-item/analysis-item.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/analysis-item/analysis-item.component.ts
 /* harmony import */ var analysis_item_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__ = __webpack_require__("NXUV");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__playhead_PlayHeadHelpers__);
@@ -2312,7 +2312,7 @@ analysis_item_component_AnalysisItemComponent = analysis_item_component___decora
 
 var analysis_item_component__a, analysis_item_component__b, analysis_item_component__c, analysis_item_component__d, analysis_item_component__e;
 //# sourceMappingURL=analysis-item.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/progress-bar/progress-bar.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/progress-bar/progress-bar.ts
 /* harmony import */ var progress_bar___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /**
  * Created by lucas on 24/04/2017.
@@ -2355,7 +2355,7 @@ ProgressBarComponent = progress_bar___decorate([
 ], ProgressBarComponent);
 
 //# sourceMappingURL=progress-bar.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/ugly-material.module.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/ugly-material.module.ts
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_material__ = __webpack_require__("Z04r");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_animations__ = __webpack_require__("fL27");
@@ -2394,7 +2394,7 @@ UglyMaterialModule = ugly_material_module___decorate([
 ], UglyMaterialModule);
 
 //# sourceMappingURL=ugly-material.module.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/playhead/playhead.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/playhead/playhead.component.ts
 /* harmony import */ var playhead_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers__ = __webpack_require__("NXUV");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers__);
@@ -2454,7 +2454,7 @@ PlayHeadComponent = playhead_component___decorate([
 
 var playhead_component__a;
 //# sourceMappingURL=playhead.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/playhead/live-play-head.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/playhead/live-play-head.component.ts
 /* harmony import */ var live_play_head_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var live_play_head_component___WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers__ = __webpack_require__("NXUV");
 /* harmony import */ var live_play_head_component___WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers___default = __webpack_require__.n(live_play_head_component___WEBPACK_IMPORTED_MODULE_1__PlayHeadHelpers__);
@@ -2511,7 +2511,7 @@ LivePlayHeadComponent = live_play_head_component___decorate([
 
 var live_play_head_component__a, live_play_head_component__b, live_play_head_component__c;
 //# sourceMappingURL=live-play-head.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/tracks/tracks.components.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/tracks/tracks.components.ts
 /* harmony import */ var tracks_components___WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_piper_js_one_shot__ = __webpack_require__("ua5f");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_piper_js_one_shot___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_piper_js_one_shot__);
@@ -2581,7 +2581,7 @@ tracks_components_TracksComponent = TracksComponent_1 = tracks_components___deco
 
 var TracksComponent_1, tracks_components__a, tracks_components__b;
 //# sourceMappingURL=tracks.components.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/curve/curve.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/curve/curve.component.ts
 /* harmony import */ var curve_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var curve_component___WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__ = __webpack_require__("NXUV");
 /* harmony import */ var curve_component___WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers___default = __webpack_require__.n(curve_component___WEBPACK_IMPORTED_MODULE_1__playhead_PlayHeadHelpers__);
@@ -2674,7 +2674,7 @@ CurveComponent = CurveComponent_1 = curve_component___decorate([
 
 var CurveComponent_1, curve_component__a, curve_component__b, curve_component__c;
 //# sourceMappingURL=curve.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/notes/notes.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/notes/notes.component.ts
 /* harmony import */ var notes_component___WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__ = __webpack_require__("9yQI");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__);
@@ -2750,7 +2750,7 @@ function findVerticalRange(notes) {
 }
 var NotesComponent_1;
 //# sourceMappingURL=notes.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/regions/regions.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/regions/regions.component.ts
 /* harmony import */ var regions_component___WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var regions_component___WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__ = __webpack_require__("9yQI");
 /* harmony import */ var regions_component___WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default = __webpack_require__.n(regions_component___WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__);
@@ -2822,7 +2822,7 @@ function regions_component_findVerticalRange(regions) {
 }
 var RegionsComponent_1;
 //# sourceMappingURL=regions.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/instants/instants.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/instants/instants.component.ts
 /* harmony import */ var instants_component___WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var instants_component___WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__ = __webpack_require__("9yQI");
 /* harmony import */ var instants_component___WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default = __webpack_require__.n(instants_component___WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__);
@@ -2876,7 +2876,7 @@ InstantsComponent = InstantsComponent_1 = instants_component___decorate([
 
 var InstantsComponent_1;
 //# sourceMappingURL=instants.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/spectrogram/ColourMap.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/spectrogram/ColourMap.ts
 /**
  * Created by lucast on 23/05/2017.
  */
@@ -2978,7 +2978,7 @@ function hsv2rgb(h, s, v) {
     return [r, g, b];
 }
 //# sourceMappingURL=ColourMap.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/spectrogram/MatrixUtils.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/spectrogram/MatrixUtils.ts
 /**
  * Created by lucast on 23/05/2017.
  */
@@ -3017,7 +3017,7 @@ function estimatePercentile(matrix, percentile) {
     return estimate;
 }
 //# sourceMappingURL=MatrixUtils.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/grid/grid.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/grid/grid.component.ts
 /* harmony import */ var grid_component___WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var grid_component___WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__ = __webpack_require__("9yQI");
 /* harmony import */ var grid_component___WEBPACK_IMPORTED_MODULE_2_waves_ui_piper___default = __webpack_require__.n(grid_component___WEBPACK_IMPORTED_MODULE_2_waves_ui_piper__);
@@ -3095,7 +3095,7 @@ grid_component_GridComponent = GridComponent_1 = grid_component___decorate([
 
 var GridComponent_1, grid_component__a, grid_component__b;
 //# sourceMappingURL=grid.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/vertical-scale.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/vertical-scale.component.ts
 /* harmony import */ var vertical_scale_component___WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 var vertical_scale_component___decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3153,7 +3153,7 @@ VerticalScaleComponent = VerticalScaleComponent_1 = vertical_scale_component___d
 
 var VerticalScaleComponent_1, vertical_scale_component__a, vertical_scale_component__b;
 //# sourceMappingURL=vertical-scale.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/visualisations/cross-hair-inspector.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/visualisations/cross-hair-inspector.component.ts
 /* harmony import */ var cross_hair_inspector_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 var cross_hair_inspector_component___decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3235,7 +3235,7 @@ CrossHairInspectorComponent = CrossHairInspectorComponent_1 = cross_hair_inspect
 
 var CrossHairInspectorComponent_1, cross_hair_inspector_component__a, cross_hair_inspector_component__b, cross_hair_inspector_component__c;
 //# sourceMappingURL=cross-hair-inspector.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/playhead/waves-ui-play-head.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/playhead/waves-ui-play-head.component.ts
 /* harmony import */ var waves_ui_play_head_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 var waves_ui_play_head_component___decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3310,7 +3310,7 @@ WavesPlayHeadComponent = waves_ui_play_head_component___decorate([
 
 var waves_ui_play_head_component__a, waves_ui_play_head_component__b, waves_ui_play_head_component__c;
 //# sourceMappingURL=waves-ui-play-head.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/actions/action-tray.component.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/actions/action-tray.component.ts
 /* harmony import */ var action_tray_component___WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_animations__ = __webpack_require__("EyWH");
 var action_tray_component___decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -3388,7 +3388,7 @@ ActionTrayComponent = action_tray_component___decorate([
 ], ActionTrayComponent);
 
 //# sourceMappingURL=action-tray.component.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/services/audio-recorder/RecordRtcMediaRecorder.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/services/audio-recorder/RecordRtcMediaRecorder.ts
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_recordrtc__ = __webpack_require__("+SkV");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_recordrtc___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_recordrtc__);
 
@@ -3442,7 +3442,7 @@ class RecordRtcMediaRecorder {
     }
 }
 //# sourceMappingURL=RecordRtcMediaRecorder.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/app/app.module.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/app/app.module.ts
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__("fc+i");
 /* harmony import */ var app_module___WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__("bm2B");
@@ -3597,12 +3597,12 @@ AppModule = app_module___decorate([
 ], AppModule);
 
 //# sourceMappingURL=app.module.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/environments/environment.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/environments/environment.ts
 const environment = {
     production: true
 };
 //# sourceMappingURL=environment.js.map
-// CONCATENATED MODULE: /Users/lucas/code/ugly-duckling/src/main.ts
+// CONCATENATED MODULE: /Users/lucast/code/ugly-duckling/src/main.ts
 /* harmony import */ var main___WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("/oeL");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser_dynamic__ = __webpack_require__("Qa4U");
 
