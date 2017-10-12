@@ -11,7 +11,7 @@ import {
 } from './services/feature-extraction/feature-extraction.service';
 import {ExtractorOutputInfo} from './feature-extraction-menu/feature-extraction-menu.component';
 import {DomSanitizer} from '@angular/platform-browser';
-import {MdIconRegistry} from '@angular/material';
+import {MatIconRegistry} from '@angular/material';
 import {Subscription} from 'rxjs/Subscription';
 import {
   AnalysisItem,
@@ -44,7 +44,7 @@ export class AppComponent implements OnDestroy {
 
   constructor(private audioService: AudioPlayerService,
               private featureService: FeatureExtractionService,
-              private iconRegistry: MdIconRegistry,
+              private iconRegistry: MatIconRegistry,
               private sanitizer: DomSanitizer,
               @Inject(
                 'UrlResourceLifetimeManager'

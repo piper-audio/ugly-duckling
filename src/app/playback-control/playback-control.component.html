@@ -1,9 +1,9 @@
-<button md-icon-button (click)="emitFastRewindStart()">
-  <md-icon>skip_previous</md-icon>
+<button mat-icon-button (click)="emitFastRewindStart()">
+  <mat-icon>skip_previous</mat-icon>
 </button>
-<button md-icon-button (click)="emitPlayPause()">
-  <md-icon>
+<button mat-icon-button (click)="emitPlayPause()">
+  <mat-icon>
     <ng-template [ngIf]="isPlaying()">pause</ng-template>
     <ng-template [ngIf]="!isPlaying()">play_arrow</ng-template>
-  </md-icon>
+  </mat-icon>
 </button>

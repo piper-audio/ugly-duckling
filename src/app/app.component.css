@@ -2,13 +2,13 @@
   flex: 1 1 auto;
 }
 
-md-sidenav-container {
+mat-sidenav-container {
   height: 100%;
   width: 100%;
   position: absolute;
 }
 
-md-sidenav {
+mat-sidenav {
   text-align: center;
 }
 

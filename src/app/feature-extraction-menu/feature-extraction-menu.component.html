@@ -1,27 +1,31 @@
 <div class="container">
-  <md-list dense>
+  <mat-list dense>
     <ng-container
       *ngFor="let extractor of extractors"
     >
-      <h3 md-subheader>{{extractor.name}}</h3>
-      <md-list-item
+      <h3 mat-subheader>{{extractor.name}}</h3>
+      <mat-list-item
         *ngFor="let output of extractor.outputs"
         (click)="extract(output)">
-        <md-icon md-list-icon>{{getFeatureIconName(output)}}</md-icon>
-        <h4 md-line>{{output.name}}</h4>
-        <p md-line>{{output.combinedKey}}</p>
-        <button md-icon-button
+        <mat-icon mat-list-icon>{{getFeatureIconName(output)}}</mat-icon>
+        <h4 mat-line>{{output.name}}</h4>
+        <p mat-line>{{output.combinedKey}}</p>
+        <button mat-icon-button
                 (click)="extract(output); $event.stopPropagation()"
                 [disabled]="disabled">
-          <md-icon>add</md-icon>
+          <mat-icon>add</mat-icon>
         </button>
-      </md-list-item>
-      <md-divider></md-divider>
+      </mat-list-item>
+      <mat-divider></mat-divider>
     </ng-container>
-  </md-list>
-  <md-spinner *ngIf="isLoading"></md-spinner>
+  </mat-list>
+  <mat-spinner
+    *ngIf="isLoading"
+    [diameter]="25"
+    [strokeWidth]="2"
+  ></mat-spinner>
   <button
-    md-button
+    mat-button
     (click)="load()"
     [disabled]="isLoading"
   >Load more</button>
