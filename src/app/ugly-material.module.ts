@@ -2,27 +2,32 @@
  * Created by lucast on 25/04/2017.
  */
 import {
-  MdButtonModule, MdCardModule,
-  MdIconModule, MdListModule, MdProgressBarModule, MdProgressSpinnerModule,
-  MdSelectModule,
-  MdSidenavModule, MdSnackBarModule,
-  MdToolbarModule
+  MatButtonModule,
+  MatCardModule,
+  MatIconModule,
+  MatListModule,
+  MatProgressBarModule,
+  MatProgressSpinnerModule,
+  MatSelectModule,
+  MatSidenavModule,
+  MatSnackBarModule,
+  MatToolbarModule
 } from '@angular/material';
 import {NgModule} from '@angular/core';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 const importExports = [
   BrowserAnimationsModule,
-  MdIconModule,
-  MdSidenavModule,
-  MdToolbarModule,
-  MdButtonModule,
-  MdSelectModule,
-  MdProgressSpinnerModule,
-  MdProgressBarModule,
-  MdCardModule,
-  MdListModule,
-  MdSnackBarModule
+  MatIconModule,
+  MatSidenavModule,
+  MatToolbarModule,
+  MatButtonModule,
+  MatSelectModule,
+  MatProgressSpinnerModule,
+  MatProgressBarModule,
+  MatCardModule,
+  MatListModule,
+  MatSnackBarModule
 ];
 
 @NgModule({

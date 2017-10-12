@@ -7,11 +7,11 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 @Component({
   selector: 'ugly-progress-bar',
   template: `
-    <md-progress-bar
+    <mat-progress-bar
       [attr.color]="'primary'"
       [mode]="isDeterminate ? 'determinate' : 'indeterminate'"
       [value]="progress"
-    ></md-progress-bar>
+    ></mat-progress-bar>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })

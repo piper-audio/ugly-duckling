@@ -8,21 +8,22 @@ import {Component, Input} from '@angular/core';
   selector: 'ugly-progress-spinner',
   template: `
     <div class="container" [hidden]="!isVisible">
-      <md-spinner
+      <mat-spinner
         class="spinner"
         [attr.color]="'primary'"
         [mode]="isDeterminate ? 'determinate' : 'indeterminate'"
         [value]="currentProcess"
-      ></md-spinner>
+        [diameter]="40"
+        [strokeWidth]="3"
+      ></mat-spinner>
     </div>
   `,
   styles: [`
     .container {
-      height: 40px;
-      width: 40px;
+      height: 50px;
+      width: 50px;
       position: absolute;
-      top: calc(50% - 20px);
-      left: calc(50% - 20px);
+      left: calc(50% - 25px);
     }
 
     .spinner {

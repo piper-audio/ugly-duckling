@@ -1,9 +1,9 @@
-<md-card>
-  <md-card-header>
-    <md-card-title>{{item.title}}</md-card-title>
-    <md-card-subtitle>{{item.description}}</md-card-subtitle>
-  </md-card-header>
-  <md-card-content>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>{{item.title}}</mat-card-title>
+    <mat-card-subtitle>{{item.description}}</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
     <div class="content">
       <ng-template [ngIf]="isLoading()">
         <ugly-progress-bar
@@ -118,16 +118,16 @@
         </ugly-waves-play-head>
       </ng-template>
     </div>
-  </md-card-content>
-  <md-card-actions
+  </mat-card-content>
+  <mat-card-actions
     *ngIf="isAudioItem()">
-    <a md-icon-button
+    <a mat-icon-button
        *ngIf="isAudioItem() && item.isExportable"
       [href]="sanitize(item.uri)"
       [download]="generateFilename(item)"
-    ><md-icon>file_download</md-icon></a>
-    <button md-icon-button (click)="remove.emit(item)">
-      <md-icon>delete_forever</md-icon>
+    ><mat-icon>file_download</mat-icon></a>
+    <button mat-icon-button (click)="remove.emit(item)">
+      <mat-icon>delete_forever</mat-icon>
     </button>
-  </md-card-actions>
-</md-card>
+  </mat-card-actions>
+</mat-card>

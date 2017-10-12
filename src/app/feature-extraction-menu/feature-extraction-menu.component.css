@@ -14,13 +14,11 @@
   display: block;
 }
 
-.container md-spinner {
-  height: 20px;
-  width: 20px;
+.container mat-spinner {
   margin: 0 auto;
   display: block;
 }
 
-md-list-item {
+mat-list-item {
   cursor: pointer;
 }
