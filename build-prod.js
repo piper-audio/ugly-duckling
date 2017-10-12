@@ -3,7 +3,7 @@
  */
 'use strict';
 const webpack = require('webpack');
-const cli = require('@angular/cli');
+const cli = require('@angular/cli').default;
 const fs = require('fs');
 webpack.optimize = Object.assign({}, webpack.optimize, {
   UglifyJsPlugin: function () { this.apply = () => {}; }
