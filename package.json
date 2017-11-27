@@ -7,7 +7,9 @@
     "start": "ng serve",
     "start-ssl": "ng serve --ssl true",
     "build": "node build-prod.js",
-    "test": "ng test",
+    "test": "npm run test-lib && ng test",
+    "build-lib-tests": "tsc -p ./lib-tests",
+    "test-lib": "npm run build-lib-tests && jasmine JASMINE_CONFIG_PATH=lib-tests/jasmine.json",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },

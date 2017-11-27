@@ -90,7 +90,7 @@ export class PersistentStack<T> {
   }
 
   unshift(item: T): number {
-    const newLength = this.unshift(item);
+    const newLength = this.unshiftMutating(item);
     this.updateHistory();
     return newLength;
   }
